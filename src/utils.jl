@@ -1,10 +1,5 @@
-function colSums(df::DataFrame, row_range, col_range)
-    new_df = sum.(eachcol(df[row_range, col_range]))
-end
-
-function rowSums(df::DataFrame, row_range, col_range)
-    new_df = sum.(eachrow(df[row_range, col_range]))
-end
+colSum(mtx::Matrix{Float64}) = sum(mtx, dims=1)
+rowSum(mtx::Matrix{Float64}) = sum(mtx, dims=2)
 
 function convert_geneid(ensembl_id::String)
     base_url = "https://rest.ensembl.org"
@@ -26,4 +21,21 @@ function convert_geneid(ensembl_id::String)
             rethrow(e)
         end
     end
+end
+
+function check_duplicates(arr)
+    seen_values = Dict{Any, Bool}()
+    removed_positions = Dict{Any, Int64}()
+    uniq_arr = []
+    for (i, value) in enumerate(arr)
+        if !haskey(seen_values, value)
+            push!(uniq_arr, value)
+            seen_values[value] = true
+        else
+            if !haskey(removed_positions, value)
+                removed_positions[value] = i
+            end
+        end
+    end
+    return uniq_arr, removed_positions
 end
