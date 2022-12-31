@@ -1,7 +1,7 @@
 function read_10x(tenx_dir::String; 
     version::String="v2", 
-    min_gene::Union{Float64, Int64} = 0.0, 
-    min_cell::Union{Float64, Int64}=0.0
+    min_gene::Real = 0.0, 
+    min_cell::Real = 0.0
 )
     if version === "v2"
         counts = MatrixMarket.mmread(tenx_dir * "/matrix.mtx")
@@ -22,3 +22,4 @@ function read_10x(tenx_dir::String;
         return rawcount
     end
 end
+
