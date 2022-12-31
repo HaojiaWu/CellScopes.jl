@@ -17,6 +17,8 @@ function Base.show(io::IO, sc_obj::scRNAObject)
             end 
         end
     end
+    println("Available fields:")
+    [println("- ", string(i)) for i in fieldnames(typeof(sc_obj))]
 end
 
 function Base.show(io::IO, count::AbstractCount)
