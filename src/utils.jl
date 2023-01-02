@@ -86,4 +86,35 @@ function ExtractClusterCount(sc_obj::scRNAObject, cl; count_type = "norm")
     cl_ct = SubsetCount(ct_obj; cells = cl_cell)
 end
 
-
+function GetDimData(dim_obj::AbstractDimReduction, dim_type::String)
+    if dim_type === "pca"
+       dim_data = dim_obj.pca.cell_embedding
+       dim_data = DataFrame(dim_data, :auto)
+       ndims = dim_obj.pca.maxoutdim
+       key = dim_obj.pca.key
+       rename!(dim_data, key .* "_" .* string.(collect((1:ndims))))
+       x_col = key * "_1"
+       y_col =  key * "_2"
+       return dim_data, x_col, y_col
+    elseif dim_type === "tsne"
+       dim_data = dim_obj.tsne.cell_embedding
+       dim_data = DataFrame(dim_data, :auto)
+       ndims = dim_obj.tsne.ndim
+       key = dim_obj.tsne.key
+       rename!(dim_data, key .* "_" .* string.(collect((1:ndims))))
+       x_col = key * "_1"
+       y_col =  key * "_2"
+       return dim_data, x_col, y_col
+    elseif dim_type === "umap"
+       dim_data = dim_obj.umap.cell_embedding
+       dim_data = DataFrame(dim_data, :auto)
+       ndims = dim_obj.umap.n_components
+       key = dim_obj.umap.key
+       rename!(dim_data, key .* "_" .* string.(collect((1:ndims))))
+       x_col = key * "_1"
+       y_col =  key * "_2"
+       return dim_data, x_col, y_col
+    else
+        error("dim_type can only be \"pca\", \"tsne\", or \"umap\"!")
+    end    
+end

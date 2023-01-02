@@ -70,7 +70,7 @@ function RunPCA(sc_obj::scRNAObject; method=:svd, pratio = 1, maxoutdim = 10)
     M = MultivariateStats.fit(PCA, pca_mat; method=method, pratio=pratio, maxoutdim=maxoutdim);
     proj = MultivariateStats.projection(M)
     percent_var = principalvars(M) ./ tvar(M) * 100
-    key = "PCA"
+    key = "PC"
     pca_obj = PCAObject(proj, M, percent_var, key , method, pratio, maxoutdim)
     reduction_obj = ReductionObject(pca_obj, nothing, nothing)
     sc_obj.dimReduction = reduction_obj
@@ -101,9 +101,11 @@ function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(),
         df1 = DataFrame(cluster = repeat([string(i)], length(cells)), cell_id=cells)
         df = [df;df1]
     end
+    df = df[indexin(colnames(sc_obj), df.cell_id),:];
     metric_type = string(metric)
     cluster_obj = ClusteringObject(df, metric_type, knn_data, dist_mat, adj_mat, result, res)
     sc_obj.clustData = cluster_obj
+    sc_obj.metaData.cluster = df.cluster
     return sc_obj
 end
 
