@@ -178,6 +178,15 @@ cs.HighlightCells(pbmc, "6")
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/highlight.png" width="600"> <br>
 
+#### 3.2 Visualize gene expression.
+a. GeneDimGraph
+```julia
+cs.GeneDimGraph(pbmc, ["CST3","IL32", "GZMB","NKG7","CD79A","CD3D"]; 
+    order=false, marker_size = 2, 
+    count_type ="norm", color_keys=("black","yellow","red"))
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/featureplot.png" width="600"> <br>
+
 
 
 
