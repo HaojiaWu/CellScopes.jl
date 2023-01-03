@@ -21,7 +21,7 @@ tar xvf pbmc3k_filtered_gene_bc_matrices.tar.gz
 ```
 
 #### 2.2 Read the data (in Julia)
-The cells and genes can be filtered by setting the parameters min_gene and min_cell, respectively.
+The cells and genes can be filtered by setting the parameters ```min_gene``` and ```min_cell```, respectively.
 ```julia
 import CellScopes as cs
 raw_counts = cs.read_10x("filtered_gene_bc_matrices/hg19"; min_gene = 3);
@@ -55,5 +55,25 @@ pbmc = cs.scRNAObject(raw_counts)
 #- dimReduction
 #- clustData
 #- undefinedData
+```
+#### 2.4 Create scRNAObject
+We use a normalization method called global-scaling, which is similar to Seurat's "LogNormalize" method. This normalization method scales the feature expression measurements for each cell by the total expression, multiplies the result by a default scale factor of 10,000, and log-transforms the final value. The normalized values are stored as a NormCountObject.
+```julia
+pbmc = cs.NormalizeObject(pbmc; scale_factor = 10000)
+#scRNAObject in CellScopes.jl
+#Genes x Cells = 13100 x 2700
+#Available data:
+#- Raw count
+#- Normalized count
+```
+We then standarize the data using the same approach in Seurat so that the variant won't be dormonited by the highly abundant genes.
+```julia
+pbmc = cs.ScaleObject(pbmc)
+#scRNAObject in CellScopes.jl
+#Genes x Cells = 13100 x 2700
+#Available data:
+#- Raw count
+#- Normalized count
+#- Scaled count
 ```
 
