@@ -66,7 +66,12 @@ pbmc = cs.NormalizeObject(pbmc; scale_factor = 10000)
 #- Raw count
 #- Normalized count
 ```
-We then standarize the data using the same approach in Seurat so that the variant won't be dormonited by the highly abundant genes.
+We then standarize the data using the same approach in Seurat so that the variant won't be dorminated by the highly abundant genes. Here is the formula for standardization. <br>
+```math
+Z_{ij} = \frac{x_{ij} - \bar{x}_i}{σ_i}
+```
+x<sub>ij</sub> is observed UMI, x̄ is the gene mean (rowMean) and σ<sub>i</sub> is the expected variance from the fit.
+
 ```julia
 pbmc = cs.ScaleObject(pbmc)
 #scRNAObject in CellScopes.jl
