@@ -10,7 +10,7 @@ function Base.show(io::IO, sc_obj::scRNAObject)
         end
     end
 
-    if isdefined(pbmc, :dimReduction)
+    if isdefined(sc_obj, :dimReduction)
         for i in reduce_field
             if isdefined(sc_obj.dimReduction, i)
                 matchtype(getfield(sc_obj.dimReduction, i))
