@@ -203,7 +203,7 @@ cs.GeneDimGraph(pbmc, ["CST3","IL32", "GZMB","NKG7","CD79A","CD3D"];
     order=false, marker_size = 2, 
     count_type ="norm", color_keys=("black","yellow","red"), split_by = "fake_goup")
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/dotgraph.png" width="600"> <br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/dotgraph.png" width="300"> <br>
 
 d. GeneDotGraph (split by condition)
 ```julia
