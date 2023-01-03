@@ -23,11 +23,37 @@ tar xvf pbmc3k_filtered_gene_bc_matrices.tar.gz
 #### 2.2 Read the data (in Julia)
 
 ```julia
-using CellScopes.jl
-raw_counts = read_10x("filtered_gene_bc_matrices/hg19"; min_gene = 3);
+import CellScopes as cs
+raw_counts = cs.read_10x("filtered_gene_bc_matrices/hg19"; min_gene = 3);
 ```
-This should create a object type called RawCountObject.
+This should create an object type called RawCountObject.
 ```julia
 raw_counts
+
+#CellScopes.RawCountObject
+#Genes x Cells = 13100 x 2700
+#Available fields:
+#- count_mtx
+#- cell_name
+#- gene_name
+```
+#### 2.3 Create scRNAObject
+We then create a scRNAObject using the count object above. The scRNAObject serves as a container to store all the data needed for and generated from the downstream analysis.
+```julia
+pbmc = cs.scRNAObject(raw_counts)
+
+#scRNAObject in CellScopes.jl
+#Genes x Cells = 13100 x 2700
+#Available data:
+#- Raw count
+#Available fields:
+#- rawCount
+#- normCount
+#- scaleCount
+#- metaData
+#- varGene
+#- dimReduction
+#- clustData
+#- undefinedData
 ```
 
