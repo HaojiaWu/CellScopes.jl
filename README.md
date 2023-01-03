@@ -29,51 +29,50 @@ raw_counts = cs.read_10x("filtered_gene_bc_matrices/hg19"; min_gene = 3);
 This should create an object type called RawCountObject.
 ```julia
 raw_counts
-#CellScopes.RawCountObject
-#Genes x Cells = 13100 x 2700
-#Available fields:
-#- count_mtx
-#- cell_name
-#- gene_name
+#=
+CellScopes.RawCountObject
+Genes x Cells = 13100 x 2700
+Available fields:
+- count_mtx
+- cell_name
+- gene_name
+=#
 ```
 #### 2.3 Create a scRNAObject
 We then create a scRNAObject using the count object above. The scRNAObject serves as a container to store all the data needed for and generated from the downstream analysis. The cells and genes can be further filtered by setting the parameters ```min_gene``` and ```min_cell```, respectively.
 ```julia
 pbmc = cs.scRNAObject(raw_counts)
-#scRNAObject in CellScopes.jl
-#Genes x Cells = 13100 x 2700
-#Available data:
-#- Raw count
-#Available fields:
-#- rawCount
-#- normCount
-#- scaleCount
-#- metaData
-#- varGene
-#- dimReduction
-#- clustData
-#- undefinedData
+#=
+scRNAObject in CellScopes.jl
+Genes x Cells = 13100 x 2700
+Available data:
+- Raw count
+=#
 ```
 #### 2.4 Normalize the scRNAObject
 We use a normalization method called global-scaling, which is similar to Seurat's "LogNormalize" method. This normalization method scales the feature expression measurements for each cell by the total expression, multiplies the result by a default scale factor of 10,000, and log-transforms the final value. The normalized values are stored as a NormCountObject.
 ```julia
 pbmc = cs.NormalizeObject(pbmc; scale_factor = 10000)
-#scRNAObject in CellScopes.jl
-#Genes x Cells = 13100 x 2700
-#Available data:
-#- Raw count
-#- Normalized count
+#=
+scRNAObject in CellScopes.jl
+Genes x Cells = 13100 x 2700
+Available data:
+- Raw count
+- Normalized count
+=#
 ```
 We then use the ```ScaleObject``` function to scale and center the data.
 
 ```julia
 pbmc = cs.ScaleObject(pbmc)
-#scRNAObject in CellScopes.jl
-#Genes x Cells = 13100 x 2700
-#Available data:
-#- Raw count
-#- Normalized count
-#- Scaled count
+#=
+scRNAObject in CellScopes.jl
+Genes x Cells = 13100 x 2700
+Available data:
+- Raw count
+- Normalized count
+- Scaled count
+=#
 ```
 
 #### 2.5 Find variable genes
@@ -85,42 +84,48 @@ x<sub>ij</sub> is observed UMI, x̄ is the gene mean (rowMean) and σ<sub>i</sub
 
 ```julia
 pbmc = cs.FindVariableGenes(pbmc)
-#scRNAObject in CellScopes.jl
-#Genes x Cells = 13100 x 2700
-#Available data:
-#- Raw count
-#- Normalized count
-#- Scaled count
-#- Variable genes
+#=
+scRNAObject in CellScopes.jl
+Genes x Cells = 13100 x 2700
+Available data:
+- Raw count
+- Normalized count
+- Scaled count
+- Variable genes
+=#
 ```
 
 #### 2.6 Run principal component analysis (PCA).
 Next, we perform PCA on the scaled data using only the previously identified variable genes as input. This is completed by the [MultivariateStats.jl](https://github.com/JuliaStats/MultivariateStats.jl) package.
 ```julia
 pbmc = cs.RunPCA(pbmc;  method=:svd, pratio = 1, maxoutdim = 10)
-#scRNAObject in CellScopes.jl
-#Genes x Cells = 13100 x 2700
-#Available data:
-#- Raw count
-#- Normalized count
-#- Scaled count
-#- Variable genes
-#- PCA data
+#=
+scRNAObject in CellScopes.jl
+Genes x Cells = 13100 x 2700
+Available data:
+- Raw count
+- Normalized count
+- Scaled count
+- Variable genes
+- PCA data
+=#
 ```
 #### 2.7 Find clusters.
 We use a graph-based approach to identify the clusters. We first construct a KNN graph based on the significant components using the [NearestNeighborDescent.jl](https://github.com/dillondaudert/NearestNeighborDescent.jl) package. We then extract the KNN matrix from the graph and convert it into an adjacency matrix. This adjacent matrix is used as input for the [Leiden.jl](https://github.com/bicycle1885/Leiden.jl) package, which performs community detection. The entire process is implemented in the RunClustering function.
 
 ```julia
 pbmc = cs.RunClustering(pbmc; res=0.015)
-#scRNAObject in CellScopes.jl
-#Genes x Cells = 13100 x 2700
-#Available data:
-#- Raw count
-#- Normalized count
-#- Scaled count
-#- Variable genes
-#- Clustering data
-#- PCA data
+#=
+scRNAObject in CellScopes.jl
+Genes x Cells = 13100 x 2700
+Available data:
+- Raw count
+- Normalized count
+- Scaled count
+- Variable genes
+- Clustering data
+- PCA data
+=#
 ```
 #### 2.8 Run UMAP or tSNE.
 CellScapes.jl provides various non-linear dimensionality reduction techniques, including tSNE and UMAP, to allow for visualization and exploration of datasets. In the current version, UMAP is much faster than tSNE for large datasets, so it is highly recommended to use UMAP.
