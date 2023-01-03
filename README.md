@@ -29,7 +29,6 @@ raw_counts = cs.read_10x("filtered_gene_bc_matrices/hg19"; min_gene = 3);
 This should create an object type called RawCountObject.
 ```julia
 raw_counts
-
 #CellScopes.RawCountObject
 #Genes x Cells = 13100 x 2700
 #Available fields:
@@ -41,7 +40,6 @@ raw_counts
 We then create a scRNAObject using the count object above. The scRNAObject serves as a container to store all the data needed for and generated from the downstream analysis. The cells and genes can be further filtered by setting the parameters ```min_gene``` and ```min_cell```, respectively.
 ```julia
 pbmc = cs.scRNAObject(raw_counts)
-
 #scRNAObject in CellScopes.jl
 #Genes x Cells = 13100 x 2700
 #Available data:
@@ -95,3 +93,19 @@ pbmc = cs.FindVariableGenes(pbmc)
 #- Scaled count
 #- Variable genes
 ```
+
+#### 2.6 Run pricipal component analysis (PCA).
+Next, we perform PCA on the scaled data using only the previously identified variable genes as input. This is completed with the [MultivariateStats.jl](https://github.com/JuliaStats/MultivariateStats.jl) package.
+```julia
+pbmc = RunPCA(pbmc;  method=:svd, pratio = 1, maxoutdim = 10)
+#scRNAObject in CellScopes.jl
+#Genes x Cells = 13100 x 2700
+#Available data:
+#- Raw count
+#- Normalized count
+#- Scaled count
+#- Variable genes
+#- PCA data
+```
+
+
