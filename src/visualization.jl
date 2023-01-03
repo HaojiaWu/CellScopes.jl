@@ -98,7 +98,7 @@ end
 
 function GeneDimGraph(sc_obj::scRNAObject, genes; dim_type::String = "umap", count_type = "norm",x_lims=nothing, y_lims=nothing, marker_size=4, order=true,
     color_keys::Union{Vector{String}, Tuple{String,String,String}}=("black","yellow","red"), do_dimname::Bool=false,
-        split_by::Union{String, Symbol, Nothing}=nothing, titlesize::Int64 = 24)
+        split_by::Union{String, Symbol, Nothing}=nothing, titlesize::Int64 = 24, height::Real = 500, width::Real = 500)
         dim_data, x_col, y_col = GetDimData(sc_obj.dimReduction, dim_type)
         if count_type === "norm"
             ct_obj = SubsetCount(sc_obj.normCount; genes = genes)
@@ -129,7 +129,7 @@ function GeneDimGraph(sc_obj::scRNAObject, genes; dim_type::String = "umap", cou
             else
                 n_cols = 3
             end
-            fig = MK.Figure(resolution = (500 * n_cols, 500 * n_rows))
+            fig = MK.Figure(resolution = (width * n_cols, height * n_rows))
             for (i, gene) in enumerate(genes)
                 df_plt = gene_data[!, [x_col, y_col, gene]]
                 gene_expr = float.(df_plt[!, gene])
@@ -172,7 +172,7 @@ function GeneDimGraph(sc_obj::scRNAObject, genes; dim_type::String = "umap", cou
             group_arr = string.(sc_obj.metaData[!, split_by])
             group_names = unique(group_arr)
             gene_data[!, split_by] = group_arr
-            fig = MK.Figure(resolution = (500 * length(group_names), 500 * length(genes)))
+            fig = MK.Figure(resolution = (width * length(group_names), height * length(genes)))
             for (i, group) in enumerate(group_names)
                 for (j, gene) in enumerate(genes)
                     df_plt = gene_data[!, [x_col, y_col, gene, split_by]]
@@ -218,7 +218,7 @@ function GeneDotGraph(sc_obj::scRNAObject, genes::Union{Vector, String},
     cluster::Union{Symbol, String};count_type = "norm" , expr_cutoff::Union{Float64, Int64}=0, split_by::Union{String, Nothing}=nothing,
     x_title="Gene", y_title = "Cell type", cell_order::Union{Vector, String, Nothing}=nothing,
     fontsize::Int64 = 12, color_scheme::String="yelloworangered",reverse_color::Bool=false,
-    fig_height::Union{String, Int64}=400, fig_width::Union{String, Int64}=400)
+    height::Union{String, Int64}=400, width::Union{String, Int64}=400)
     if count_type === "norm"
         ct_obj = SubsetCount(sc_obj.normCount; genes = genes)
     elseif count_type === "raw"
@@ -253,7 +253,7 @@ if isa(split_by, Nothing)
         color={"avg_exp:q",
                 scale={scheme=color_scheme,reverse=reverse_color}},
         size={"perc_exp:q", legend={symbolFillColor="transparent"}},
-        height= fig_height, width=fig_width
+        height= height, width=width
         )
 else
     all_df=DataFrame()
@@ -282,9 +282,58 @@ else
                 scale={scheme=color_scheme,reverse=reverse_color}},
         size={"perc_exp:q", legend={symbolFillColor="transparent"}},
         column={:split_by, header={labelFontSize=16, title=nothing}},
-        height= fig_height, width=fig_width
+        height= height, width=width
         )        
     end
     return p
 end
 
+function GeneVlnGraph(sc_obj::scRNAObject, genes; 
+    count_type::String ="norm", group_by::String = "cluster", 
+    pt_size::Real =0.5, line_width::Real = 0, alpha::Real=1,
+    height::Real = 800, width::Real = 500, do_legend::Bool = false,
+    col_use::Union{Vector, Symbol, Nothing}=nothing)
+    if count_type === "norm"
+        ct_obj = SubsetCount(sc_obj.normCount; genes = genes)
+    elseif count_type === "raw"
+        ct_obj = SubsetCount(sc_obj.rawCount; genes = genes)
+    elseif count_type === "scale"
+        ct_obj = SubsetCount(sc_obj.scaleCount; genes = genes)
+    else
+        println("count_type can only be \"raw\", \"norm\" or \"scale\"!")
+    end
+    count_mat = ct_obj.count_mtx
+    count_mat = count_mat'
+    noise = randn(size(count_mat)[1]) ./ 1000
+    count_mat = count_mat .+ noise
+    count_mat = count_mat'
+    count_mat = DataFrame(count_mat, :auto)
+    count_mat.gene = ct_obj.gene_name
+    count_mat = permutedims(count_mat, :gene)
+    count_mat.cells = sc_obj.rawCount.cell_name
+    count_mat.cluster = sc_obj.metaData[!, group_by]
+    if isa(col_use, Nothing)
+        col_use=:auto
+    end
+    gr(size=(width,height))
+    l = @layout [a;b;c;d;e;f;g;h;i;j;k;l;m;n;o;p;q;r;s;t;u;v;w;x;y;z;aa;bb;cc;dd;ee;ff;gg;hh;ii;jj;kk;ll;mm;nn;oo;pp;qq;rr;ss;tt;uu;vv;ww;xx;yy;zz]
+    l = l[1:length(genes)]
+    p = []
+    for (i, gene) in enumerate(genes)
+        if i < length(genes)
+        p1 = @df count_mat StatsPlots.violin(string.(:cluster), cols(Symbol.(gene)), ylabel=gene,
+                group=string.(:cluster),linewidth=line_width, alpha=alpha, legend=do_legend, xaxis=nothing,grid = false,
+                color_palette = col_use)
+        p1 = @df count_mat dotplot!(string.(:cluster), cols(Symbol.(gene)), marker=(:black, stroke(1)), 
+                    markersize =pt_size, legend=do_legend, xaxis=nothing,grid = false )
+        else 
+        p1 = @df count_mat StatsPlots.violin(string.(:cluster), cols(Symbol.(gene)), ylabel=gene,
+                group=string.(:cluster),linewidth=line_width, alpha=alpha, legend=do_legend,grid = false, 
+                color_palette = col_use)
+        p1 = @df count_mat dotplot!(string.(:cluster), cols(Symbol.(gene)), marker=(:black, stroke(1)), 
+                    markersize =pt_size, legend=do_legend,grid = false )
+        end
+        p = push!(p, p1)
+    end
+    display(plot(p..., layout=l))
+end

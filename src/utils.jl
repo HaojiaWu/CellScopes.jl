@@ -118,3 +118,15 @@ function GetDimData(dim_obj::AbstractDimReduction, dim_type::String)
         error("dim_type can only be \"pca\", \"tsne\", or \"umap\"!")
     end    
 end
+
+function jitter(x)
+    z = abs(-(extrema(skipmissing(x))...))
+    a = z/50
+    if a == 0
+        x = x .+ rand(size(x,1))
+        return reduce(vcat, x)
+    else
+        x = x .+ rand(Uniform(-a, a),size(x,1))
+        return reduce(vcat, x)
+    end
+end
