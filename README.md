@@ -94,7 +94,7 @@ pbmc = cs.FindVariableGenes(pbmc)
 #- Variable genes
 ```
 
-#### 2.6 Run pricipal component analysis (PCA).
+#### 2.6 Run principal component analysis (PCA).
 Next, we perform PCA on the scaled data using only the previously identified variable genes as input. This is completed with the [MultivariateStats.jl](https://github.com/JuliaStats/MultivariateStats.jl) package.
 ```julia
 pbmc = RunPCA(pbmc;  method=:svd, pratio = 1, maxoutdim = 10)
