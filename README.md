@@ -66,11 +66,7 @@ pbmc = cs.NormalizeObject(pbmc; scale_factor = 10000)
 #- Raw count
 #- Normalized count
 ```
-We then standarize the data using the same approach in Seurat so that the variant won't be dorminated by the highly abundant genes. Here is the formula for standardization. <br>
-```math
-Z_{ij} = \frac{x_{ij} - \bar{x}_i}{σ_i}
-```
-x<sub>ij</sub> is observed UMI, x̄ is the gene mean (rowMean) and σ<sub>i</sub> is the expected variance from the fit.
+We then use the ```ScaleObject``` function to scale and center the data.
 
 ```julia
 pbmc = cs.ScaleObject(pbmc)
@@ -82,3 +78,20 @@ pbmc = cs.ScaleObject(pbmc)
 #- Scaled count
 ```
 
+#### 2.5 Find variable genes
+We use the ```vst``` approach implemented in the ```FindVariableFeatures``` function in Seurat or the ```pp.highly_variable_genes``` function in Scanpy to identify the variable genes. To standardize the counts, we use the following formula:
+```math
+Z_{ij} = \frac{x_{ij} - \bar{x}_i}{σ_i}
+```
+x<sub>ij</sub> is observed UMI, x̄ is the gene mean (rowMean) and σ<sub>i</sub> is the expected variance from the loess fit.
+
+```julia
+pbmc = cs.FindVariableGenes(pbmc)
+#scRNAObject in CellScopes.jl
+#Genes x Cells = 13100 x 2700
+#Available data:
+#- Raw count
+#- Normalized count
+#- Scaled count
+#- Variable genes
+```
