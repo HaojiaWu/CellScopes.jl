@@ -21,7 +21,7 @@ tar xvf pbmc3k_filtered_gene_bc_matrices.tar.gz
 ```
 
 #### 2.2 Read the data (in Julia)
-
+The cells and genes can be filtered by setting the parameters min_gene and min_cell, respectively.
 ```julia
 import CellScopes as cs
 raw_counts = cs.read_10x("filtered_gene_bc_matrices/hg19"; min_gene = 3);
@@ -38,7 +38,7 @@ raw_counts
 #- gene_name
 ```
 #### 2.3 Create scRNAObject
-We then create a scRNAObject using the count object above. The scRNAObject serves as a container to store all the data needed for and generated from the downstream analysis.
+We then create a scRNAObject using the count object above. The scRNAObject serves as a container to store all the data needed for and generated from the downstream analysis. The cells and genes can be further filtered by setting the parameters ```min_gene``` and ```min_cell```, respectively.
 ```julia
 pbmc = cs.scRNAObject(raw_counts)
 
