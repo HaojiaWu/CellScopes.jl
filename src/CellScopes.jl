@@ -29,4 +29,11 @@ using ColorSchemes
 import CairoMakie as MK
 using StatsPlots
 
+include("fileio.jl")
+include("properties.jl")
+include("objects.jl")
+include("processing.jl")
+include("utils.jl")
+include("visualization.jl")
+
 end
