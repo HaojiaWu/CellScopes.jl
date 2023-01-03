@@ -108,7 +108,7 @@ pbmc = cs.RunPCA(pbmc;  method=:svd, pratio = 1, maxoutdim = 10)
 #- PCA data
 ```
 #### 2.7 Find clusters.
-We use a graph-based approach to identify the clusters. We first construct a KNN graph based on the significant components using the [NearestNeighborDescent.jl](https://github.com/dillondaudert/NearestNeighborDescent.jl) package. We then extract the KNN matrix from the graph and convert it into an adjacent matrix. This adjacent matrix is used as input for the [Leiden.jl](https://github.com/bicycle1885/Leiden.jl) package, which performs community detection. The entire process is implemented in the RunClustering function.
+We use a graph-based approach to identify the clusters. We first construct a KNN graph based on the significant components using the [NearestNeighborDescent.jl](https://github.com/dillondaudert/NearestNeighborDescent.jl) package. We then extract the KNN matrix from the graph and convert it into an adjacency matrix. This adjacent matrix is used as input for the [Leiden.jl](https://github.com/bicycle1885/Leiden.jl) package, which performs community detection. The entire process is implemented in the RunClustering function.
 
 ```julia
 pbmc = cs.RunClustering(pbmc; res=0.015)
@@ -122,5 +122,26 @@ pbmc = cs.RunClustering(pbmc; res=0.015)
 #- Clustering data
 #- PCA data
 ```
+#### 2.8 Run UMAP or tSNE.
+CellScapes.jl provides various non-linear dimensionality reduction techniques, including tSNE and UMAP, to allow for visualization and exploration of datasets. In the current version, UMAP is much faster than tSNE for large datasets, so it is highly recommended to use UMAP.
+```julia
+pbmc = cs.RunTSNE(pbmc)
+pbmc = cs.RunUMAP(pbmc)
+#=
+scRNAObject in CellScopes.jl
+Genes x Cells = 13100 x 2700
+Available data:
+- Raw count
+- Normalized count
+- Scaled count
+- Variable genes
+- Clustering data
+- PCA data
+- tSNE data
+- UMAP data
+=#
+```
+
+
 
 
