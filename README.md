@@ -12,5 +12,22 @@ using Pkg;
 Pkg.add("https://github.com/bicycle1885/Leiden.jl") # Install the unregistered dependency Leiden.jl
 Pkg.add("https://github.com/HaojiaWu/CellScopes.jl") # Install CellScopes.jl
 ```
+### 2. Tutorial for scRNA-seq analysis
+This tutorial uses the pbmc3k dataset from 10x Genomics, which has been previously used by [Seurat](https://satijalab.org/seurat/articles/pbmc3k_tutorial.html) and [Scanpy](https://scanpy-tutorials.readthedocs.io/en/latest/pbmc3k.html) for demo purpose. This will read in the data and create a RawCountObject that can be used as input for ```CellScopes.jl```.
+#### 2.1 Download the pbmc3k data (in Terminal)
+```bash
+wget https://cf.10xgenomics.com/samples/cell/pbmc3k/pbmc3k_filtered_gene_bc_matrices.tar.gz
+tar xvf pbmc3k_filtered_gene_bc_matrices.tar.gz
+```
 
+#### 2.2 Read the data (in Julia)
+
+```julia
+using CellScopes.jl
+raw_counts = read_10x("filtered_gene_bc_matrices/hg19"; min_gene = 3);
+```
+This should create a object type called RawCountObject.
+```julia
+raw_counts
+```
 
