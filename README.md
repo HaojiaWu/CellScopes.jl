@@ -110,7 +110,7 @@ Available data:
 - PCA data
 =#
 ```
-#### 2.7 Find clusters.
+#### 2.7 Cell clustering.
 We use a graph-based approach to identify the clusters. We first construct a KNN graph based on the significant components using the [NearestNeighborDescent.jl](https://github.com/dillondaudert/NearestNeighborDescent.jl) package. We then extract the KNN matrix from the graph and convert it into an adjacency matrix. This adjacent matrix is used as input for the [Leiden.jl](https://github.com/bicycle1885/Leiden.jl) package, which performs community detection. The entire process is implemented in the RunClustering function.
 
 ```julia
@@ -147,6 +147,11 @@ Available data:
 =#
 ```
 #### 2.9 Find markers.
+```CellScopes.jl``` can help you find markers that define clusters through differential expression. Same as Seurat and Scanpy, we perform wilcoxon rank sum test on each pair of cell types to identify the differential genes. This is implemented by the [HypothesisTests.jl](https://github.com/JuliaStats/HypothesisTests.jl) and [MultipleTesting.jl](https://github.com/juliangehring/MultipleTesting.jl)
+```julia
+markers = FindMarkers(pbmc, "7", "6")
+```
+
 
 
 
