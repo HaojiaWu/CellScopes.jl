@@ -214,5 +214,10 @@ cs.GeneDimGraph(pbmc, ["CST3","IL32", "GZMB","NKG7","CD79A","CD3D"];
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/split_by2.png" width="600"> <br>
 
-
+e. GeneVlnGraph
+```julia
+cs.GeneVlnGraph(pbmc, ["CST3","IL32", "GZMB","NKG7","CD79A","CD68"]; 
+height = 500,alpha=0.5, col_use = :tab10);
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/violin.png" width="600"> <br>
 
