@@ -187,9 +187,32 @@ cs.GeneDimGraph(pbmc, ["CST3","IL32", "GZMB","NKG7","CD79A","CD3D"];
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/featureplot.png" width="600"> <br>
 
+b. GeneDimGraph (split by condition)
+```julia
+pbmc.metaData.fake_group = repeat(["group1","group2","group3"],900) # Create a fake condition
+cs.GeneDimGraph(pbmc, ["CST3","IL32", "GZMB","NKG7","CD79A","CD3D"]; 
+    order=false, marker_size = 2, 
+    count_type ="norm", color_keys=("black","yellow","red"), split_by = "fake_goup")
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/featureplot.png" width="600"> <br>
 
+c. GeneDotGraph 
+```julia
+pbmc.metaData.fake_group = repeat(["group1","group2","group3"],900) # Create a fake condition
+cs.GeneDimGraph(pbmc, ["CST3","IL32", "GZMB","NKG7","CD79A","CD3D"]; 
+    order=false, marker_size = 2, 
+    count_type ="norm", color_keys=("black","yellow","red"), split_by = "fake_goup")
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/featureplot.png" width="600"> <br>
 
-
+d. GeneDotGraph (split by condition)
+```julia
+pbmc.metaData.fake_group = repeat(["group1","group2","group3"],900) # Create a fake condition
+cs.GeneDimGraph(pbmc, ["CST3","IL32", "GZMB","NKG7","CD79A","CD3D"]; 
+    order=false, marker_size = 2, 
+    count_type ="norm", color_keys=("black","yellow","red"), split_by = "fake_goup")
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/featureplot.png" width="600"> <br>
 
 
 
