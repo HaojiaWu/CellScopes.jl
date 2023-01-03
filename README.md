@@ -95,9 +95,9 @@ pbmc = cs.FindVariableGenes(pbmc)
 ```
 
 #### 2.6 Run principal component analysis (PCA).
-Next, we perform PCA on the scaled data using only the previously identified variable genes as input. This is completed with the [MultivariateStats.jl](https://github.com/JuliaStats/MultivariateStats.jl) package.
+Next, we perform PCA on the scaled data using only the previously identified variable genes as input. This is completed by the [MultivariateStats.jl](https://github.com/JuliaStats/MultivariateStats.jl) package.
 ```julia
-pbmc = RunPCA(pbmc;  method=:svd, pratio = 1, maxoutdim = 10)
+pbmc = cs.RunPCA(pbmc;  method=:svd, pratio = 1, maxoutdim = 10)
 #scRNAObject in CellScopes.jl
 #Genes x Cells = 13100 x 2700
 #Available data:
@@ -105,6 +105,21 @@ pbmc = RunPCA(pbmc;  method=:svd, pratio = 1, maxoutdim = 10)
 #- Normalized count
 #- Scaled count
 #- Variable genes
+#- PCA data
+```
+#### 2.7 Find clusters.
+We use a graph-based approach to identify the clusters. We first construct a KNN graph based on the significant components using the [NearestNeighborDescent.jl](https://github.com/dillondaudert/NearestNeighborDescent.jl) package. We then extract the KNN matrix from the graph and convert it into an adjacent matrix. This adjacent matrix is used as input for the [Leiden.jl](https://github.com/bicycle1885/Leiden.jl) package, which performs community detection. The entire process is implemented in the RunClustering function.
+
+```julia
+pbmc = cs.RunClustering(pbmc; res=0.015)
+#scRNAObject in CellScopes.jl
+#Genes x Cells = 13100 x 2700
+#Available data:
+#- Raw count
+#- Normalized count
+#- Scaled count
+#- Variable genes
+#- Clustering data
 #- PCA data
 ```
 
