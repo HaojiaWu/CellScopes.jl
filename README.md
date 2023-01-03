@@ -149,8 +149,29 @@ Available data:
 #### 2.9 Find markers.
 ```CellScopes.jl``` can help you find markers that define clusters through differential expression. Same as Seurat and Scanpy, we perform wilcoxon rank sum test on each pair of cell types to identify the differential genes. This is implemented by the [HypothesisTests.jl](https://github.com/JuliaStats/HypothesisTests.jl) and [MultipleTesting.jl](https://github.com/juliangehring/MultipleTesting.jl)
 ```julia
-markers = FindMarkers(pbmc, "7", "6")
+markers = cs.FindMarkers(pbmc, "7", "6")
 ```
+### 3. Data for visualization
+Inspired by Seurat and Scanpy, we utilize various methods to visualize cell annotations and gene expression. 
+#### 3.1 Visualize cell annotaiton.
+a. DimGraph on PCA
+```julia
+cs.DimGraph(pbmc; dim_type = "pca")
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/CellScopes.png" width="600"> <br>
+
+b. DimGraph on tSNE
+```julia
+cs.DimGraph(pbmc; dim_type = "tsne")
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/CellScopes.png" width="600"> <br>
+
+c. DimGraph on UMAP
+```julia
+cs.DimGraph(pbmc; dim_type = "umap")
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/CellScopes.png" width="600"> <br>
+
 
 
 
