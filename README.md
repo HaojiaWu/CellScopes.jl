@@ -37,7 +37,7 @@ raw_counts
 #- cell_name
 #- gene_name
 ```
-#### 2.3 Create scRNAObject
+#### 2.3 Create a scRNAObject
 We then create a scRNAObject using the count object above. The scRNAObject serves as a container to store all the data needed for and generated from the downstream analysis. The cells and genes can be further filtered by setting the parameters ```min_gene``` and ```min_cell```, respectively.
 ```julia
 pbmc = cs.scRNAObject(raw_counts)
@@ -56,7 +56,7 @@ pbmc = cs.scRNAObject(raw_counts)
 #- clustData
 #- undefinedData
 ```
-#### 2.4 Create scRNAObject
+#### 2.4 Normalize the scRNAObject
 We use a normalization method called global-scaling, which is similar to Seurat's "LogNormalize" method. This normalization method scales the feature expression measurements for each cell by the total expression, multiplies the result by a default scale factor of 10,000, and log-transforms the final value. The normalized values are stored as a NormCountObject.
 ```julia
 pbmc = cs.NormalizeObject(pbmc; scale_factor = 10000)
