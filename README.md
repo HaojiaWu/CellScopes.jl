@@ -158,19 +158,25 @@ a. DimGraph on PCA
 ```julia
 cs.DimGraph(pbmc; dim_type = "pca")
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/CellScopes.png" width="600"> <br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/pca.png" width="600"> <br>
 
 b. DimGraph on tSNE
 ```julia
 cs.DimGraph(pbmc; dim_type = "tsne")
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/CellScopes.png" width="600"> <br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/tsne.png" width="600"> <br>
 
 c. DimGraph on UMAP
 ```julia
 cs.DimGraph(pbmc; dim_type = "umap")
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/CellScopes.png" width="600"> <br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/umap.png" width="600"> <br>
+
+d. DimGraph on selected cluster
+```julia
+cs.HighlightCells(pbmc, "6")
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/highlight.png" width="600"> <br>
 
 
 
