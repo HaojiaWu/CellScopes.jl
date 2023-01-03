@@ -128,7 +128,7 @@ Available data:
 =#
 ```
 #### 2.8 Run UMAP or tSNE.
-CellScapes.jl provides various non-linear dimensionality reduction techniques, including tSNE and UMAP, to allow for visualization and exploration of datasets. In the current version, UMAP is much faster than tSNE for large datasets, so it is highly recommended to use UMAP.
+CellScapes.jl provides various non-linear dimensionality reduction techniques, including tSNE and UMAP, to allow for visualization and exploration of datasets. In the current version, UMAP is much faster than tSNE for large datasets, so it is highly recommended to use UMAP. We use the [TSne.jl](https://github.com/lejon/TSne.jl) and [UMAP.jl](https://github.com/dillondaudert/UMAP.jl) packages for tSNE and UMAP analysis, respectively.
 ```julia
 pbmc = cs.RunTSNE(pbmc)
 pbmc = cs.RunUMAP(pbmc)
@@ -146,6 +146,8 @@ Available data:
 - UMAP data
 =#
 ```
+#### 2.9 Find markers.
+
 
 
 
