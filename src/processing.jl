@@ -1,5 +1,6 @@
 function NormalizeObject(mtx::AbstractMatrix{<:Real}; scale_factor = 10000, norm_method = "logarithm", pseudocount = 1)
-    norm_count = Float32.(log.((mtx ./ sum(mtx, dims=1)) .* scale_factor .+ pseudocount))
+    norm_count = log.((mtx ./ sum(mtx, dims=1)) .* scale_factor .+ pseudocount)
+    norm_count = Float32.(norm_count)
     return norm_count
 end
 
