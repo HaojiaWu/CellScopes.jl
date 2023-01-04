@@ -26,7 +26,7 @@ The cells and genes can be filtered by setting the parameters ```min_gene``` and
 import CellScopes as cs
 raw_counts = cs.read_10x("filtered_gene_bc_matrices/hg19"; min_gene = 3);
 ```
-This should create an object type called RawCountObject.
+This should create an object type called ```RawCountObject```.
 ```julia
 raw_counts
 #=
@@ -50,7 +50,7 @@ Available data:
 =#
 ```
 #### 2.4 Normalize the scRNAObject
-We use a normalization method called global-scaling, which is similar to Seurat's "LogNormalize" method. This normalization method scales the feature expression measurements for each cell by the total expression, multiplies the result by a default scale factor of 10,000, and log-transforms the final value. The normalized values are stored as a NormCountObject.
+We use a normalization method called global-scaling, which is similar to Seurat's "LogNormalize" method. This normalization method scales the feature expression measurements for each cell by the total expression, multiplies the result by a default scale factor of 10,000, and log-transforms the final value. The normalized values are stored as a ```NormCountObject```.
 ```julia
 pbmc = cs.NormalizeObject(pbmc; scale_factor = 10000)
 #=
