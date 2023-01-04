@@ -39,7 +39,7 @@ Available fields:
 =#
 ```
 #### 2.3 Create a scRNAObject
-We then create a scRNAObject using the count object above. The scRNAObject serves as a container to store all the data needed for and generated from the downstream analysis. The cells and genes can be further filtered by setting the parameters ```min_gene``` and ```min_cell```, respectively.
+We then create a ```scRNAObject``` using the count object above. The ```scRNAObject``` serves as a container to store all the data needed for and generated from the downstream analysis. The cells and genes can be further filtered by setting the parameters ```min_gene``` and ```min_cell```, respectively.
 ```julia
 pbmc = cs.scRNAObject(raw_counts)
 #=
