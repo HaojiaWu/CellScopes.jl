@@ -5,7 +5,7 @@ function read_10x(tenx_dir::String;
 )
     if version === "v2"
         counts = MatrixMarket.mmread(tenx_dir * "/matrix.mtx")
-        counts = Matrix(counts)
+        #counts = Matrix(counts)
         cells = CSV.File(tenx_dir * "/barcodes.tsv", header = false) |> DataFrame
         cells = string.(cells.Column1)
         genes = CSV.File(tenx_dir * "/genes.tsv", header = false) |> DataFrame

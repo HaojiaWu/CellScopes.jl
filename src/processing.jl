@@ -1,15 +1,15 @@
-function NormalizeObject(mtx::AbstractMatrix{<:Real}; scale_factor = 1000000, norm_method = "logarithm", pseudocount = 1)
-    norm_count = log.((mtx ./ sum(mtx, dims=1)) .* scale_factor .+ pseudocount)
+function NormalizeObject(mtx::AbstractMatrix{<:Real}; scale_factor = 10000, norm_method = "logarithm", pseudocount = 1)
+    norm_count = Float32.(log.((mtx ./ sum(mtx, dims=1)) .* scale_factor .+ pseudocount))
     return norm_count
 end
 
-function NormalizeObject(ct_obj::RawCountObject; scale_factor = 1000000, norm_method = "logarithm", pseudocount = 1)
+function NormalizeObject(ct_obj::RawCountObject; scale_factor = 10000, norm_method = "logarithm", pseudocount = 1)
     norm_count = NormalizeObject(ct_obj.count_mtx; scale_factor=scale_factor, norm_method=norm_method, pseudocount=pseudocount)
     norm_obj = NormCountObject(norm_count, ct_obj.cell_name, ct_obj.gene_name, scale_factor, norm_method, pseudocount)
     return norm_obj
 end
 
-function NormalizeObject(sc_obj::scRNAObject; scale_factor = 1000000, norm_method = "logarithm", pseudocount = 1)
+function NormalizeObject(sc_obj::scRNAObject; scale_factor = 10000, norm_method = "logarithm", pseudocount = 1)
     norm_obj = NormalizeObject(sc_obj.rawCount; scale_factor = scale_factor, norm_method = norm_method, pseudocount = pseudocount)
     sc_obj.normCount = norm_obj
     return sc_obj
@@ -18,11 +18,12 @@ end
 function ScaleObject(count_mtx::AbstractMatrix{<:Real}; scale_max::Real = 10.0, do_scale::Bool = true, do_center::Bool = true)
     rmean = mean(count_mtx, dims=2)
     rsd = sqrt.(var(count_mtx, dims=2))
-    count_mtx = count_mtx .- rmean
+    count_mtx = Float32.(count_mtx .- rmean)
     if do_scale
-        count_mtx = count_mtx ./ rsd
+        count_mtx = Float32.(count_mtx ./ rsd)
     end
     count_mtx = map(x -> x > scale_max ? scale_max : x, count_mtx)
+    count_mtx = Float32.(count_mtx)
     return count_mtx
 end
 
