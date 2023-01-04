@@ -130,3 +130,8 @@ function jitter(x)
         return reduce(vcat, x)
     end
 end
+
+function VariableGenes(sc_obj::scRNAObject)
+    vargenes = pbmc.varGene.var_gene
+    return vargenes
+end

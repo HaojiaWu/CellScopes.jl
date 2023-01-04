@@ -25,6 +25,7 @@ function ScaleObject(count_mtx::AbstractMatrix{<:Real}; scale_max::Real = 10.0, 
     end
     count_mtx = map(x -> x > scale_max ? scale_max : x, count_mtx)
     count_mtx = count_mtx
+    count_mtx = Float32.(count_mtx)
     return count_mtx
 end
 
