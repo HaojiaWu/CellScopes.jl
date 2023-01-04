@@ -19,12 +19,12 @@ end
 function ScaleObject(count_mtx::AbstractMatrix{<:Real}; scale_max::Real = 10.0, do_scale::Bool = true, do_center::Bool = true)
     rmean = mean(count_mtx, dims=2)
     rsd = sqrt.(var(count_mtx, dims=2))
-    count_mtx = Float32.(count_mtx .- rmean)
+    count_mtx = count_mtx .- rmean
     if do_scale
-        count_mtx = Float32.(count_mtx ./ rsd)
+        count_mtx = count_mtx ./ rsd
     end
     count_mtx = map(x -> x > scale_max ? scale_max : x, count_mtx)
-    count_mtx = Float32.(count_mtx)
+    count_mtx = count_mtx
     return count_mtx
 end
 
