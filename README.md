@@ -151,7 +151,7 @@ Available data:
 ```julia
 markers = cs.FindMarkers(pbmc, "7", "6")
 ```
-### 3. Data for visualization
+### 3. Data visualization
 Inspired by Seurat and Scanpy, we utilize various methods to visualize cell annotations and gene expression. 
 #### 3.1 Visualize cell annotaiton.
 a. DimGraph on PCA
