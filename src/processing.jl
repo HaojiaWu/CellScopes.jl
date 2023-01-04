@@ -171,7 +171,11 @@ function FindMarkers(sc_obj::scRNAObject, cl1, cl2; expr_cutoff=0.0, min_pct=0.1
     cl1_obj = ExtractClusterCount(sc_obj, cl1)
     cl2_obj = ExtractClusterCount(sc_obj, cl2)
     cl1_ct = cl1_obj.count_mtx
+    cl1_ct = Matrix(cl1_ct)
+    cl1_ct = convert(Matrix{Float64}, cl1_ct)
     cl2_ct = cl2_obj.count_mtx
+    cl2_ct = Matrix(cl2_ct)
+    cl2_ct = convert(Matrix{Float64}, cl2_ct)
     wilcon_test = [MannWhitneyUTest(x, y) for (x,y) in zip(eachrow(cl1_ct), eachrow(cl2_ct))]
     p_value = pvalue.(wilcon_test)
     mean1 = log.(mean.([expm1.(x) for x in eachrow(cl1_ct)]) .+ 1)
