@@ -28,14 +28,17 @@ function ScaleObject(count_mtx::AbstractMatrix{<:Real}; scale_max::Real = 10.0, 
     return count_mtx
 end
 
-function ScaleObject(ct_obj::NormCountObject; scale_max::Real = 10.0, do_scale::Bool = true, do_center::Bool = true)
+function ScaleObject(ct_obj::NormCountObject; features::Union{Vector{String}, Nothing}=nothing, scale_max::Real = 10.0, do_scale::Bool = true, do_center::Bool = true)
+    if features !== nothing
+        ct_obj = SubsetCount(ct_obj; genes = features)
+    end
     scale_count = ScaleObject(ct_obj.count_mtx; scale_max=scale_max, do_scale=do_scale, do_center=do_center)
     scale_obj = ScaleCountObject(scale_count, ct_obj.cell_name, ct_obj.gene_name, do_scale, do_center, scale_max)
     return scale_obj
 end
 
-function ScaleObject(sc_obj::scRNAObject; scale_max::Real = 10.0, do_scale::Bool = true, do_center::Bool = true)
-    scale_obj = ScaleObject(sc_obj.normCount; scale_max=scale_max, do_scale=do_scale, do_center=do_center)
+function ScaleObject(sc_obj::scRNAObject; features::Union{Vector{String}, Nothing}=nothing, scale_max::Real = 10.0, do_scale::Bool = true, do_center::Bool = true)
+    scale_obj = ScaleObject(sc_obj.normCount; features = features, scale_max=scale_max, do_scale=do_scale, do_center=do_center)
     sc_obj.scaleCount = scale_obj
     return sc_obj
 end
