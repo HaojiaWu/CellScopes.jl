@@ -85,7 +85,7 @@ function RunPCA(sc_obj::scRNAObject; method=:svd, pratio = 1, maxoutdim = 10)
     return sc_obj
 end
 
-function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
+function RunClustering2(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
     knn_data = [collect(i) for i in eachrow(sc_obj.dimReduction.pca.cell_embedding)]
     graph = nndescent(knn_data, n_neighbors, metric)
     indices, dist_mat = knn_matrices(graph);
@@ -98,6 +98,34 @@ function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(),
     end
     for i in 1:size(indices, 2)
         for j in 1:size(indices, 1)
+            adj_mat[i, indices[j, i]] = 1
+        end
+    end
+    Random.seed!(seed_use)
+    result = Leiden.leiden(adj_mat, resolution = res);
+    df = DataFrame()
+    for (i, members) in enumerate(result.partition)
+        cells = sc_obj.rawCount.cell_name[members]
+        df1 = DataFrame(cluster = repeat([string(i)], length(cells)), cell_id=cells)
+        df = [df;df1]
+    end
+    df = df[indexin(colnames(sc_obj), df.cell_id),:];
+    metric_type = string(metric)
+    cluster_obj = ClusteringObject(df, metric_type, knn_data, dist_mat, adj_mat, result, res)
+    sc_obj.clustData = cluster_obj
+    sc_obj.metaData.cluster = df.cluster
+    return sc_obj
+end
+
+function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
+    knn_data = [collect(i) for i in eachrow(sc_obj.dimReduction.pca.cell_embedding)]
+    graph = nndescent(knn_data, n_neighbors, metric)
+    indices, dist_mat = knn_matrices(graph);
+    n = size(indices, 2)
+    adj_mat = Array{Int64}(undef, n, n)
+    @inbounds for i in 1:n
+        for j in 1:size(indices, 1)
+            adj_mat[indices[j, i], i] = 1
             adj_mat[i, indices[j, i]] = 1
         end
     end
