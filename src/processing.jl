@@ -68,7 +68,9 @@ end
 
 function RunPCA(sc_obj::scRNAObject; method=:svd, pratio = 1, maxoutdim = 10)
     new_count = SubsetCount(sc_obj.scaleCount; genes = sc_obj.varGene.var_gene);
-    pca_mat = Matrix(new_count.count_mtx');
+    pca_mat = new_count.count_mtx'
+    pca_mat = Matrix(pca_mat)
+    pca_mat = convert(Matrix{Float64}, pca_mat)
     M = MultivariateStats.fit(PCA, pca_mat; method=method, pratio=pratio, maxoutdim=maxoutdim);
     proj = MultivariateStats.projection(M)
     percent_var = principalvars(M) ./ tvar(M) * 100
