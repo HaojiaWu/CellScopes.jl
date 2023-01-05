@@ -1,4 +1,4 @@
-function NormalizeObject(mtx::AbstractMatrix{Int64}; scale_factor = 10000.0, norm_method = "logarithm", pseudocount = 1.0)
+function NormalizeObject(mtx::AbstractMatrix{<:Real}; scale_factor = 10000.0, norm_method = "logarithm", pseudocount = 1.0)
     mtx = Float32.(mtx)
     norm_count = log.((mtx ./ sum(mtx, dims=1)) .* scale_factor .+ pseudocount)
     norm_count = Float32.(norm_count)
@@ -17,7 +17,7 @@ function NormalizeObject(sc_obj::scRNAObject; scale_factor = 10000.0, norm_metho
     return sc_obj
 end
 
-function ScaleObject(count_mtx::AbstractMatrix{Float32}; scale_max::Float32 = 10.0, do_scale::Bool = true, do_center::Bool = true)
+function ScaleObject(count_mtx::AbstractMatrix{<:Real}; scale_max::Float32 = 10.0, do_scale::Bool = true, do_center::Bool = true)
     rmean = mean(count_mtx, dims=2)
     rmean = Float32.(rmean)
     rsd = sqrt.(var(count_mtx, dims=2))
