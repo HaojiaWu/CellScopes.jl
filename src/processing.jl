@@ -145,7 +145,7 @@ function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(),
     end
     df = df[indexin(colnames(sc_obj), df.cell_id),:];
     metric_type = string(metric)
-    cluster_obj = ClusteringObject(df, metric_type, dist_mat, adj_mat, result, res)
+    cluster_obj = ClusteringObject(df, metric_type, adj_mat, result, res)
     sc_obj.clustData = cluster_obj
     sc_obj.metaData.cluster = df.cluster
     return sc_obj

@@ -107,11 +107,10 @@ end
 mutable struct ClusteringObject <: AbstractSingleCell
     clustering::DataFrame
     metric::Union{String, Nothing}
-    dist_mat::Union{Matrix{Float64}, Nothing}
     adj_mat::Union{Matrix{Int64}, Nothing}
     ledein_res::Union{NamedTuple{(:quality, :partition), Tuple{Float64, Vector{Vector{Int64}}}}, Nothing}
     resolution::Union{Real, Nothing}
-    ClusteringObject(clustering, metric, dist_mat, adj_mat, ledein_res, resolution)=new(clustering, metric, dist_mat, adj_mat, ledein_res, resolution)
+    ClusteringObject(clustering, metric, adj_mat, ledein_res, resolution)=new(clustering, metric, adj_mat, ledein_res, resolution)
 end
 
 mutable struct VariableGeneObject <: AbstractSingleCell
