@@ -135,3 +135,7 @@ function VariableGenes(sc_obj::scRNAObject)
     vargenes = pbmc.varGene.var_gene
     return vargenes
 end
+
+function SaveObj(sc_obj::scRNAObject; key::String = "scRNAObject", filename::String = "sc_obj.jld2")
+    JLD2.save(filename, key, sc_obj)
+end
