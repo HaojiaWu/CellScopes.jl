@@ -176,7 +176,7 @@ d. DimGraph on selected cluster
 ```julia
 cs.HighlightCells(pbmc, "6")
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/highlight.png" width="600"> <br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/highlight.png" width="500"> <br>
 
 #### 3.2 Visualize gene expression.
 a. GeneDimGraph
