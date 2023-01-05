@@ -1,5 +1,6 @@
 module CellScopes
 
+using Pkg
 using MatrixMarket
 using DataFrames
 using CSV
@@ -29,11 +30,23 @@ using ColorSchemes
 import CairoMakie as MK
 using StatsPlots
 
-include("fileio.jl")
-include("objects.jl")
-include("properties.jl")
-include("processing.jl")
-include("utils.jl")
-include("visualization.jl")
+using PyCall
+using RCall
+import PlotlyJS as plyjs
+using Images
+using Polynomials
+using FileIO
+
+include("scrna/fileio.jl")
+include("scrna/objects.jl")
+include("scrna/properties.jl")
+include("scrna/processing.jl")
+include("scrna/utils.jl")
+include("scrna/visualization.jl")
+
+include("spatial/SpaObj.jl")
+include("spatial/SpaPlots.jl")
+include("spatial/SpaUtils.jl")
+include("spatial/SpaAnalysis.jl")
 
 end

@@ -6,9 +6,6 @@ abstract type AbstractSingleCell <: AbstractCellScope end
 abstract type AbstractCount <: AbstractSingleCell end
 abstract type AbstractDimReduction <: AbstractSingleCell end
 
-# AbstractSpatial: type for Saptial transcriptomics
-abstract type AbstractSpatial <: AbstractCellScope end
-
 # scRNA-seq object constructors
 mutable struct RawCountObject <: AbstractCount
     count_mtx::AbstractMatrix{<:Real}
