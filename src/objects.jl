@@ -93,7 +93,8 @@ mutable struct UMAPObject <: AbstractDimReduction
     n_neighbors::Int64
     metric::String
     min_dist::Real
-    UMAPObject(cell_embedding, key, n_components, n_dimensions, n_neighbors, metric, min_dist) = new(cell_embedding, key, n_components, n_dimensions, n_neighbors, metric, min_dist)    
+    knn_data::Matrix{Int64}
+    UMAPObject(cell_embedding, key, n_components, n_dimensions, n_neighbors, metric, min_dist, knn_data) = new(cell_embedding, key, n_components, n_dimensions, n_neighbors, metric, min_dist, knn_data)    
 end
 
 mutable struct ReductionObject <: AbstractDimReduction

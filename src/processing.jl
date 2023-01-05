@@ -120,9 +120,13 @@ function RunClustering2(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist()
 end
 
 function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
-    knn_data = [collect(i) for i in eachrow(sc_obj.dimReduction.pca.cell_embedding)]
-    graph = nndescent(knn_data, n_neighbors, metric)
-    indices, dist_mat = knn_matrices(graph);
+    if isdefined(sc_obj.dimReduction, :umap)
+        indices = sc_obj.dimReduction.umap.knn_data
+    else
+        pca_vec = [collect(i) for i in eachrow(sc_obj.dimReduction.pca.cell_embedding)]
+        graph = nndescent(pca_vec, n_neighbors, metric)
+        indices, dist_mat = knn_matrices(graph)
+    end
     n = size(indices, 2)
     adj_mat = Array{Int64}(undef, n, n)
     @inbounds for i in 1:n
@@ -141,7 +145,7 @@ function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(),
     end
     df = df[indexin(colnames(sc_obj), df.cell_id),:];
     metric_type = string(metric)
-    cluster_obj = ClusteringObject(df, metric_type, knn_data, dist_mat, adj_mat, result, res)
+    cluster_obj = ClusteringObject(df, metric_type, pca_vec, dist_mat, adj_mat, result, res)
     sc_obj.clustData = cluster_obj
     sc_obj.metaData.cluster = df.cluster
     return sc_obj
@@ -162,11 +166,13 @@ function RunUMAP(sc_obj::scRNAObject; ndim::Int64 = 2, reduce_dims::Int64 = 10, 
     Random.seed!(seed_use)
     pca_mat = sc_obj.dimReduction.pca.cell_embedding
     pca_mat = pca_mat[:, 1:reduce_dims]
-    embedding = umap(pca_mat', ndim; n_neighbors = n_neighbors, min_dist = min_dist, metric = metric)
+    umap_data = UMAP_(pca_mat', ndim ;n_neighbors=n_neighbors, , min_dist = min_dist, metric = metric)
+    knns = umap_data.knns
+    embedding = umap_data.embedding
     embedding = embedding'
     key = "UMAP"
     metric_use = string(metric)
-    umap_obj = UMAPObject(embedding, key, ndim, reduce_dims, n_neighbors, metric_use, min_dist)
+    umap_obj = UMAPObject(embedding, key, ndim, reduce_dims, n_neighbors, metric_use, min_dist, knns)
     sc_obj.dimReduction.umap = umap_obj
     return sc_obj
 end
