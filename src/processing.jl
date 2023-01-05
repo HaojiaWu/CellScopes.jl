@@ -166,7 +166,7 @@ function RunUMAP(sc_obj::scRNAObject; ndim::Int64 = 2, reduce_dims::Int64 = 10, 
     Random.seed!(seed_use)
     pca_mat = sc_obj.dimReduction.pca.cell_embedding
     pca_mat = pca_mat[:, 1:reduce_dims]
-    umap_data = UMAP_(pca_mat', ndim ;n_neighbors=n_neighbors, , min_dist = min_dist, metric = metric)
+    umap_data = UMAP_(pca_mat', ndim; n_neighbors=n_neighbors , min_dist = min_dist, metric = metric)
     knns = umap_data.knns
     embedding = umap_data.embedding
     embedding = embedding'
