@@ -130,8 +130,8 @@ Available data:
 #### 2.8 Run UMAP or tSNE.
 CellScapes.jl provides various non-linear dimensionality reduction techniques, including tSNE and UMAP, to allow for visualization and exploration of datasets. In the current version, UMAP is much faster than tSNE for large datasets, so it is highly recommended to use UMAP. We use the [TSne.jl](https://github.com/lejon/TSne.jl) and [UMAP.jl](https://github.com/dillondaudert/UMAP.jl) packages for tSNE and UMAP analysis, respectively.
 ```julia
-pbmc = cs.RunTSNE(pbmc)
-pbmc = cs.RunUMAP(pbmc)
+pbmc = pbmc = cs.RunTSNE(pbmc; max_iter = 3000, perplexit = 50)
+pbmc = cs.RunUMAP(pbmc; min_dist=0.4)
 #=
 scRNAObject in CellScopes.jl
 Genes x Cells = 13100 x 2700
@@ -176,48 +176,50 @@ d. DimGraph on selected cluster
 ```julia
 cs.HighlightCells(pbmc, "6")
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/highlight.png" width="600"> <br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/highlight.png" width="500"> <br>
 
 #### 3.2 Visualize gene expression.
 a. GeneDimGraph
 ```julia
-cs.GeneDimGraph(pbmc, ["CST3","IL32", "GZMB","NKG7","CD79A","CD3D"]; 
-    order=false, marker_size = 2, 
-    count_type ="norm", color_keys=("black","yellow","red"))
+cs.GeneDimGraph(pbmc, ["CST3","IL32","CD79A"]; 
+    order=false, marker_size = 4, 
+    count_type ="norm", color_keys=("black","indianred1","red"))
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/featureplot.png" width="600"> <br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/featureplot.png" width="800"> <br>
 
 b. GeneDimGraph (split by condition)
 ```julia
 pbmc.metaData.fake_group = repeat(["group1","group2","group3"],900) # Create a fake condition
-cs.GeneDimGraph(pbmc, ["CST3","IL32", "GZMB","NKG7","CD79A","CD3D"]; 
-    order=false, marker_size = 2, 
-    count_type ="norm", color_keys=("black","yellow","red"), split_by = "fake_goup")
+cs.GeneDimGraph(pbmc, ["CST3","IL32","CD79A"]; 
+    order=false, marker_size = 7, 
+    count_type ="norm", color_keys=("black","indianred1","red"), split_by="fake_group")
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/split_by1.png" width="600"> <br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/split_by1.png" width="800"> <br>
 
 c. GeneDotGraph 
 ```julia
-pbmc.metaData.fake_group = repeat(["group1","group2","group3"],900) # Create a fake condition
-cs.GeneDimGraph(pbmc, ["CST3","IL32", "GZMB","NKG7","CD79A","CD3D"]; 
-    order=false, marker_size = 2, 
-    count_type ="norm", color_keys=("black","yellow","red"), split_by = "fake_goup")
+cs.GeneDotGraph(pbmc, ["GZMB","GZMA", "CD3D","CD68","CD79A"], "cluster";
+               count_type="norm",height=300, width=150,  expr_cutoff = 1, 
+                cell_order=["1","5","4","3","8","2","7","6"])
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/dotgraph.png" width="300"> <br>
 
 d. GeneDotGraph (split by condition)
 ```julia
-pbmc.metaData.fake_group = repeat(["group1","group2","group3"],900) # Create a fake condition
-cs.GeneDimGraph(pbmc, ["CST3","IL32", "GZMB","NKG7","CD79A","CD3D"]; 
-    order=false, marker_size = 2, 
-    count_type ="norm", color_keys=("black","yellow","red"), split_by = "fake_goup")
+cs.GeneDotGraph(pbmc, ["GZMB","GZMA", "CD3D","CD68","CD79A"], 
+                "cluster"; split_by="fake_group",
+                count_type="norm",height=300, width=150,  expr_cutoff = 1, 
+                cell_order=["1","5","4","3","8","2","7","6"])
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/split_by2.png" width="600"> <br>
 
 e. GeneVlnGraph
 ```julia
-cs.GeneVlnGraph(pbmc, ["CST3","IL32", "GZMB","NKG7","CD79A","CD68"]; 
-height = 500,alpha=0.5, col_use = :tab10);
+from = ["1","5","4","3","8","2","7","6"]
+to = ["c1","c2","c3","c4","c5","c6","c7","c8"]
+pbmc.metaData = mapvalues(pbmc.metaData, :cluster, :cluster2, from, to);
+cs.GeneVlnGraph(pbmc, ["GZMB","GZMA", "CD3D","CD68","CD79A"]; group_by="cluster2",
+height = 500,alpha=0.5, col_use = :tab10)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/violin.png" width="600"> <br>
 
