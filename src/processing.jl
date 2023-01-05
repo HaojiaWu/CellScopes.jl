@@ -17,7 +17,7 @@ function NormalizeObject(sc_obj::scRNAObject; scale_factor = 10000.0, norm_metho
     return sc_obj
 end
 
-function ScaleObject(count_mtx::AbstractMatrix{<:Real}; scale_max::Float32 = 10.0, do_scale::Bool = true, do_center::Bool = true)
+function ScaleObject(count_mtx::AbstractMatrix{<:Real}; scale_max::Real = 10.0, do_scale::Bool = true, do_center::Bool = true)
     rmean = mean(count_mtx, dims=2)
     rmean = Float32.(rmean)
     rsd = sqrt.(var(count_mtx, dims=2))
@@ -31,7 +31,7 @@ function ScaleObject(count_mtx::AbstractMatrix{<:Real}; scale_max::Float32 = 10.
     return count_mtx
 end
 
-function ScaleObject(ct_obj::NormCountObject; features::Union{Vector{String}, Nothing}=nothing, scale_max::Float32 = 10.0, do_scale::Bool = true, do_center::Bool = true)
+function ScaleObject(ct_obj::NormCountObject; features::Union{Vector{String}, Nothing}=nothing, scale_max::Real = 10.0, do_scale::Bool = true, do_center::Bool = true)
     if features !== nothing
         ct_obj = SubsetCount(ct_obj; genes = features)
     end
