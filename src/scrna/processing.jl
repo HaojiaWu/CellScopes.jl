@@ -129,7 +129,7 @@ function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(),
     end
     n = size(indices, 2)
     adj_mat = Array{Int64}(undef, n, n)
-    Threads.@threads for i in 1:n
+    for i in 1:n
         for j in 1:size(indices, 1)
             adj_mat[indices[j, i], i] = 1
             adj_mat[i, indices[j, i]] = 1
@@ -138,7 +138,7 @@ function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(),
     Random.seed!(seed_use)
     result = Leiden.leiden(adj_mat, resolution = res);
     df = DataFrame()
-    Threads.@threads for (i, members) in enumerate(result.partition)
+    for (i, members) in enumerate(result.partition)
         cells = sc_obj.rawCount.cell_name[members]
         df1 = DataFrame(cluster = repeat([string(i)], length(cells)), cell_id=cells)
         df = [df;df1]
