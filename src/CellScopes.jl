@@ -1,4 +1,10 @@
+__precompile__()
+
 module CellScopes
+
+function __init__()
+    println("Welcome to use CellScopes.jl!")
+end
 
 using Pkg
 using MatrixMarket
@@ -37,14 +43,13 @@ using Images
 using Polynomials
 using FileIO
 
-include("scrna/fileio.jl")
 include("scrna/objects.jl")
-include("scrna/properties.jl")
+include("spatial/SpaObj.jl")
+include("properties.jl")
 include("scrna/processing.jl")
 include("scrna/utils.jl")
 include("scrna/visualization.jl")
-
-include("spatial/SpaObj.jl")
+include("scrna/fileio.jl")
 include("spatial/SpaPlots.jl")
 include("spatial/SpaUtils.jl")
 include("spatial/SpaAnalysis.jl")

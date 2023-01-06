@@ -129,7 +129,7 @@ function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(),
     end
     n = size(indices, 2)
     adj_mat = Array{Int64}(undef, n, n)
-    @inbounds for i in 1:n
+    Threads.@threads for i in 1:n
         for j in 1:size(indices, 1)
             adj_mat[indices[j, i], i] = 1
             adj_mat[i, indices[j, i]] = 1
@@ -138,7 +138,7 @@ function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(),
     Random.seed!(seed_use)
     result = Leiden.leiden(adj_mat, resolution = res);
     df = DataFrame()
-    for (i, members) in enumerate(result.partition)
+    Threads.@threads for (i, members) in enumerate(result.partition)
         cells = sc_obj.rawCount.cell_name[members]
         df1 = DataFrame(cluster = repeat([string(i)], length(cells)), cell_id=cells)
         df = [df;df1]
@@ -162,7 +162,7 @@ function RunTSNE(sc_obj::scRNAObject; ndim::Int64 = 2, reduce_dims::Int64 = 10, 
     return sc_obj
 end
 
-function RunUMAP(sc_obj::scRNAObject; ndim::Int64 = 2, reduce_dims::Int64 = 10, n_neighbors::Int64 = 100, metric = CosineDist(), min_dist::Real = 0.2, seed_use::Int64 = 1234)
+function RunUMAP(sc_obj::scRNAObject; ndim::Int64 = 2, reduce_dims::Int64 = 10, n_neighbors::Int64 = 30, metric = CosineDist(), min_dist::Real = 0.4, seed_use::Int64 = 1234)
     Random.seed!(seed_use)
     pca_mat = sc_obj.dimReduction.pca.cell_embedding
     pca_mat = pca_mat[:, 1:reduce_dims]
