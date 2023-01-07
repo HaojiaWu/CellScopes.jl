@@ -55,8 +55,10 @@ function SubsetCount(ct_obj::T;
     if isa(cells, Nothing)
         cells = all_cells
     end
-    check_gene = [i in(genes) for i in all_genes]
-    check_cell = [i in(cells) for i in all_cells]
+    cells_set = Set(cells)
+    genes_set = Set(genes)
+    check_cell = [i in cells_set for i in all_cells]
+    check_gene = [i in genes_set for i in all_genes]
     gene_name = all_genes[check_gene]
     cell_name = all_cells[check_cell]
     new_count = ct_obj.count_mtx[check_gene, check_cell]

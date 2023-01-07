@@ -39,15 +39,12 @@ end
 
 function ScaleObject(count_mtx::AbstractMatrix{<:Real}; scale_max::Real = 10.0, do_scale::Bool = true, do_center::Bool = true)
     rmean = mean(count_mtx, dims=2)
-    rmean = Float32.(rmean)
     rsd = sqrt.(var(count_mtx, dims=2))
-    rsd = Float32.(rsd)
-    count_mtx = count_mtx .- rmean
+    count_mtx = hcat([count_mtx[i, :] .- rmean[i] for i in 1:length(rmean)]...)
     if do_scale
-        count_mtx = count_mtx ./ rsd
+        count_mtx = hcat([count_mtx[i, :] ./ rsd[i] for i in 1:length(rsd)]...)
     end
     count_mtx = map(x -> x > scale_max ? scale_max : x, count_mtx)
-    count_mtx = Float32.(count_mtx)
     return count_mtx
 end
 
@@ -75,9 +72,12 @@ function FindVariableGenes(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, span
     vst_data = filter(:variance => x -> x > 0.0, vst_data)
     fit = loess(log10.(vst_data.mean), log10.(vst_data.variance), span=span)
     vst_data.variance_expected = 10 .^ Loess.predict(fit, log10.(vst_data.mean))
-    mat = deepcopy(ct_mtx.count_mtx);
-    mat2 = (mat .- vst_data.mean) ./ sqrt.(vst_data.variance_expected)
-    sd_val = var(mat2, dims=2)
+    mat = ct_mtx.count_mtx
+    mean1 = vst_data.mean
+    var1 = sqrt.(vst_data.variance_expected)
+    mat = hcat([(mat[i, :] .- mean1[i]) ./ var1[i] for i in 1:n]...)
+    # mat2 = (mat .- vst_data.mean) ./ sqrt.(vst_data.variance_expected)
+    sd_val = var(mat, dims=2)
     vst_data.variance_standardized = vec(sd_val)
     vst_data.gene = ct_mtx.gene_name;
     vst_data = sort(vst_data, :variance_standardized, rev=true)
@@ -93,11 +93,11 @@ function FindVariableGenes(sc_obj::scRNAObject; nFeatures::Int64 = 2000, span::F
 end
 
 function RunPCA(sc_obj::scRNAObject; method=:svd, pratio = 1, maxoutdim = 10)
-    new_count = SubsetCount(sc_obj.scaleCount; genes = sc_obj.varGene.var_gene);
+    new_count = SubsetCount(sc_obj.scaleCount; genes = sc_obj.varGene.var_gene)
     pca_mat = new_count.count_mtx'
     pca_mat = Matrix(pca_mat)
     pca_mat = convert(Matrix{Float64}, pca_mat)
-    M = MultivariateStats.fit(PCA, pca_mat; method=method, pratio=pratio, maxoutdim=maxoutdim);
+    M = MultivariateStats.fit(PCA, pca_mat; method=method, pratio=pratio, maxoutdim=maxoutdim)
     proj = MultivariateStats.projection(M)
     percent_var = principalvars(M) ./ tvar(M) * 100
     key = "PC"
