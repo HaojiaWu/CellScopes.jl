@@ -1,23 +1,4 @@
-#=
-function NormalizeObject(mtx::AbstractMatrix{<:Real}; scale_factor = 10000.0, norm_method = "logarithm", pseudocount = 1.0)
-    mtx = Float32.(mtx)
-    norm_count = log.((mtx ./ sum(mtx, dims=1)) .* scale_factor .+ pseudocount)
-    norm_count = Float32.(norm_count)
-    return norm_count
-end
 
-function NormalizeObject(ct_obj::RawCountObject; scale_factor = 10000.0, norm_method = "logarithm", pseudocount = 1.0)
-    norm_count = NormalizeObject(ct_obj.count_mtx; scale_factor=scale_factor, norm_method=norm_method, pseudocount=pseudocount)
-    norm_obj = NormCountObject(norm_count, ct_obj.cell_name, ct_obj.gene_name, scale_factor, norm_method, pseudocount)
-    return norm_obj
-end
-
-function NormalizeObject(sc_obj::scRNAObject; scale_factor = 10000.0, norm_method = "logarithm", pseudocount = 1.0)
-    norm_obj = NormalizeObject(sc_obj.rawCount; scale_factor = scale_factor, norm_method = norm_method, pseudocount = pseudocount)
-    sc_obj.normCount = norm_obj
-    return sc_obj
-end
-=#
 function NormalizeObject(mtx::AbstractMatrix{<:Real}; scale_factor = 10000, norm_method = "logarithm", pseudocount = 1)
     n= size(mtx)[2]
     sum_val = sum(mtx, dims=1)
@@ -78,7 +59,7 @@ function FindVariableGenes(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, span
     var1 = sqrt.(vst_data.variance_expected)
     mat = hcat([(mat[i, :] .- mean1[i]) ./ var1[i] for i in 1:length(mean1)]...)
     #mat = (mat .- vst_data.mean) ./ sqrt.(vst_data.variance_expected)
-    sd_val = var(mat, dims=2)
+    sd_val = var(mat, dims=1)
     vst_data.variance_standardized = vec(sd_val)
     vst_data.gene = ct_mtx.gene_name;
     vst_data = sort(vst_data, :variance_standardized, rev=true)
