@@ -1,3 +1,4 @@
+#=
 function NormalizeObject(mtx::AbstractMatrix{<:Real}; scale_factor = 10000.0, norm_method = "logarithm", pseudocount = 1.0)
     mtx = Float32.(mtx)
     norm_count = log.((mtx ./ sum(mtx, dims=1)) .* scale_factor .+ pseudocount)
@@ -12,6 +13,25 @@ function NormalizeObject(ct_obj::RawCountObject; scale_factor = 10000.0, norm_me
 end
 
 function NormalizeObject(sc_obj::scRNAObject; scale_factor = 10000.0, norm_method = "logarithm", pseudocount = 1.0)
+    norm_obj = NormalizeObject(sc_obj.rawCount; scale_factor = scale_factor, norm_method = norm_method, pseudocount = pseudocount)
+    sc_obj.normCount = norm_obj
+    return sc_obj
+end
+=#
+function NormalizeObject(mtx::AbstractMatrix{<:Real}; scale_factor = 10000, norm_method = "logarithm", pseudocount = 1)
+    n= size(mtx)[2]
+    sum_val = sum(mtx, dims=1)
+    norm_count = hcat([log.((mtx[:, i] ./ sum_val[i]) .* scale_factor .+ pseudocount) for i in 1:n]...)
+    return norm_count
+end
+
+function NormalizeObject(ct_obj::RawCountObject; scale_factor = 10000, norm_method = "logarithm", pseudocount = 1)
+    norm_count = NormalizeObject(ct_obj.count_mtx; scale_factor=scale_factor, norm_method=norm_method, pseudocount=pseudocount)
+    norm_obj = NormCountObject(norm_count, ct_obj.cell_name, ct_obj.gene_name, scale_factor, norm_method, pseudocount)
+    return norm_obj
+end
+
+function NormalizeObject(sc_obj::scRNAObject; scale_factor = 10000, norm_method = "logarithm", pseudocount = 1)
     norm_obj = NormalizeObject(sc_obj.rawCount; scale_factor = scale_factor, norm_method = norm_method, pseudocount = pseudocount)
     sc_obj.normCount = norm_obj
     return sc_obj
