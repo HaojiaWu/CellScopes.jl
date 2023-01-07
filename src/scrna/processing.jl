@@ -42,7 +42,7 @@ function ScaleObject(count_mtx::AbstractMatrix{<:Real}; scale_max::Real = 10.0, 
     rsd = sqrt.(var(count_mtx, dims=2))
     count_mtx = hcat([count_mtx[i, :] .- rmean[i] for i in 1:length(rmean)]...)
     if do_scale
-        count_mtx = hcat([count_mtx[i, :] ./ rsd[i] for i in 1:length(rsd)]...)
+        count_mtx = hcat([count_mtx[:, i] ./ rsd[i] for i in 1:length(rsd)]...)
     end
     count_mtx = map(x -> x > scale_max ? scale_max : x, count_mtx)
     count_mtx = count_mtx'
