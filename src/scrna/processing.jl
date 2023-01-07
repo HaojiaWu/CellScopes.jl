@@ -131,8 +131,8 @@ function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(),
     end
     n = size(indices, 2)
     adj_mat = Array{Int64}(undef, n, n)
-    for i in 1:n
-        for j in 1:size(indices, 1)
+    @distributed for i in 1:n
+        @distributed  for j in 1:size(indices, 1)
             adj_mat[indices[j, i], i] = 1
             adj_mat[i, indices[j, i]] = 1
         end
