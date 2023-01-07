@@ -45,6 +45,7 @@ function ScaleObject(count_mtx::AbstractMatrix{<:Real}; scale_max::Real = 10.0, 
         count_mtx = hcat([count_mtx[i, :] ./ rsd[i] for i in 1:length(rsd)]...)
     end
     count_mtx = map(x -> x > scale_max ? scale_max : x, count_mtx)
+    count_mtx = count_mtx'
     return count_mtx
 end
 
