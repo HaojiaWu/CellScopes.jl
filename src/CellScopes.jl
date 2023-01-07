@@ -42,7 +42,6 @@ import PlotlyJS as plyjs
 using Images
 using Polynomials
 using FileIO
-using Distributed
 
 include("scrna/objects.jl")
 include("spatial/SpaObj.jl")
