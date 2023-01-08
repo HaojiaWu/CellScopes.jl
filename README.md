@@ -245,49 +245,49 @@ rowSum(mtx::AbstractMatrix{<:Real}) = sum(mtx, dims=2)
 @time gene_kept = (vec ∘ collect)(rowSum(counts).> 0.0);
 genes = genes[gene_kept];
 ```
-1.811749 seconds (2.46 M allocations: 131.292 MiB, 37.24% compilation time)
+*1.811749 seconds (2.46 M allocations: 131.292 MiB, 37.24% compilation time)*
 ```julia
 colSum(mtx::AbstractMatrix{<:Real}) = sum(mtx, dims=1)
 @time cell_kept = (vec ∘ collect)(colSum(counts) .> 0.0)
 cells = cells[cell_kept];
 ```
-0.180891 seconds (18.55 k allocations: 4.606 MiB, 3.59% compilation time)
+*0.180891 seconds (18.55 k allocations: 4.606 MiB, 3.59% compilation time)*
 ```julia
 @time counts = counts[gene_kept, cell_kept];
 ```
-4.641869 seconds (631.47 k allocations: 3.878 GiB, 28.75% gc time, 7.56% compilation time)
+*4.641869 seconds (631.47 k allocations: 3.878 GiB, 28.75% gc time, 7.56% compilation time)*
 ```julia
 @time rawcount = cs.RawCountObject(counts, cells, genes);
 ```
-0.011193 seconds (5.12 k allocations: 290.205 KiB, 99.64% compilation time)
+*0.011193 seconds (5.12 k allocations: 290.205 KiB, 99.64% compilation time)*
 ```julia
 @time mca = cs.scRNAObject(rawcount)
 ```
-4.828527 seconds (1.61 M allocations: 3.954 GiB, 6.74% gc time, 16.00% compilation time)
+*4.828527 seconds (1.61 M allocations: 3.954 GiB, 6.74% gc time, 16.00% compilation time)*
 ```julia
 @time mca = cs.NormalizeObject(mca; scale_factor = 10000)
 ```
-15.791931 seconds (3.82 M allocations: 11.933 GiB, 20.05% gc time, 2.43% compilation time)
+*15.791931 seconds (3.82 M allocations: 11.933 GiB, 20.05% gc time, 2.43% compilation time)*
 ```julia
 @time mca = cs.FindVariableGenes(mca)
 ```
-360.900305 seconds (22.33 M allocations: 239.714 GiB, 2.77% gc time, 1.68% compilation time)
+*360.900305 seconds (22.33 M allocations: 239.714 GiB, 2.77% gc time, 1.68% compilation time)*
 ```julia
 @time mca = cs.ScaleObject(mca; features = mca.varGene.var_gene)
 ```
-169.916280 seconds (2.00 M allocations: 73.590 GiB, 6.25% gc time, 0.72% compilation time)
+*169.916280 seconds (2.00 M allocations: 73.590 GiB, 6.25% gc time, 0.72% compilation time)*
 ```julia
 @time mca = cs.RunPCA(mca; maxoutdim = 30)
 ```
-616.548600 seconds (4.26 M allocations: 36.830 GiB, 1.16% gc time, 0.94% compilation time)
+*616.548600 seconds (4.26 M allocations: 36.830 GiB, 1.16% gc time, 0.94% compilation time)*
 ```julia
 @time mca = cs.RunUMAP(mca; reduce_dims = 30, min_dist = 0.6, n_neighbors=30)
 ```
-2554.080855 seconds (63.06 M allocations: 22.751 GiB, 0.57% gc time, 0.14% compilation time)
+*2554.080855 seconds (63.06 M allocations: 22.751 GiB, 0.57% gc time, 0.14% compilation time)*
 ```julia
 @time mca = cs.RunClustering(mca; res=0.0001,n_neighbors=30) # To-do list: runtime optimization
 ```
-3466.776112 seconds (2.30 M allocations: 1.198 TiB, 0.04% gc time, 0.02% compilation time)
+*3466.776112 seconds (2.30 M allocations: 1.198 TiB, 0.04% gc time, 0.02% compilation time)*
 
 ```julia
 cs.DimGraph(mca; marker_size =1, do_label=false, do_legend=false)
