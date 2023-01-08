@@ -267,7 +267,7 @@ cells = cells[cell_kept];
 ```julia
 @time mca = cs.FindVariableGenes(mca)
 ```
-1193.544471 seconds (22.88 M allocations: 235.914 GiB, 2.20% gc time, 2.22% compilation time)
+360.900305 seconds (22.33 M allocations: 239.714 GiB, 2.77% gc time, 1.68% compilation time)
 ```julia
 @time mca = cs.ScaleObject(mca; features = mca.varGene.var_gene)
 ```
