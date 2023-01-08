@@ -26,7 +26,7 @@ function ScaleObject(count_mtx::AbstractMatrix{<:Real}; scale_max::Real = 10.0, 
         count_mtx = hcat([count_mtx[:, i] ./ rsd[i] for i in 1:length(rsd)]...)
     end
     count_mtx = map(x -> x > scale_max ? scale_max : x, count_mtx)
-    count_mtx = count_mtx'
+    count_mtx = convert(SparseArrays.SparseMatrixCSC{Float64, Int64}, count_mtx')
     return count_mtx
 end
 
@@ -145,8 +145,9 @@ function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(),
             adj_mat[i, indices[j, i]] = 1
         end
     end
+    sp_mat = SparseArrays.hcat([sparsevec(adj_mat[:, i]) for i in 1:n]...)
     Random.seed!(seed_use)
-    result = Leiden.leiden(adj_mat, resolution = res);
+    result = Leiden.leiden(sp_mat, resolution = res);
     df = DataFrame()
     for (i, members) in enumerate(result.partition)
         cells = sc_obj.rawCount.cell_name[members]
@@ -176,7 +177,9 @@ function RunUMAP(sc_obj::scRNAObject; ndim::Int64 = 2, reduce_dims::Int64 = 10, 
     Random.seed!(seed_use)
     pca_mat = sc_obj.dimReduction.pca.cell_embedding
     pca_mat = pca_mat[:, 1:reduce_dims]
-    umap_data = UMAP_(pca_mat', ndim; n_neighbors=n_neighbors , min_dist = min_dist, metric = metric)
+    pca_mat = transpose(pca_mat)
+    pca_mat = convert(SparseArrays.SparseMatrixCSC{Float64, Int64}, pca_mat)
+    umap_data = UMAP_(pca_mat, ndim; n_neighbors=n_neighbors , min_dist = min_dist, metric = metric)
     knns = umap_data.knns
     embedding = umap_data.embedding
     embedding = embedding'
