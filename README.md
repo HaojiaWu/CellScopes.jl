@@ -275,11 +275,11 @@ cells = cells[cell_kept];
 ```julia
 @time mca = cs.ScaleObject(mca; features = mca.varGene.var_gene)
 ```
-*169.916280 seconds (2.00 M allocations: 73.590 GiB, 6.25% gc time, 0.72% compilation time)*
+*79.487866 seconds (2.00 M allocations: 73.589 GiB, 13.61% gc time, 1.39% compilation time)*
 ```julia
 @time mca = cs.RunPCA(mca; maxoutdim = 30)
 ```
-*616.548600 seconds (4.26 M allocations: 36.830 GiB, 1.16% gc time, 0.94% compilation time)*
+*125.673314 seconds (4.16 M allocations: 24.600 GiB, 1.03% gc time, 1.79% compilation time)*
 ```julia
 @time mca = cs.RunUMAP(mca; reduce_dims = 30, min_dist = 0.6, n_neighbors=30)
 ```
