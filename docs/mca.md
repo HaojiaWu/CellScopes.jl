@@ -297,7 +297,7 @@ using JLD2
 ```julia
 cs.DimGraph(pbmc)
 ```
-https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/umap2.png
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/umap2.png" width="600"> <br>
 
 ```julia
 
