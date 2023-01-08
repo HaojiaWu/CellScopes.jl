@@ -75,7 +75,10 @@ function FindVariableGenes(sc_obj::scRNAObject; nFeatures::Int64 = 2000, span::F
 end
 
 function RunPCA(sc_obj::scRNAObject; method=:svd, pratio = 1, maxoutdim = 10)
-    new_count = SubsetCount(sc_obj.scaleCount; genes = sc_obj.varGene.var_gene)
+    features = sc_obj.varGene.var_gene
+    if length(sc_obj.scaleCount.gene_name) == length(sc_obj.rawCount.gene_name)
+        new_count = SubsetCount(sc_obj.scaleCount; genes = features)
+    end
     pca_mat = new_count.count_mtx'
     pca_mat = Matrix(pca_mat)
     pca_mat = convert(Matrix{Float64}, pca_mat)
