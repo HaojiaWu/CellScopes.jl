@@ -11,7 +11,7 @@ using Pkg;
 Pkg.add("https://github.com/bicycle1885/Leiden.jl") # Install the unregistered dependency Leiden.jl
 Pkg.add("https://github.com/HaojiaWu/CellScopes.jl") # Install CellScopes.jl
 ```
-### 2. Tutorial for scRNA-seq analysis
+### 2. Tutorial: PBMC 3K
 This tutorial uses the pbmc3k dataset from 10x Genomics, which has been previously used by [Seurat](https://satijalab.org/seurat/articles/pbmc3k_tutorial.html) and [Scanpy](https://scanpy-tutorials.readthedocs.io/en/latest/pbmc3k.html) for demo purpose. This will read in the data and create a RawCountObject that can be used as input for ```CellScopes.jl```.
 #### 2.1 Download the pbmc3k data (in Terminal)
 ```bash
@@ -222,3 +222,68 @@ height = 500,alpha=0.5, col_use = :tab10)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/violin.png" width="600"> <br>
 
+### 4. Tutorial: MCA 400K cells
+```CellScopes.jl``` can analyze atlas-scale single cell data as well. Below are some example codes to complete the analysis of the MCA dataset which contained ~400K cells. This take about 2.5 hours in a linux server with 256GB RAM and 16 cores.
+
+```julia
+import CellScopes as cs
+using MatrixMarket, CSV, DataFrames
+using SparseArrays
+```
+
+```julia
+counts = MatrixMarket.mmread("mca_mtx/matrix.mtx");
+cells = CSV.File("mca_mtx/barcodes.tsv", header = false) |> DataFrame
+cells = string.(cells.Column1)
+genes = CSV.File("mca_mtx/genes.tsv", header = false) |> DataFrame
+genes = string.(genes.Column2);
+rowSum(mtx::AbstractMatrix{<:Real}) = sum(mtx, dims=2)
+@time gene_kept = (vec ∘ collect)(rowSum(counts).> 0.0);
+genes = genes[gene_kept];
+```
+1.811749 seconds (2.46 M allocations: 131.292 MiB, 37.24% compilation time)
+```julia
+colSum(mtx::AbstractMatrix{<:Real}) = sum(mtx, dims=1)
+@time cell_kept = (vec ∘ collect)(colSum(counts) .> 0.0)
+cells = cells[cell_kept];
+```
+0.180891 seconds (18.55 k allocations: 4.606 MiB, 3.59% compilation time)
+```julia
+@time counts = counts[gene_kept, cell_kept];
+```
+4.641869 seconds (631.47 k allocations: 3.878 GiB, 28.75% gc time, 7.56% compilation time)
+```julia
+@time rawcount = cs.RawCountObject(counts, cells, genes);
+```
+0.011193 seconds (5.12 k allocations: 290.205 KiB, 99.64% compilation time)
+```julia
+@time mca = cs.scRNAObject(rawcount)
+```
+4.828527 seconds (1.61 M allocations: 3.954 GiB, 6.74% gc time, 16.00% compilation time)
+```julia
+@time mca = cs.NormalizeObject(mca; scale_factor = 10000)
+```
+15.791931 seconds (3.82 M allocations: 11.933 GiB, 20.05% gc time, 2.43% compilation time)
+```julia
+@time mca = cs.FindVariableGenes(mca)
+```
+1193.544471 seconds (22.88 M allocations: 235.914 GiB, 2.20% gc time, 2.22% compilation time)
+```julia
+@time mca = cs.ScaleObject(mca; features = mca.varGene.var_gene)
+```
+169.916280 seconds (2.00 M allocations: 73.590 GiB, 6.25% gc time, 0.72% compilation time)
+```julia
+@time mca = cs.RunPCA(mca; maxoutdim = 30)
+```
+```julia
+@time mca = cs.RunUMAP(mca; reduce_dims = 30, min_dist = 0.6, n_neighbors=30)
+```
+2554.080855 seconds (63.06 M allocations: 22.751 GiB, 0.57% gc time, 0.14% compilation time)
+```julia
+@time mca = cs.RunClustering(mca; res=0.0001,n_neighbors=30) # To-do list: runtime optimization
+```
+3466.776112 seconds (2.30 M allocations: 1.198 TiB, 0.04% gc time, 0.02% compilation time)
+
+```julia
+cs.DimGraph(mca; marker_size =1, do_label=false, do_legend=false)
+```
