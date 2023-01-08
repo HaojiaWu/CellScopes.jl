@@ -78,6 +78,8 @@ function RunPCA(sc_obj::scRNAObject; method=:svd, pratio = 1, maxoutdim = 10)
     features = sc_obj.varGene.var_gene
     if length(sc_obj.scaleCount.gene_name) == length(sc_obj.rawCount.gene_name)
         new_count = SubsetCount(sc_obj.scaleCount; genes = features)
+    else
+        new_count = sc_obj.scaleCount
     end
     pca_mat = new_count.count_mtx'
     pca_mat = Matrix(pca_mat)
@@ -92,6 +94,7 @@ function RunPCA(sc_obj::scRNAObject; method=:svd, pratio = 1, maxoutdim = 10)
     return sc_obj
 end
 
+#=
 function RunClustering2(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
     knn_data = [collect(i) for i in eachrow(sc_obj.dimReduction.pca.cell_embedding)]
     graph = nndescent(knn_data, n_neighbors, metric)
@@ -123,7 +126,9 @@ function RunClustering2(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist()
     sc_obj.metaData.cluster = df.cluster
     return sc_obj
 end
+=#
 
+### much faster
 function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
     if isdefined(sc_obj.dimReduction, :umap)
         indices = sc_obj.dimReduction.umap.knn_data
