@@ -275,6 +275,7 @@ cells = cells[cell_kept];
 ```julia
 @time mca = cs.RunPCA(mca; maxoutdim = 30)
 ```
+616.548600 seconds (4.26 M allocations: 36.830 GiB, 1.16% gc time, 0.94% compilation time)
 ```julia
 @time mca = cs.RunUMAP(mca; reduce_dims = 30, min_dist = 0.6, n_neighbors=30)
 ```
@@ -287,3 +288,4 @@ cells = cells[cell_kept];
 ```julia
 cs.DimGraph(mca; marker_size =1, do_label=false, do_legend=false)
 ```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/umap2.png" width="600"> <br>
