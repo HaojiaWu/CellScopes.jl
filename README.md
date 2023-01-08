@@ -1,5 +1,5 @@
 # CellScopes.jl <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/logo.png" width="60" height="60"> <br>
-```CellScopes.jl``` is a Julia-based toolkit for analyzing single cell data. It performs data normalization, dimensional reduction, cell clustering, and visualization on scRNA-seq and spatial transcriptomics data. Currently, ```CellScopes.jl``` only supports scRNA-seq and spatial data, but support for scATAC-seq is planned for future releases. This is the overall design of the package in its current version.
+```CellScopes.jl``` is a Julia-based toolkit for analyzing single cell data. It performs data normalization, dimensional reduction, cell clustering, and visualization on various single cell data types. Currently, ```CellScopes.jl``` only supports scRNA-seq and spatial data, but support for scATAC-seq is planned for future releases. This is the overall design of the package in its current version.
 
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/CellScopes-version-1.png" width="600"> <br>
 
