@@ -55,11 +55,14 @@ function FindVariableGenes(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, span
     fit = loess(log10.(vst_data.mean), log10.(vst_data.variance), span=span)
     vst_data.variance_expected = 10 .^ Loess.predict(fit, log10.(vst_data.mean))
     mat = ct_mtx.count_mtx
-    #mean1 = vst_data.mean
-    #var1 = sqrt.(vst_data.variance_expected)
-    #mat = hcat([(mat[i, :] .- mean1[i]) ./ var1[i] for i in 1:length(mean1)]...)
-    mat = (mat .- vst_data.mean) ./ sqrt.(vst_data.variance_expected)
-    sd_val = var(mat, dims=2)
+    #mat = (mat .- vst_data.mean) ./ sqrt.(vst_data.variance_expected) # Broadcast is inefficient.
+    mean1 = sparsevec(vst_data.mean)
+    var1 = sparsevec(sqrt.(vst_data.variance_expected))
+    mat2 = Array{Float64}(undef, size(mat)[1], size(mat)[2])
+    @simd for i in 1:length(mean1)
+        @inbounds mat2[:, i] = (mat[:, i] .- mean1[i]) ./ var1[i]
+    end
+    sd_val = var(mat2, dims=2)
     vst_data.variance_standardized = vec(sd_val)
     vst_data.gene = ct_mtx.gene_name;
     vst_data = sort(vst_data, :variance_standardized, rev=true)
@@ -128,7 +131,7 @@ function RunClustering2(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist()
 end
 =#
 
-### much faster
+### Much faster
 function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
     if isdefined(sc_obj.dimReduction, :umap)
         indices = sc_obj.dimReduction.umap.knn_data
