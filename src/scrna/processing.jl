@@ -59,8 +59,8 @@ function FindVariableGenes(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, span
     mean1 = sparsevec(vst_data.mean)
     var1 = sparsevec(sqrt.(vst_data.variance_expected))
     mat2 = Array{Float64}(undef, size(mat)[1], size(mat)[2])
-    @simd for i in 1:length(mean1)
-        @inbounds mat2[:, i] = (mat[:, i] .- mean1[i]) ./ var1[i]
+    for i in 1:length(mean1)
+        mat2[:, i] = (mat[:, i] .- mean1[i]) ./ var1[i]
     end
     sd_val = var(mat2, dims=2)
     vst_data.variance_standardized = vec(sd_val)
