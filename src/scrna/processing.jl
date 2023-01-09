@@ -44,7 +44,7 @@ function ScaleObject(sc_obj::scRNAObject; features::Union{Vector{String}, Nothin
     sc_obj.scaleCount = scale_obj
     return sc_obj
 end
-
+#=
 function FindVariableGenes2(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, span::Float64 = 0.3)
     mean_val = mean(ct_mtx.count_mtx, dims=2)
     var_val = var(ct_mtx.count_mtx, dims=2)
@@ -63,6 +63,7 @@ function FindVariableGenes2(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, spa
     Features = vst_data.gene[1:nFeatures]
     return vst_data, Features
 end
+=#
 
 function FindVariableGenes(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, span::Float64 = 0.3)
     mean_val = mean(ct_mtx.count_mtx, dims=2)
@@ -73,7 +74,10 @@ function FindVariableGenes(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, span
     vst_data = filter(:variance => x -> x > 0.0, vst_data)
     fit = loess(log10.(vst_data.mean), log10.(vst_data.variance), span=span)
     vst_data.variance_expected = 10 .^ Loess.predict(fit, log10.(vst_data.mean))
-    sd_val = var((ct_mtx.count_mtx .- vst_data.mean) ./ sqrt.(vst_data.variance_expected) , dims=2)
+    mean1 = sparsevec(vst_data.mean)
+    var1 = sparsevec(sqrt.(vst_data.variance_expected))
+    mat = convert(SparseMatrixCSC{Int64, Int64}, ct_mtx.count_mtx')
+    sd_val = [var((x .- mean1[i]) ./ var1[i]) for (i, x) in enumerate(eachcol(mat))]
     vst_data.variance_standardized = vec(sd_val)
     vst_data.gene = ct_mtx.gene_name;
     vst_data = sort(vst_data, :variance_standardized, rev=true)
