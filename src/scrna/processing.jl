@@ -45,6 +45,25 @@ function ScaleObject(sc_obj::scRNAObject; features::Union{Vector{String}, Nothin
     return sc_obj
 end
 
+function FindVariableGenes2(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, span::Float64 = 0.3)
+    mean_val = mean(ct_mtx.count_mtx, dims=2)
+    var_val = var(ct_mtx.count_mtx, dims=2)
+    vst_data = [mean_val var_val zeros(length(mean_val)) zeros(length(mean_val))]
+    vst_data = DataFrame(vst_data, :auto)
+    rename!(vst_data, ["mean", "variance", "variance_expected","variance_standardized"])
+    vst_data = filter(:variance => x -> x > 0.0, vst_data)
+    fit = loess(log10.(vst_data.mean), log10.(vst_data.variance), span=span)
+    vst_data.variance_expected = 10 .^ Loess.predict(fit, log10.(vst_data.mean))
+    rmean = sparsevec(vst_data.mean)
+    rvar = sparsevec(sqrt.(vst_data.variance_expected))
+    sd_val = var((ct_mtx.count_mtx .- rmean) ./ rvar , dims=2)
+    vst_data.variance_standardized = vec(sd_val)
+    vst_data.gene = ct_mtx.gene_name;
+    vst_data = sort(vst_data, :variance_standardized, rev=true)
+    Features = vst_data.gene[1:nFeatures]
+    return vst_data, Features
+end
+
 function FindVariableGenes(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, span::Float64 = 0.3)
     mean_val = mean(ct_mtx.count_mtx, dims=2)
     var_val = var(ct_mtx.count_mtx, dims=2)
@@ -54,16 +73,7 @@ function FindVariableGenes(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, span
     vst_data = filter(:variance => x -> x > 0.0, vst_data)
     fit = loess(log10.(vst_data.mean), log10.(vst_data.variance), span=span)
     vst_data.variance_expected = 10 .^ Loess.predict(fit, log10.(vst_data.mean))
-    mat = ct_mtx.count_mtx
-    mat = convert(SparseArrays.SparseMatrixCSC{Float64, Int64}, mat')
-    #mat = (mat .- vst_data.mean) ./ sqrt.(vst_data.variance_expected) # Broadcast is inefficient.
-    mean1 = sparsevec(vst_data.mean)
-    var1 = sparsevec(sqrt.(vst_data.variance_expected))
-    mat2 = Array{Float64}(undef, size(mat)[1], size(mat)[2])
-    for i in 1:length(mean1)
-        mat2[:, i] = (mat[:, i] .- mean1[i]) ./ var1[i]
-    end
-    sd_val = var(mat2, dims=1)
+    sd_val = var((ct_mtx.count_mtx .- vst_data.mean) ./ sqrt.(vst_data.variance_expected) , dims=2)
     vst_data.variance_standardized = vec(sd_val)
     vst_data.gene = ct_mtx.gene_name;
     vst_data = sort(vst_data, :variance_standardized, rev=true)
