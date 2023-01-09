@@ -55,6 +55,7 @@ function FindVariableGenes(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, span
     fit = loess(log10.(vst_data.mean), log10.(vst_data.variance), span=span)
     vst_data.variance_expected = 10 .^ Loess.predict(fit, log10.(vst_data.mean))
     mat = ct_mtx.count_mtx
+    mat = convert(SparseArrays.SparseMatrixCSC{Float64, Int64}, mat')
     #mat = (mat .- vst_data.mean) ./ sqrt.(vst_data.variance_expected) # Broadcast is inefficient.
     mean1 = sparsevec(vst_data.mean)
     var1 = sparsevec(sqrt.(vst_data.variance_expected))
