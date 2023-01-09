@@ -63,7 +63,7 @@ function FindVariableGenes(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, span
     for i in 1:length(mean1)
         mat2[:, i] = (mat[:, i] .- mean1[i]) ./ var1[i]
     end
-    sd_val = var(mat2, dims=2)
+    sd_val = var(mat2, dims=1)
     vst_data.variance_standardized = vec(sd_val)
     vst_data.gene = ct_mtx.gene_name;
     vst_data = sort(vst_data, :variance_standardized, rev=true)
