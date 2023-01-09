@@ -159,9 +159,9 @@ function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(),
             adj_mat[i, indices[j, i]] = 1
         end
     end
-    sp_mat = SparseArrays.hcat([sparsevec(adj_mat[:, i]) for i in 1:n]...)
+    adj_mat = convert(SparseMatrixCSC{Int64,Int64}, adj_mat);
     Random.seed!(seed_use)
-    result = Leiden.leiden(sp_mat, resolution = res);
+    result = Leiden.leiden(adj_mat, resolution = res);
     df = DataFrame()
     for (i, members) in enumerate(result.partition)
         cells = sc_obj.rawCount.cell_name[members]
