@@ -281,9 +281,9 @@ cells = cells[cell_kept];
 ```
 *236.710203 seconds (4.22 M allocations: 24.603 GiB, 0.52% gc time, 0.74% compilation time)*
 ```julia
-@time mca = cs.RunUMAP(mca; reduce_dims = 30, min_dist = 0.6, n_neighbors=30)
+@time mca = cs.RunUMAP(mca; reduce_dims = 30, min_dist = 0.6, n_neighbors=30, n_epochs=100)
 ```
-*2554.080855 seconds (63.06 M allocations: 22.751 GiB, 0.57% gc time, 0.14% compilation time)*
+*1075.675636 seconds (63.08 M allocations: 23.239 GiB, 1.64% gc time, 0.37% compilation time)*
 ```julia
 @time mca = cs.RunClustering(mca; res=0.0001,n_neighbors=30) # To-do list: runtime optimization
 ```
