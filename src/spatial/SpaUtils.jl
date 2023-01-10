@@ -24,7 +24,7 @@ function mapvalues(df::DataFrame,
     if isa(new_col, String)
         new_col = Symbol(new_col)
     end
-    df=transform(df, old_col => ByRow(x -> map_value[x]) => new_col)
+    df = DataFrames.transform(df, old_col => ByRow(x -> map_value[x]) => new_col)
     return df
 end
 
