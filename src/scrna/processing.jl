@@ -191,13 +191,13 @@ function RunTSNE(sc_obj::scRNAObject; ndim::Int64 = 2, reduce_dims::Int64 = 10, 
     return sc_obj
 end
 
-function RunUMAP(sc_obj::scRNAObject; ndim::Int64 = 2, reduce_dims::Int64 = 10, n_neighbors::Int64 = 30, metric = CosineDist(), min_dist::Real = 0.4, seed_use::Int64 = 1234)
+function RunUMAP(sc_obj::scRNAObject; ndim::Int64 = 2, reduce_dims::Int64 = 10, n_neighbors::Int64 = 30, n_epochs=300, init = :spectral, metric = CosineDist(), min_dist::Real = 0.4, seed_use::Int64 = 1234)
     Random.seed!(seed_use)
     pca_mat = sc_obj.dimReduction.pca.cell_embedding
     pca_mat = pca_mat[:, 1:reduce_dims]
     pca_mat = transpose(pca_mat)
     pca_mat = convert(SparseArrays.SparseMatrixCSC{Float64, Int64}, pca_mat)
-    umap_data = UMAP_(pca_mat, ndim; n_neighbors=n_neighbors , min_dist = min_dist, metric = metric)
+    umap_data = UMAP_(pca_mat, ndim; n_neighbors=n_neighbors , min_dist = min_dist, metric = metric, n_epochs = n_epochs, init=init)
     knns = umap_data.knns
     embedding = umap_data.embedding
     embedding = embedding'
