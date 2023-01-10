@@ -227,7 +227,7 @@ height = 500,alpha=0.5, col_use = :tab10)
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/violin.png" width="600"> <br>
 
 ### 2.3. Tutorial: MCA 400K cells
-```CellScopes.jl``` can analyze atlas-scale single cell data as well. Below are some example codes to complete the analysis of the [MCA dataset](https://figshare.com/articles/MCA_DGE_Data/5435866) which contains ~400K cells. This takes about 2 hours in a linux server with 256GB RAM and 16 cores.
+```CellScopes.jl``` can analyze atlas-scale single cell data as well. Below are some example codes to complete the analysis of the [MCA dataset](https://figshare.com/articles/MCA_DGE_Data/5435866) which contains ~400K cells. This takes about 50 minutes in a linux server with 256GB RAM and 16 cores.
 
 ```julia
 import CellScopes as cs
@@ -287,7 +287,7 @@ cells = cells[cell_kept];
 ```julia
 @time mca = cs.RunClustering(mca; res=0.0001,n_neighbors=30) # To-do list: runtime optimization
 ```
-*3466.776112 seconds (2.30 M allocations: 1.198 TiB, 0.04% gc time, 0.02% compilation time)*
+*590.371976 seconds (40.33 M allocations: 1.199 TiB, 0.43% gc time, 0.13% compilation time)*
 
 ```julia
 cs.DimGraph(mca; marker_size =1, do_label=false, do_legend=false)
