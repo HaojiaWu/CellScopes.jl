@@ -45,7 +45,7 @@ function ScaleObject(sc_obj::scRNAObject; features::Union{Vector{String}, Nothin
     return sc_obj
 end
 #=
-function FindVariableGenes2(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, span::Float64 = 0.3)
+function FindVariableGenes(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, span::Float64 = 0.3)
     mean_val = mean(ct_mtx.count_mtx, dims=2)
     var_val = var(ct_mtx.count_mtx, dims=2)
     vst_data = [mean_val var_val zeros(length(mean_val)) zeros(length(mean_val))]
