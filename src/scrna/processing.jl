@@ -208,52 +208,28 @@ function RunUMAP(sc_obj::scRNAObject; ndim::Int64 = 2, reduce_dims::Int64 = 10, 
     return sc_obj
 end
 
-# The looping method below is inefficient and has been replaced with 
-# vectorized operations for improved performance.
-#=
-function FindMarkers(sc_obj::AbstractCount, cl1, cl2; expr_cutoff=0.0, min_pct=0.1, p_cutoff = 0.05, only_pos = true)
-    cl1_obj = ExtractClusterCount(sc_obj, cl1; count_type = "norm")
-    cl2_obj = ExtractClusterCount(sc_obj, cl2; count_type = "norm")
-    test_result = DataFrame()
-    for i in sc_obj.normCount.gene_name
-        cl1_ct = vec(SubsetCount(cl1_obj; genes=[i]).count_mtx)
-        cl2_ct = vec(SubsetCount(cl2_obj; genes=[i]).count_mtx)
-        wilcon_test = MannWhitneyUTest(cl1_ct, cl2_ct)
-        p_value = pvalue(wilcon_test)
-        mean1 = log(mean(expm1.(cl1_ct)) + 1)
-        mean2 = log(mean(expm1.(cl2_ct)) + 1)
-        avg_logFC = mean1 - mean2
-        pct1 = countmap(cl1_ct .> expr_cutoff)[:1]/length(cl1_ct) 
-        pct2 = countmap(cl2_ct .> expr_cutoff)[:1]/length(cl2_ct)
-        row1 = DataFrame(gene = i, p_val = p_value, avg_logFC = avg_logFC, pct_1 = pct1, pct_2 = pct2)
-        test_result = [test_result; row1]
-    end
-    test_result.p_val_adj = MultipleTesting.adjust(test_result.p_val, Bonferroni())
-    filter!([:pct_1, :p_val] => (y, z) -> y > min_pct && z < p_cutoff, test_result)
-    if only_pos
-        filter!(:avg_logFC => x -> x > 0.0, test_result)
-    end
-    sort!(test_result, :p_val_adj)
-    return test_result
-end
-=#
-
 function FindMarkers(sc_obj::scRNAObject, cl1, cl2; expr_cutoff=0.0, min_pct=0.1, p_cutoff = 0.05, only_pos = true)
     cl1_obj = ExtractClusterCount(sc_obj, cl1)
     cl2_obj = ExtractClusterCount(sc_obj, cl2)
+    genes = cl1_obj.gene_name
+    common_genes = hcat((vec ∘ collect)(rowSum(cl1_obj.count_mtx) .> 0.0), (vec ∘ collect)(rowSum(cl2_obj.count_mtx) .> 0.0))
+    common_genes = (vec ∘ collect)(rowSum(common_genes) .== 2)
+    genes = genes[common_genes]
+    cl1_obj = SubsetCount(cl1_obj; genes = genes)
+    cl2_obj = SubsetCount(cl2_obj; genes = genes)
     cl1_ct = cl1_obj.count_mtx
+    cl2_ct = cl2_obj.count_mtx
     cl1_ct = Matrix(cl1_ct)
     cl1_ct = convert(Matrix{Float64}, cl1_ct)
-    cl2_ct = cl2_obj.count_mtx
     cl2_ct = Matrix(cl2_ct)
     cl2_ct = convert(Matrix{Float64}, cl2_ct)
-    wilcon_test = [MannWhitneyUTest(x, y) for (x,y) in zip(eachrow(cl1_ct), eachrow(cl2_ct))]
+    wilcon_test = Folds.collect(MannWhitneyUTest(x, y) for (x,y) in zip(eachrow(cl1_ct), eachrow(cl2_ct)))
     p_value = pvalue.(wilcon_test)
-    mean1 = log.(mean.([expm1.(x) for x in eachrow(cl1_ct)]) .+ 1)
-    mean2 = log.(mean.([expm1.(x) for x in eachrow(cl2_ct)]) .+ 1)
-    avg_logFC = mean1 .- mean2
-    pct1 = [countmap(x .> expr_cutoff)[:1]/length(x) for x in eachrow(cl1_ct)]
-    pct2 = [countmap(x .> expr_cutoff)[:1]/length(x) for x in eachrow(cl2_ct)]
+    mean1 = Folds.collect(log(mean(expm1.(x)) + 1) for x in eachrow(cl1_ct))
+    mean2 = Folds.collect(log(mean(expm1.(x)) + 1) for x in eachrow(cl2_ct))
+    avg_logFC = mean1 - mean2
+    pct1 = Folds.collect(countmap(x .> expr_cutoff)[:1]/length(x) for x in eachrow(cl1_ct))
+    pct2 = Folds.collect(countmap(x .> expr_cutoff)[:1]/length(x) for x in eachrow(cl2_ct))
     test_result = DataFrame(gene = cl1_obj.gene_name, p_val = p_value, avg_logFC = avg_logFC, pct_1 = pct1, pct_2 = pct2)    
     test_result.p_val_adj = MultipleTesting.adjust(test_result.p_val, Bonferroni())
     filter!([:pct_1, :p_val] => (y, z) -> y > min_pct && z < p_cutoff, test_result)
