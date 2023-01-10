@@ -287,7 +287,7 @@ cells = cells[cell_kept];
 ```julia
 @time mca = cs.RunClustering(mca; res=0.0001,n_neighbors=30) # To-do list: runtime optimization
 ```
-*3466.776112 seconds (2.30 M allocations: 1.198 TiB, 0.04% gc time, 0.02% compilation time)*
+*590.371976 seconds (40.33 M allocations: 1.199 TiB, 0.43% gc time, 0.13% compilation time)*
 
 ```julia
 cs.DimGraph(mca; marker_size =1, do_label=false, do_legend=false)
