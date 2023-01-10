@@ -62,7 +62,7 @@ mutable struct ScaleCountObject <: AbstractCount
 end
 
 mutable struct PCAObject <: AbstractDimReduction
-    cell_embedding::Matrix{Float64}
+    cell_embedding::AbstractMatrix{<:Real}
     pca_model::Union{PCA{Float64}, Nothing}
     percent_var::Union{Vector{Float64}, Nothing}
     key::String
@@ -73,7 +73,7 @@ mutable struct PCAObject <: AbstractDimReduction
 end
 
 mutable struct tSNEObject <: AbstractDimReduction
-    cell_embedding::Matrix{Float64}
+    cell_embedding::AbstractMatrix{<:Real}
     key::String
     ndim::Int64
     reduce_dims::Int64
@@ -83,14 +83,14 @@ mutable struct tSNEObject <: AbstractDimReduction
 end
 
 mutable struct UMAPObject <: AbstractDimReduction
-    cell_embedding::Matrix{Float64}
+    cell_embedding::AbstractMatrix{<:Real}
     key::String
     n_components::Int64
     n_dimensions::Int64
     n_neighbors::Int64
     metric::String
     min_dist::Real
-    knn_data::Matrix{Int64}
+    knn_data::AbstractMatrix{<:Real}
     UMAPObject(cell_embedding, key, n_components, n_dimensions, n_neighbors, metric, min_dist, knn_data) = new(cell_embedding, key, n_components, n_dimensions, n_neighbors, metric, min_dist, knn_data)    
 end
 
@@ -104,7 +104,7 @@ end
 mutable struct ClusteringObject <: AbstractSingleCell
     clustering::DataFrame
     metric::Union{String, Nothing}
-    adj_mat::Union{Matrix{Int64}, Nothing}
+    adj_mat::Union{AbstractMatrix{<:Real}, Nothing}
     ledein_res::Union{NamedTuple{(:quality, :partition), Tuple{Float64, Vector{Vector{Int64}}}}, Nothing}
     resolution::Union{Real, Nothing}
     ClusteringObject(clustering, metric, adj_mat, ledein_res, resolution)=new(clustering, metric, adj_mat, ledein_res, resolution)

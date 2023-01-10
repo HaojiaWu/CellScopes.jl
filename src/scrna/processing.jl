@@ -113,7 +113,7 @@ function RunPCA(sc_obj::scRNAObject; method=:svd, pratio = 1, maxoutdim = 10)
 end
 
 #=
-function RunClustering2(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
+function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
     knn_data = [collect(i) for i in eachrow(sc_obj.dimReduction.pca.cell_embedding)]
     graph = nndescent(knn_data, n_neighbors, metric)
     indices, dist_mat = knn_matrices(graph);
@@ -163,9 +163,9 @@ function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(),
             adj_mat[i, indices[j, i]] = 1
         end
     end
-    adj_mat = convert(SparseMatrixCSC{Int64,Int64}, adj_mat);
+    adj_mat = convert(SparseMatrixCSC{Int64,Int64}, adj_mat)
     Random.seed!(seed_use)
-    result = Leiden.leiden(adj_mat, resolution = res);
+    result = Leiden.leiden(adj_mat, resolution = res)
     df = DataFrame()
     for (i, members) in enumerate(result.partition)
         cells = sc_obj.rawCount.cell_name[members]
