@@ -271,15 +271,15 @@ cells = cells[cell_kept];
 ```julia
 @time mca = cs.FindVariableGenes(mca)
 ```
-*360.900305 seconds (22.33 M allocations: 239.714 GiB, 2.77% gc time, 1.68% compilation time)*
+*217.251548 seconds (21.15 M allocations: 126.109 GiB, 4.52% gc time, 2.32% compilation time)*
 ```julia
 @time mca = cs.ScaleObject(mca; features = mca.varGene.var_gene)
 ```
-*79.487866 seconds (2.00 M allocations: 73.589 GiB, 13.61% gc time, 1.39% compilation time)*
+*147.311905 seconds (4.10 M allocations: 97.858 GiB, 8.31% gc time, 1.23% compilation time)*
 ```julia
 @time mca = cs.RunPCA(mca; maxoutdim = 30)
 ```
-*125.673314 seconds (4.16 M allocations: 24.600 GiB, 1.03% gc time, 1.79% compilation time)*
+*236.710203 seconds (4.22 M allocations: 24.603 GiB, 0.52% gc time, 0.74% compilation time)*
 ```julia
 @time mca = cs.RunUMAP(mca; reduce_dims = 30, min_dist = 0.6, n_neighbors=30)
 ```
