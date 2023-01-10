@@ -227,7 +227,7 @@ height = 500,alpha=0.5, col_use = :tab10)
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/violin.png" width="600"> <br>
 
 ### 2.3. Tutorial: MCA 400K cells
-```CellScopes.jl``` can analyze atlas-scale single cell data as well. Below are some example codes to complete the analysis of the [MCA dataset](https://figshare.com/articles/MCA_DGE_Data/5435866) which contains ~400K cells. This takes about 2 hours in a linux server with 256GB RAM and 16 cores.
+```CellScopes.jl``` can analyze atlas-scale single cell data as well. Below are some example codes to complete the analysis of the [MCA dataset](https://figshare.com/articles/MCA_DGE_Data/5435866) which contains ~400K cells. This takes about 50 minutes in a linux server with 256GB RAM and 16 cores.
 
 ```julia
 import CellScopes as cs
