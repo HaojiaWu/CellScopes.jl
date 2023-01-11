@@ -131,7 +131,7 @@ Available data:
 =#
 ```
 #### 2.1.8 Run UMAP or tSNE.
-CellScapes.jl provides various non-linear dimensionality reduction techniques, including tSNE and UMAP, to allow for visualization and exploration of datasets. In the current version, UMAP is much faster than tSNE for large datasets, so it is highly recommended to use UMAP. We use the [TSne.jl](https://github.com/lejon/TSne.jl) and [UMAP.jl](https://github.com/dillondaudert/UMAP.jl) packages for tSNE and UMAP analysis, respectively.
+```CellScapes.jl``` provides various non-linear dimensionality reduction techniques, including tSNE and UMAP, to allow for visualization and exploration of datasets. In the current version, UMAP is much faster than tSNE for large datasets, so it is highly recommended to use UMAP. We use the [TSne.jl](https://github.com/lejon/TSne.jl) and [UMAP.jl](https://github.com/dillondaudert/UMAP.jl) packages for tSNE and UMAP analysis, respectively.
 ```julia
 pbmc = pbmc = cs.RunTSNE(pbmc; max_iter = 3000, perplexit = 50)
 pbmc = cs.RunUMAP(pbmc; min_dist=0.4)
@@ -161,19 +161,19 @@ Inspired by Seurat and Scanpy, we utilize various methods to visualize cell anno
 #### 2.2.1 Visualize cell annotaiton.
 a. DimGraph on PCA
 ```julia
-cs.DimGraph(pbmc; dim_type = "pca")
+cs.DimGraph(pbmc; dim_type = "pca", marker_size = 4)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/pca.png" width="600"> <br>
 
 b. DimGraph on tSNE
 ```julia
-cs.DimGraph(pbmc; dim_type = "tsne")
+cs.DimGraph(pbmc; dim_type = "tsne", marker_size = 4)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/tsne.png" width="600"> <br>
 
 c. DimGraph on UMAP
 ```julia
-cs.DimGraph(pbmc; dim_type = "umap")
+cs.DimGraph(pbmc; dim_type = "umap", marker_size = 4)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/umap.png" width="600"> <br>
 
@@ -222,7 +222,7 @@ e. GeneVlnGraph
 ```julia
 from = ["1","5","4","3","8","2","7","6"]
 to = ["c1","c2","c3","c4","c5","c6","c7","c8"]
-pbmc.metaData = mapvalues(pbmc.metaData, :cluster, :cluster2, from, to);
+pbmc.metaData = cs.mapvalues(pbmc.metaData, :cluster, :cluster2, from, to);
 cs.GeneVlnGraph(pbmc, ["GZMB","GZMA", "CD3D","CD68","CD79A"]; group_by="cluster2",
 height = 500,alpha=0.5, col_use = :tab10)
 ```
@@ -243,14 +243,12 @@ cells = CSV.File("mca_mtx/barcodes.tsv", header = false) |> DataFrame
 cells = string.(cells.Column1)
 genes = CSV.File("mca_mtx/genes.tsv", header = false) |> DataFrame
 genes = string.(genes.Column2);
-rowSum(mtx::AbstractMatrix{<:Real}) = sum(mtx, dims=2)
-@time gene_kept = (vec ∘ collect)(rowSum(counts).> 0.0);
+@time gene_kept = (vec ∘ collect)(cs.rowSum(counts).> 0.0);
 genes = genes[gene_kept];
 ```
 *1.811749 seconds (2.46 M allocations: 131.292 MiB, 37.24% compilation time)*
 ```julia
-colSum(mtx::AbstractMatrix{<:Real}) = sum(mtx, dims=1)
-@time cell_kept = (vec ∘ collect)(colSum(counts) .> 0.0)
+@time cell_kept = (vec ∘ collect)(cs.colSum(counts) .> 0.0)
 cells = cells[cell_kept];
 ```
 *0.180891 seconds (18.55 k allocations: 4.606 MiB, 3.59% compilation time)*
