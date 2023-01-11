@@ -44,26 +44,6 @@ function ScaleObject(sc_obj::scRNAObject; features::Union{Vector{String}, Nothin
     sc_obj.scaleCount = scale_obj
     return sc_obj
 end
-#=
-function FindVariableGenes(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, span::Float64 = 0.3)
-    mean_val = mean(ct_mtx.count_mtx, dims=2)
-    var_val = var(ct_mtx.count_mtx, dims=2)
-    vst_data = [mean_val var_val zeros(length(mean_val)) zeros(length(mean_val))]
-    vst_data = DataFrame(vst_data, :auto)
-    rename!(vst_data, ["mean", "variance", "variance_expected","variance_standardized"])
-    vst_data = filter(:variance => x -> x > 0.0, vst_data)
-    fit = loess(log10.(vst_data.mean), log10.(vst_data.variance), span=span)
-    vst_data.variance_expected = 10 .^ Loess.predict(fit, log10.(vst_data.mean))
-    rmean = sparsevec(vst_data.mean)
-    rvar = sparsevec(sqrt.(vst_data.variance_expected))
-    sd_val = var((ct_mtx.count_mtx .- rmean) ./ rvar , dims=2)
-    vst_data.variance_standardized = vec(sd_val)
-    vst_data.gene = ct_mtx.gene_name;
-    vst_data = sort(vst_data, :variance_standardized, rev=true)
-    Features = vst_data.gene[1:nFeatures]
-    return vst_data, Features
-end
-=#
 
 function FindVariableGenes(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, span::Float64 = 0.3)
     mean_val = mean(ct_mtx.count_mtx, dims=2)
@@ -112,41 +92,6 @@ function RunPCA(sc_obj::scRNAObject; method=:svd, pratio = 1, maxoutdim = 10)
     return sc_obj
 end
 
-#=
-function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
-    knn_data = [collect(i) for i in eachrow(sc_obj.dimReduction.pca.cell_embedding)]
-    graph = nndescent(knn_data, n_neighbors, metric)
-    indices, dist_mat = knn_matrices(graph);
-    n = size(indices, 2)  
-    adj_mat = zeros(Int64, n, n)
-    for i in 1:size(indices, 2)
-      for j in 1:size(indices, 1)
-            adj_mat[indices[j, i], i] = 1
-        end
-    end
-    for i in 1:size(indices, 2)
-        for j in 1:size(indices, 1)
-            adj_mat[i, indices[j, i]] = 1
-        end
-    end
-    Random.seed!(seed_use)
-    result = Leiden.leiden(adj_mat, resolution = res);
-    df = DataFrame()
-    for (i, members) in enumerate(result.partition)
-        cells = sc_obj.rawCount.cell_name[members]
-        df1 = DataFrame(cluster = repeat([string(i)], length(cells)), cell_id=cells)
-        df = [df;df1]
-    end
-    df = df[indexin(colnames(sc_obj), df.cell_id),:];
-    metric_type = string(metric)
-    cluster_obj = ClusteringObject(df, metric_type, knn_data, dist_mat, adj_mat, result, res)
-    sc_obj.clustData = cluster_obj
-    sc_obj.metaData.cluster = df.cluster
-    return sc_obj
-end
-=#
-
-### Much faster
 function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
     if isdefined(sc_obj.dimReduction, :umap)
         indices = sc_obj.dimReduction.umap.knn_data
@@ -208,7 +153,13 @@ function RunUMAP(sc_obj::scRNAObject; ndim::Int64 = 2, reduce_dims::Int64 = 10, 
     return sc_obj
 end
 
-function FindMarkers(sc_obj::scRNAObject, cl1, cl2; expr_cutoff=0.0, min_pct=0.1, p_cutoff = 0.05, only_pos = true)
+function FindMarkers(sc_obj::scRNAObject; cluster_1::Union{String, Nothing}=nothing, cluster_2::Union{String, Nothing}=nothing, expr_cutoff=0.0, min_pct=0.1, p_cutoff = 0.05, only_pos = true)
+    if isa(cluster_1, Nothing)
+        error("Please provide the name of the cell cluster for which you wish to obtain the differential genes. The \"cluster_1\" argument cannot be left blank.")
+    end
+    if isa(cluster_2, Nothing)
+        error("Please enter the name of the cell cluster you wish to compare against. The \"cluster_2\" argument cannot be left blank.")
+    end
     cl1_obj = ExtractClusterCount(sc_obj, cl1)
     cl2_obj = ExtractClusterCount(sc_obj, cl2)
     genes = cl1_obj.gene_name
