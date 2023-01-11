@@ -108,7 +108,9 @@ function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(),
             adj_mat[i, indices[j, i]] = 1
         end
     end
-    adj_mat = convert(SparseMatrixCSC{Int64,Int64}, adj_mat)
+    if n > 10000 # Input as SparseMatrix to Leiden runs quicker for large dataset
+        adj_mat = convert(SparseMatrixCSC{Int64,Int64}, adj_mat)
+    end
     Random.seed!(seed_use)
     result = Leiden.leiden(adj_mat, resolution = res)
     df = DataFrame()
