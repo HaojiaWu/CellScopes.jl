@@ -38,7 +38,7 @@ function DimGraph(sc_obj::scRNAObject; anno::Union{Symbol, String}="cluster", di
         else
             cell_anno=cell_order
         end
-        Threads.@threads for i in cell_anno
+        for i in cell_anno
             MK.xlims!(MK.current_axis(), x_lims)
             MK.ylims!(MK.current_axis(), y_lims)
             anno_df2=filter(anno => x-> x == i, dim_data)
@@ -59,7 +59,7 @@ function DimGraph(sc_obj::scRNAObject; anno::Union{Symbol, String}="cluster", di
             end
         end
         if do_label
-            Threads.@threads for i in cell_anno
+            for i in cell_anno
                 anno_df2=filter(anno => x-> x == i, dim_data)
                 x_ax = anno_df2[!, x_col]
                 y_ax = anno_df2[!, y_col]
@@ -130,7 +130,7 @@ function GeneDimGraph(sc_obj::scRNAObject, genes; dim_type::String = "umap", cou
                 n_cols = 3
             end
             fig = MK.Figure(resolution = (width * n_cols, height * n_rows))
-            Threads.@threads for (i, gene) in enumerate(genes)
+            for (i, gene) in enumerate(genes)
                 df_plt = gene_data[!, [x_col, y_col, gene]]
                 gene_expr = float.(df_plt[!, gene])
                 if sum(gene_expr) !== 0.0
@@ -230,7 +230,7 @@ function GeneDotGraph(sc_obj::scRNAObject, genes::Union{Vector, String},
     end
 if isa(split_by, Nothing)
     all_df=DataFrame()
-    Threads.@threads for (i, gene) in enumerate(genes)
+    for (i, gene) in enumerate(genes)
         gene_expr = SubsetCount(ct_obj; genes = [gene]).count_mtx
         gene_expr = vec(gene_expr)
         df = DataFrame()
@@ -257,7 +257,7 @@ if isa(split_by, Nothing)
         )
 else
     all_df=DataFrame()
-    Threads.@threads for (i, gene) in enumerate(genes)
+    for (i, gene) in enumerate(genes)
         gene_expr = SubsetCount(ct_obj; genes = [gene]).count_mtx
         gene_expr = vec(gene_expr)
         df = DataFrame()
@@ -319,7 +319,7 @@ function GeneVlnGraph(sc_obj::scRNAObject, genes;
     l = @layout [a;b;c;d;e;f;g;h;i;j;k;l;m;n;o;p;q;r;s;t;u;v;w;x;y;z;aa;bb;cc;dd;ee;ff;gg;hh;ii;jj;kk;ll;mm;nn;oo;pp;qq;rr;ss;tt;uu;vv;ww;xx;yy;zz]
     l = l[1:length(genes)]
     p = []
-    Threads.@threads for (i, gene) in enumerate(genes)
+    for (i, gene) in enumerate(genes)
         if i < length(genes)
         p1 = @df count_mat StatsPlots.violin(string.(:cluster), cols(Symbol.(gene)), ylabel=gene,
                 group=string.(:cluster),linewidth=line_width, alpha=alpha, legend=do_legend, xaxis=nothing,grid = false,
