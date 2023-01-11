@@ -16,7 +16,7 @@ mutable struct RawCountObject <: AbstractCount
             error("The total number of cells in the count matrix and the cell ID do not match!")
         end
         if length(gene_name) !== size(count_mtx)[1]
-            error("The total number of genes in the count matrix and the cell ID do not match!")
+            error("The total number of genes in the count matrix and the gene name do not match!")
         end
         raw_count = new(count_mtx, cell_name, gene_name)
         return raw_count
@@ -35,7 +35,7 @@ mutable struct NormCountObject <: AbstractCount
             error("The total number of cells in the count matrix and the cell ID do not match!")
         end
         if length(gene_name) !== size(count_mtx)[1]
-            error("The total number of genes in the count matrix and the cell ID do not match!")
+            error("The total number of genes in the count matrix and the gene name do not match!")
         end
         normcountobj = new(count_mtx, cell_name, gene_name, scale_factor, norm_method, pseudocount)
         return normcountobj
@@ -54,7 +54,7 @@ mutable struct ScaleCountObject <: AbstractCount
             error("The total number of cells in the count matrix and the cell ID do not match!")
         end
         if length(gene_name) !== size(count_mtx)[1]
-            error("The total number of genes in the count matrix and the cell ID do not match!")
+            error("The total number of genes in the count matrix and the gene name do not match!")
         end
         scale_obj = new(count_mtx, cell_name, gene_name, do_scale, do_center,scale_max)
         return scale_obj
