@@ -203,13 +203,14 @@ function FindAllMarkers(sc_obj::scRNAObject; expr_cutoff=0.0, min_pct=0.1, p_cut
     p = Progress(n, dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=40, color=:black)
     for i in 1:n
         cluster = all_clusters[i]
-        cl1_obj = ExtractClusterCount(sc_obj, cluster)
+        sc_obj1 = deepcopy(sc_obj)
+        cl1_obj = ExtractClusterCount(sc_obj1, cluster)
         from = all_clusters
         to = [cluster == x ? cluster : "nonself" for x in from]
-        df = sc_obj.clustData.clustering
+        df = sc_obj1.clustData.clustering
         df = mapvalues(df, :cluster, :cluster, from, to)
-        sc_obj.clustData.clustering = df
-        markers = FindMarkers(sc_obj; cluster_1 = cluster, cluster_2 = "nonself")
+        sc_obj1.clustData.clustering = df
+        markers = FindMarkers(sc_obj1; cluster_1 = cluster, cluster_2 = "nonself")
         markers.cluster .= cluster
         all_markers = [all_markers;markers]
         next!(p)
