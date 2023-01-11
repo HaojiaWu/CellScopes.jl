@@ -112,7 +112,8 @@ function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(),
     Random.seed!(seed_use)
     result = Leiden.leiden(adj_mat, resolution = res)
     df = DataFrame()
-    Threads.@threads for (i, members) in enumerate(result.partition)
+    Threads.@threads for i in 1:length(result.partition)
+        members = result.partition[i]
         cells = sc_obj.rawCount.cell_name[members]
         df1 = DataFrame(cluster = repeat([string(i)], length(cells)), cell_id=cells)
         df = [df;df1]
