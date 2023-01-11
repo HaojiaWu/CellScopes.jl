@@ -102,7 +102,7 @@ function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(),
     end
     n = size(indices, 2)
     adj_mat = Array{Int64}(undef, n, n)
-    for i in 1:n
+    Threads.@threads for i in 1:n
         for j in 1:size(indices, 1)
             adj_mat[indices[j, i], i] = 1
             adj_mat[i, indices[j, i]] = 1
@@ -112,7 +112,7 @@ function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(),
     Random.seed!(seed_use)
     result = Leiden.leiden(adj_mat, resolution = res)
     df = DataFrame()
-    for (i, members) in enumerate(result.partition)
+    Threads.@threads for (i, members) in enumerate(result.partition)
         cells = sc_obj.rawCount.cell_name[members]
         df1 = DataFrame(cluster = repeat([string(i)], length(cells)), cell_id=cells)
         df = [df;df1]
@@ -187,6 +187,25 @@ function FindMarkers(sc_obj::scRNAObject; cluster_1::Union{String, Nothing}=noth
     if only_pos
         filter!(:avg_logFC => x -> x > 0.0, test_result)
     end
-    sort!(test_result, :avg_logFC)
+    sort!(test_result, :avg_logFC, rev=true)
     return test_result
+end
+
+function FindAllMarkers(sc_obj::scRNAObject; expr_cutoff=0.0, min_pct=0.1, p_cutoff = 0.05, only_pos = true)
+    all_clusters = unique(sc_obj.clustData.clustering.cluster)
+    all_markers = DataFrame()
+    n=length(all_clusters)
+    p = Progress(n, dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=40, color=:black)
+    Threads.@threads for i in 1:n
+        cluster = all_clusters[i]
+        cl1_obj = ExtractClusterCount(sc_obj, cluster)
+        from = all_clusters
+        to = [cl == x ? cl : "nonself" for x in from]
+        sc_obj.clustData.clustering = mapvalues(sc_obj.clustData.clustering, :cluster, :cluster, from, to)
+        markers = FindMarkers(sc_obj; cluster_1 = cluster, cluster_2 = "nonself")
+        markers.cluster .= cluster
+        all_markers = [all_markers;markers]
+        next!(p)
+    end
+    return all_markers
 end
