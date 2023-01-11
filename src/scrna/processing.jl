@@ -155,7 +155,8 @@ function RunUMAP(sc_obj::scRNAObject; ndim::Int64 = 2, reduce_dims::Int64 = 10, 
     return sc_obj
 end
 
-function FindMarkers(sc_obj::scRNAObject; cluster_1::Union{String, Nothing}=nothing, cluster_2::Union{String, Nothing}=nothing, expr_cutoff=0.0, min_pct=0.1, p_cutoff = 0.05, only_pos = true)
+function FindMarkers(sc_obj::scRNAObject; cluster_1::Union{String, Nothing}=nothing, cluster_2::Union{String, Nothing}=nothing, 
+    anno::Union{String, Symbol}="cluster", expr_cutoff=0.0, min_pct=0.1, p_cutoff = 0.05, only_pos = true)
     if isa(cluster_1, Nothing)
         error("Please provide the name of the cell cluster for which you wish to obtain the differential genes. The \"cluster_1\" parameter cannot be left blank.")
     end
@@ -165,8 +166,8 @@ function FindMarkers(sc_obj::scRNAObject; cluster_1::Union{String, Nothing}=noth
     if !isdefined(sc_obj, :clustData)
         error("Clustering has not been done. Please complete the \"RunClustering\" first!")
     end
-    cl1_obj = ExtractClusterCount(sc_obj, cluster_1)
-    cl2_obj = ExtractClusterCount(sc_obj, cluster_2)
+    cl1_obj = ExtractClusterCount(sc_obj, cluster_1; anno = anno)
+    cl2_obj = ExtractClusterCount(sc_obj, cluster_2; anno = anno)
     genes = cl1_obj.gene_name
     common_genes = hcat((vec ∘ collect)(rowSum(cl1_obj.count_mtx) .> 0.0), (vec ∘ collect)(rowSum(cl2_obj.count_mtx) .> 0.0))
     common_genes = (vec ∘ collect)(rowSum(common_genes) .== 2)
@@ -196,21 +197,23 @@ function FindMarkers(sc_obj::scRNAObject; cluster_1::Union{String, Nothing}=noth
     return test_result
 end
 
-function FindAllMarkers(sc_obj::scRNAObject; expr_cutoff=0.0, min_pct=0.1, p_cutoff = 0.05, only_pos = true)
-    all_clusters = unique(sc_obj.clustData.clustering.cluster)
+function FindAllMarkers(sc_obj::scRNAObject; anno::Union{String, Symbol}="cluster", expr_cutoff=0.0, min_pct=0.1, p_cutoff = 0.05, only_pos = true)
+    if isa(anno, String)
+        anno = Symbol(anno)
+    end
+    all_clusters = unique(sc_obj.clustData.clustering[!, anno])
     all_markers = DataFrame()
     n=length(all_clusters)
     p = Progress(n, dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=40, color=:black)
     for i in 1:n
         cluster = all_clusters[i]
-        sc_obj1 = deepcopy(sc_obj)
-        cl1_obj = ExtractClusterCount(sc_obj1, cluster)
+        cl1_obj = ExtractClusterCount(sc_obj, cluster; anno = anno)
         from = all_clusters
         to = [cluster == x ? cluster : "nonself" for x in from]
-        df = sc_obj1.clustData.clustering
-        df = mapvalues(df, :cluster, :cluster, from, to)
-        sc_obj1.clustData.clustering = df
-        markers = FindMarkers(sc_obj1; cluster_1 = cluster, cluster_2 = "nonself")
+        df = sc_obj.clustData.clustering
+        df = mapvalues(df, anno, :new_cluster, from, to)
+        sc_obj.clustData.clustering = df
+        markers = FindMarkers(sc_obj; anno= "new_cluster", cluster_1 = cluster, cluster_2 = "nonself")
         markers.cluster .= cluster
         all_markers = [all_markers;markers]
         next!(p)

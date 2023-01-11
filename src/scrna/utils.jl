@@ -72,9 +72,12 @@ function SubsetCount(ct_obj::T;
     return new_obj
 end
 
-function ExtractClusterCount(sc_obj::scRNAObject, cl; count_type = "norm")
+function ExtractClusterCount(sc_obj::scRNAObject, cl; count_type = "norm", anno = Union{String, Symbol}="cluster")
     df = sc_obj.clustData.clustering
-    cl_data = filter(:cluster => x -> x == cl, df)
+    if isa(anno, String)
+        anno = Symbol(anno)
+    end
+    cl_data = filter(anno => x -> x == cl, df)
     cl_cell = cl_data.cell_id
     if count_type === "raw"
         ct_obj = sc_obj.rawCount
