@@ -205,7 +205,7 @@ function FindAllMarkers(sc_obj::scRNAObject; expr_cutoff=0.0, min_pct=0.1, p_cut
         cluster = all_clusters[i]
         cl1_obj = ExtractClusterCount(sc_obj, cluster)
         from = all_clusters
-        to = [cl == x ? cl : "nonself" for x in from]
+        to = [cluster == x ? cluster : "nonself" for x in from]
         sc_obj.clustData.clustering = mapvalues(sc_obj.clustData.clustering, :cluster, :cluster, from, to)
         markers = FindMarkers(sc_obj; cluster_1 = cluster, cluster_2 = "nonself")
         markers.cluster .= cluster
