@@ -155,13 +155,13 @@ end
 
 function FindMarkers(sc_obj::scRNAObject; cluster_1::Union{String, Nothing}=nothing, cluster_2::Union{String, Nothing}=nothing, expr_cutoff=0.0, min_pct=0.1, p_cutoff = 0.05, only_pos = true)
     if isa(cluster_1, Nothing)
-        error("Please provide the name of the cell cluster for which you wish to obtain the differential genes. The \"cluster_1\" argument cannot be left blank.")
+        error("Please provide the name of the cell cluster for which you wish to obtain the differential genes. The \"cluster_1\" parameter cannot be left blank.")
     end
     if isa(cluster_2, Nothing)
-        error("Please enter the name of the cell cluster you wish to compare against. The \"cluster_2\" argument cannot be left blank.")
+        error("Please enter the name of the cell cluster you wish to compare against. The \"cluster_2\" parameter cannot be left blank.")
     end
-    cl1_obj = ExtractClusterCount(sc_obj, cl1)
-    cl2_obj = ExtractClusterCount(sc_obj, cl2)
+    cl1_obj = ExtractClusterCount(sc_obj, cluster_1)
+    cl2_obj = ExtractClusterCount(sc_obj, cluster_2)
     genes = cl1_obj.gene_name
     common_genes = hcat((vec ∘ collect)(rowSum(cl1_obj.count_mtx) .> 0.0), (vec ∘ collect)(rowSum(cl2_obj.count_mtx) .> 0.0))
     common_genes = (vec ∘ collect)(rowSum(common_genes) .== 2)
@@ -187,6 +187,6 @@ function FindMarkers(sc_obj::scRNAObject; cluster_1::Union{String, Nothing}=noth
     if only_pos
         filter!(:avg_logFC => x -> x > 0.0, test_result)
     end
-    sort!(test_result, :p_val)
+    sort!(test_result, :avg_logFC)
     return test_result
 end
