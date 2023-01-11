@@ -2,7 +2,7 @@
 function NormalizeObject(mtx::AbstractMatrix{<:Real}; scale_factor = 10000, norm_method = "logarithm", pseudocount = 1)
     n= size(mtx)[2]
     sum_val = sum(mtx, dims=1)
-    norm_count = hcat([log.((mtx[:, i] ./ sum_val[i]) .* scale_factor .+ pseudocount) for i in 1:n]...)
+    norm_count = hcat(Folds.collect(log.((mtx[:, i] ./ sum_val[i]) .* scale_factor .+ pseudocount) for i in 1:n)...)
     return norm_count
 end
 
@@ -21,11 +21,11 @@ end
 function ScaleObject(count_mtx::AbstractMatrix{<:Real}; scale_max::Real = 10.0, do_scale::Bool = true, do_center::Bool = true)
     rmean = mean(count_mtx, dims=2)
     rsd = sqrt.(var(count_mtx, dims=2))
-    count_mtx = hcat([count_mtx[i, :] .- rmean[i] for i in 1:length(rmean)]...)
+    count_mtx = hcat(Folds.collect(count_mtx[i, :] .- rmean[i] for i in 1:length(rmean))...)
     if do_scale
         count_mtx = hcat([count_mtx[:, i] ./ rsd[i] for i in 1:length(rsd)]...)
     end
-    count_mtx = map(x -> x > scale_max ? scale_max : x, count_mtx)
+    count_mtx = Folds.map(x -> x > scale_max ? scale_max : x, count_mtx)
     count_mtx = convert(SparseArrays.SparseMatrixCSC{Float64, Int64}, count_mtx')
     return count_mtx
 end
@@ -77,7 +77,7 @@ function FindVariableGenes(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, span
     mean1 = sparsevec(vst_data.mean)
     var1 = sparsevec(sqrt.(vst_data.variance_expected))
     mat = convert(SparseMatrixCSC{Int64, Int64}, ct_mtx.count_mtx')
-    sd_val = [var((x .- mean1[i]) ./ var1[i]) for (i, x) in enumerate(eachcol(mat))]
+    sd_val = Folds.collect(var((x .- mean1[i]) ./ var1[i]) for (i, x) in enumerate(eachcol(mat)))
     vst_data.variance_standardized = vec(sd_val)
     vst_data.gene = ct_mtx.gene_name;
     vst_data = sort(vst_data, :variance_standardized, rev=true)
@@ -151,7 +151,7 @@ function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(),
     if isdefined(sc_obj.dimReduction, :umap)
         indices = sc_obj.dimReduction.umap.knn_data
     else
-        pca_vec = [collect(i) for i in eachrow(sc_obj.dimReduction.pca.cell_embedding)]
+        pca_vec = Folds.collect(collect(i) for i in eachrow(sc_obj.dimReduction.pca.cell_embedding))
         graph = nndescent(pca_vec, n_neighbors, metric)
         indices, dist_mat = knn_matrices(graph)
     end
