@@ -156,7 +156,7 @@ markers = cs.FindMarkers(pbmc; cluster_1 = "7", cluster_2 = "6")
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/markers.png" width="600"> <br>
 
-Like in Seurat and Scanpy, we also provide a ```FindAllMarkers`` function to identify the marker genes for all clusters.
+Like in Seurat and Scanpy, we also provide a ```FindAllMarkers``` function to identify the marker genes for all clusters.
 ```julia
 all_markers = cs.FindAllMarkers(pbmc)
 ```
