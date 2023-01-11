@@ -138,6 +138,3 @@ function VariableGenes(sc_obj::scRNAObject)
     return vargenes
 end
 
-function SaveObj(sc_obj::scRNAObject; key::String = "CSObject", filename::String = "cs_obj.jld2")
-    JLD2.save(filename, key, sc_obj)
-end
