@@ -106,7 +106,7 @@ mutable struct CartanaObject <: AbstractImagingObj
         cell_coord = cell_data[!, [x_col, y_col]]
         mol_coord = molecule_data[!, [x_col, y_col]]
         coord = SpaCoordObj(cell_coord, mol_coord, nothing, nothing)
-        spObj.dimData = coord
+        spObj.coordData = coord
         println("CartanaObject was successfully created!")
         return spObj
     end
