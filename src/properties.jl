@@ -47,8 +47,8 @@ matchtype(field) = @match field begin
 end
 
 function Base.show(io::IO, sp_obj::CartanaObject)
-    println(io, "SpaObj in CellScopes.jl")
-    println("Genes x Cells = ", size(sp_obj.rawCount)[1], " x ", size(sp_obj.rawCount)[2])
+    println(io, "CartanaObject in CellScopes.jl")
+    println("Genes x Cells = ", size(sp_obj.rawCount.count_mtx)[1], " x ", size(sp_obj.rawCount.count_mtx)[2])
     println("Available data:")
     all_field = fieldnames(CartanaObject)
     for i in all_field
