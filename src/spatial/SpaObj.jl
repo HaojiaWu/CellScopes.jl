@@ -86,41 +86,41 @@ mutable struct CartanaObject <: AbstractImagingObj
     imputeData::Union{SpaImputeObj, Nothing}
     imageData::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}}
     polygonData::Array{Array{Float64, 2}, 1}
-    function CartanaObject(molecules::DataFrame, cells::DataFrame, counts::RawCountObject; 
+    function CartanaObject(molecule_data::DataFrame, cell_data::DataFrame, counts::RawCountObject; 
         prefix::Union{String, Nothing}=nothing, postfix::Union{String, Nothing}=nothing, 
         min_gene::Int64=0, min_cell::Int64=0, x_col::Union{String, Symbol} = "x", 
         y_col::Union{String, Symbol} = "y", cell_col::Union{String, Symbol} = "cell")
         if prefix !== nothing
             println("Adding prefix " * prefix * " to all cells...")
             counts.cell_name = prefix * "_" .* counts.cell_name
-            molecules[!, cell_col] = prefix * "_" .* molecules[!, cell_col]
-            cells[!, cell_col] = prefix * "_" .* cells[!, cell_col]
+            molecule_data[!, cell_col] = prefix * "_" .* molecule_data[!, cell_col]
+            cell_data[!, cell_col] = prefix * "_" .* cell_data[!, cell_col]
         end
         if postfix !== nothing
             println("Adding postfix " * postfix * " to all cells...")
             counts.cell_name = counts.cell_name .* "_" .* postfix
-            molecules[!, cell_col] = molecules[!, cell_col] .* "_" .* postfix
-            cells[!, cell_col] = cells[!, cell_col] .* "_" .* postfix
+            molecule_data[!, cell_col] = molecule_data[!, cell_col] .* "_" .* postfix
+            cell_data[!, cell_col] = cell_data[!, cell_col] .* "_" .* postfix
         end
         count_mat = counts.count_mtx
         gene_name = counts.gene_name
         cell_name = counts.cell_name
         gene_kept = (vec ∘ collect)(rowSum(count_mat).>= min_gene)
-        genes = gene_name[gene_kept]
+        gene_name = gene_name[gene_kept]
         cell_kept = (vec ∘ collect)(colSum(count_mat) .>= min_cell)
-        cells = cell_name[cell_kept]
+        cell_name = cell_name[cell_kept]
         count_mat = count_mat[gene_kept, cell_kept]
         counts = RawCountObject(count_mat, cell_name, gene_name)
-        cell_check = map(x -> x in cell_name, cells[!, cell_col])
-        cells = cells[cell_check, :]
-        cell_check = map(x -> x in cell_name, molecules[!, cell_col])
-        molecules = molecules[cell_check, :]
+        cell_check = Folds.collect(x in cell_name for x in cell_data[!, cell_col])
+        cell_data = cell_data[cell_check, :]
+        cell_check = Folds.collect(x in cell_name for x in molecule_data[!, cell_col])
+        molecule_data = molecule_data[cell_check, :]
         spObj=new(counts)
-        meta = SpaMetaObj(cells)
-        meta.molecules = molecules
+        meta = SpaMetaObj(cell_data)
+        meta.molecules = molecule_data
         spObj.metaData = meta
-        cell_coord = cells[!, [x_col, y_col]]
-        mol_coord = molecules[!, [x_col, y_col]]
+        cell_coord = cell_data[!, [x_col, y_col]]
+        mol_coord = molecule_data[!, [x_col, y_col]]
         coord = SpaCoordObj("cell_coord"; cell_coord)
         coord.molCoord = mol_coord
         spObj.dimData = coord
