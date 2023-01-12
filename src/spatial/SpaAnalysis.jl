@@ -127,7 +127,7 @@ function run_tangram(sp::AbstractSpaObj, data_path::String)
         sp.imp_data
     catch test_impdata
         if isa(test_impdata, UndefRefError)
-            sp.imp_data = imputeObj("tangram"; imp_data = new_df)
+            sp.imp_data = SpaImputeObj("tangram"; imp_data = new_df)
         else
             sp.imp_data = add_impdata(sp.imp_data, "tangram", new_df)
         end
@@ -214,7 +214,7 @@ function run_tangram2(sp::AbstractSpaObj,
         tg_meta = DataFrame(tg_meta,:auto)
         sp.imp_meta = tg_meta
         if isa(sp.imp_data, Nothing)
-            sp.imp_data = imputeObj("tangram"; imp_data = tg_count)
+            sp.imp_data = SpaImputeObj("tangram"; imp_data = tg_count)
         else
             sp.imp_data = add_impdata(sp.imp_data, "tangram", tg_count)
         end
@@ -295,7 +295,7 @@ function run_spaGE(sp::AbstractSpaObj, data_path::String, spaGE_path::String; np
         sp.imp_data
     catch test_impdata
         if isa(test_impdata, UndefRefError)
-            sp.imp_data = imputeObj("SpaGE"; imp_data = new_df)
+            sp.imp_data = SpaImputeObj("SpaGE"; imp_data = new_df)
         else
             sp.imp_data = add_impdata(sp.imp_data, "SpaGE", new_df)
         end
@@ -379,7 +379,7 @@ function run_gimVI(sp::AbstractSpaObj, data_path::String)
         sp.imp_data
     catch test_impdata
         if isa(test_impdata, UndefRefError)
-            sp.imp_data = imputeObj("gimVI"; imp_data = new_df)
+            sp.imp_data = SpaImputeObj("gimVI"; imp_data = new_df)
         else
             sp.imp_data = add_impdata(sp.imp_data, "gimVI", new_df)
         end
