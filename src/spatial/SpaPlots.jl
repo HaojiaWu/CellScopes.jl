@@ -1,5 +1,5 @@
 
-function plot_transcript_polygons(sp::SpaObj; 
+function plot_transcript_polygons(sp::AbstractSpaObj; 
         genes::Union{Vector, Symbol, String}="Podxl", 
         colors::Union{Vector, Symbol, String}="blue", 
         bg_color::Union{Vector, Symbol, String}="gray95",
@@ -71,7 +71,7 @@ function plot_transcript_polygons(sp::SpaObj;
     return MK.current_figure()
 end
 
-function dot_plot(sp::Union{SpaObj, visiumObj, scRNAObj}, genes::Union{Vector, String},
+function dot_plot(sp::AbstractSpaObj, genes::Union{Vector, String},
     cluster::Union{Symbol, String};expr_cutoff::Union{Float64, Int64}=0, split_by::Union{String, Nothing}=nothing,
     x_title="Gene",y_title="Cell type", cell_order::Union{Vector, String, Nothing}=nothing,
     fontsize::Int64=12, color_scheme::String="yelloworangered",reverse_color::Bool=false,
@@ -137,7 +137,7 @@ else
     return p
 end
 
-function feature_plot(sp::Union{SpaObj, visiumObj, scRNAObj}, genes; layer::String = "cells", x_col::Union{String, Symbol}="x",
+function feature_plot(sp::AbstractSpaObj, genes; layer::String = "cells", x_col::Union{String, Symbol}="x",
     y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order=true,
     color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray96","red","red3"])
         if layer === "cells"
@@ -216,7 +216,7 @@ function feature_plot(sp::Union{SpaObj, visiumObj, scRNAObj}, genes; layer::Stri
         end
 end
 
-function feature_plot_split(scObj::scRNAObj, gene::String, split_by::String; x_col::Union{String, Symbol}="x",
+function feature_plot_split(scObj::AbstractSpaObj, gene::String, split_by::String; x_col::Union{String, Symbol}="x",
     y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order=true, 
         color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray96","red","red3"])
                 coord_cell=deepcopy(scObj.cells)
@@ -266,7 +266,7 @@ function feature_plot_split(scObj::scRNAObj, gene::String, split_by::String; x_c
                 MK.current_figure()
 end
 
-function feature_plot_overlaid(sp::SpaObj, genes; layer::String="cells",
+function feature_plot_overlaid(sp::AbstractSpaObj, genes; layer::String="cells",
     color_scheme::String="magma",reverse_color::Bool=true, 
     molecule_colors::Union{Vector, Nothing}=nothing, overlay::Bool=false,
     order::Bool=false,x_lims=nothing, y_lims=nothing, pt_size=5,
@@ -362,7 +362,7 @@ function feature_plot_overlaid(sp::SpaObj, genes; layer::String="cells",
     end
 end
 
-function plot_gene_polygons(sp::SpaObj, gene::String, c_map;
+function plot_gene_polygons(sp::AbstractSpaObj, gene::String, c_map;
     x_lims=nothing, y_lims=nothing,canvas_size=(5000,6000),stroke_width=0.5,stroke_color="black"
     )
     gene_expr=sp.poly_norm
@@ -386,7 +386,7 @@ function plot_gene_polygons(sp::SpaObj, gene::String, c_map;
     MK.current_figure()
 end
 
-function plot_cell_polygons(sp::SpaObj, column::Union{Symbol, String};
+function plot_cell_polygons(sp::AbstractSpaObj, column::Union{Symbol, String};
     anno_color::Union{Nothing, Dict} = nothing,
     x_lims=nothing, y_lims=nothing,canvas_size=(5000,6000),stroke_width=0.5,stroke_color="black"
     )
@@ -416,7 +416,7 @@ function plot_cell_polygons(sp::SpaObj, column::Union{Symbol, String};
     return MK.current_figure()
 end
 
-function dim_plot(sp::Union{SpaObj, visiumObj, scRNAObj}, anno::Union{Symbol, String}; 
+function dim_plot(sp::AbstractSpaObj, anno::Union{Symbol, String}; 
     anno_color::Union{Nothing, Dict} = nothing, x_col::String = "x", y_col::String = "y", cell_order::Union{Vector{String}, Nothing}=nothing,
     x_lims=nothing, y_lims=nothing,canvas_size=(5000,6000),stroke_width=0.5,stroke_color=:transparent, 
         marker_size=1, label_size=50, label_color="black", label_offset=(0,0), do_label=true, do_legend=true,
@@ -486,7 +486,7 @@ function dim_plot(sp::Union{SpaObj, visiumObj, scRNAObj}, anno::Union{Symbol, St
     return MK.current_figure()
 end
 
-function highlight_cells(sp::Union{SpaObj, visiumObj, scRNAObj}, cell_hightlight::String, group_label::Union{String,Symbol};
+function highlight_cells(sp::AbstractSpaObj, cell_hightlight::String, group_label::Union{String,Symbol};
     canvas_size=(900,1000),stroke_width::Float64=0.1, stroke_color="black", cell_color::String="red",
     marker_size=2,x_lims=nothing, y_lims=nothing)
     coord_cells=sp.cells
@@ -510,7 +510,7 @@ function highlight_cells(sp::Union{SpaObj, visiumObj, scRNAObj}, cell_hightlight
     MK.current_figure()
 end
 
-function plot_gene_rank(sp::SpaObj, cluster::String, celltype::String; num_gene::Int64=20)
+function plot_gene_rank(sp::AbstractSpaObj, cluster::String, celltype::String; num_gene::Int64=20)
     genes=unique(sp.molecules.gene)
     all_df=DataFrame()
     for (i, gene) in enumerate(genes)
@@ -533,7 +533,7 @@ function plot_gene_rank(sp::SpaObj, cluster::String, celltype::String; num_gene:
         y={:rank,axis={title="Ranking", grid=false}})
 end
 
-function plot_impute_gene(sp::SpaObj, gene::String; data_type="predicted", imp_type::String="SpaGE", c_map=nothing, x_lims=nothing,
+function plot_impute_gene(sp::AbstractSpaObj, gene::String; data_type="predicted", imp_type::String="SpaGE", c_map=nothing, x_lims=nothing,
     y_lims=nothing, canvas_size=(1000,1200), marker_size=2, order=true)
     if data_type === "predicted"
         if imp_type === "tangram"
@@ -589,7 +589,7 @@ function plot_impute_gene(sp::SpaObj, gene::String; data_type="predicted", imp_t
     MK.current_figure()
 end
 
-function plot_impute_group(impute_list::Vector{SpaObj}, genes::Vector{String}; data_type="predicted", imp_type::String="SpaGE",
+function plot_impute_group(impute_list::Vector{AbstractSpaObj}, genes::Vector{String}; data_type="predicted", imp_type::String="SpaGE",
     c_map=nothing, marker_size = 2, order=false, canvas_size=(500, 550))
     fig = MK.Figure(resolution=(canvas_size[1] * length(genes) ,canvas_size[2] * length(impute_list)))
     for j in 1:length(genes)
@@ -649,7 +649,7 @@ function plot_impute_group(impute_list::Vector{SpaObj}, genes::Vector{String}; d
     MK.current_figure()
 end
 
-function plot_fov(sp::Union{SpaObj, visiumObj}, n_fields_x::Int64, n_fields_y::Int64; 
+function plot_fov(sp::AbstractSpaObj, n_fields_x::Int64, n_fields_y::Int64; 
     x_col::Union{String, Symbol}="x", y_col::Union{String, Symbol}="y", group_label::Union{Nothing, String}=nothing, 
     canvas_size=(4000,4000), cell_highlight::Union{Nothing, String, Number}=nothing, shield::Bool= false, marker_size::Union{Int64, Float64}=2)
     df = sp.cells
@@ -695,7 +695,7 @@ function plot_fov(sp::Union{SpaObj, visiumObj}, n_fields_x::Int64, n_fields_y::I
     MK.current_figure()
 end
 
-function plot_point(sp::Union{SpaObj,visiumObj}, pt::Vector{Float64}; 
+function plot_point(sp::AbstractSpaObj, pt::Vector{Float64}; 
     canvas_size=(4000,4000),marker_size=60, text_size=100, 
     pt_color="red", text_color="blue", label="point")
     df = sp.cells
@@ -714,7 +714,7 @@ function plot_point(sp::Union{SpaObj,visiumObj}, pt::Vector{Float64};
     MK.current_figure()
 end
 
-function plot_depth(sp::Union{SpaObj, visiumObj}; celltype::Union{String, Symbol} = :celltype,
+function plot_depth(sp::AbstractSpaObj; celltype::Union{String, Symbol} = :celltype,
     cmap=nothing, cell_select=nothing, 
     fontsize=16, scale=0.8, markers=nothing)
         cells=sp.cells
@@ -763,7 +763,7 @@ function plot_depth(sp::Union{SpaObj, visiumObj}; celltype::Union{String, Symbol
         MK.current_figure()
 end
 
-function plot_depth_animation(sp::Union{SpaObj,visiumObj}, celltypes::Vector{String}, markers::Vector{String}; 
+function plot_depth_animation(sp::AbstractSpaObj, celltypes::Vector{String}, markers::Vector{String}; 
     group_label="celltype",gene_label="gene", cmap=nothing, bg_color="gray94",fontsize=16, scale=0.8, canvas_size=(1800,600), file_name="animation.gif", framerate=30,
     titles=["Cells colored by kidney depth","Cell distribution from cortex to papilla","Transcript distribution from cortex to papilla"])
         cells=sp.cells
@@ -831,7 +831,7 @@ function plot_depth_animation(sp::Union{SpaObj,visiumObj}, celltypes::Vector{Str
         end
 end
 
-function plot_gene_depth(sp::Union{SpaObj, visiumObj}, gene::String;
+function plot_gene_depth(sp::AbstractSpaObj, gene::String;
     c_map::Union{String, Symbol, Nothing}=nothing, cell_col="cell2",
     canvas_size =(1200,300),marker_size=4,
     stroke_width=0.5,stroke_color="gray94",
@@ -865,7 +865,7 @@ function plot_gene_depth(sp::Union{SpaObj, visiumObj}, gene::String;
     MK.current_figure()
 end
 
-function plot_interactive(sp::Union{SpaObj, visiumObj, scRNAObj}; layer::String = "cells", marker_color::Union{Symbol, String}="black", marker_size=3, plot_mode="markers")
+function plot_interactive(sp::AbstractSpaObj; layer::String = "cells", marker_color::Union{Symbol, String}="black", marker_size=3, plot_mode="markers")
     if layer === "cells"
         cells=sp.cells
         plyjs.plot(plyjs.scatter(x=cells.x, y=cells.y, mode=plot_mode, marker=plyjs.attr(size=marker_size, color=marker_color)))
@@ -918,7 +918,7 @@ function plot_transcript_nuclei(sp::SpaObj, fov::Int64, n_fields_x::Int64, n_fie
     MK.current_figure()
 end
 
-function compare_gene_expr(sp1::Union{SpaObj, visiumObj, scRNAObj},sp2::Union{SpaObj, visiumObj, scRNAObj}, genes::Union{Vector, String},
+function compare_gene_expr(sp1::AbstractSpaObj,sp2::AbstractSpaObj, genes::Union{Vector, String},
     cluster::Union{Symbol, String}; sp1_name::String ="sp1", sp2_name::String="sp2",
     assay_use::String="measured",expr_cutoff::Union{Float64, Int64}=0, legend_min::Union{Float64, Int64}=0, legend_max::Union{Float64, Int64}=1, 
     x_title="Gene",y_title="Cell type", cell_order::Union{Vector, String, Nothing}=nothing,
@@ -973,7 +973,7 @@ function compare_gene_expr(sp1::Union{SpaObj, visiumObj, scRNAObj},sp2::Union{Sp
         return p
 end
 
-function heatmap_plot(sp::Union{SpaObj, visiumObj, scRNAObj}, genes::Union{Vector, String},
+function heatmap_plot(sp::AbstractSpaObj, genes::Union{Vector, String},
     cluster::Union{Symbol, String};assay_use::String="measured",expr_cutoff::Union{Float64, Int64}=0, split_by::Union{String, Nothing}=nothing,
     x_title="Gene",y_title="Cell type", cell_order::Union{Vector, String, Nothing}=nothing,
     fontsize::Int64=12, color_scheme::String="yelloworangered",reverse_color::Bool=false,scale::Bool=true,
@@ -1046,7 +1046,7 @@ function heatmap_plot(sp::Union{SpaObj, visiumObj, scRNAObj}, genes::Union{Vecto
         return p
 end
 
-function overlay_cells(vs::visiumObj, sp::SpaObj; vs_x = "new_x", vs_y = "new_y", 
+function overlay_cells(vs::VisiumObject, sp::CartanaObject; vs_x = "new_x", vs_y = "new_y", 
     sp_x = "new_x", sp_y = "new_y", vs_color=:red, sp_color=:blue, vs_markersize=7, 
     sp_markersize=2, vs_title="Visium", sp_title="Cartana")
     cartana_df = deepcopy(sp.cells)
@@ -1068,7 +1068,7 @@ function overlay_cells(vs::visiumObj, sp::SpaObj; vs_x = "new_x", vs_y = "new_y"
     MK.current_figure()
 end
 
-function overlay_gene(vs::visiumObj, sp::SpaObj, gene; vs_x="new_x", vs_y="new_y", sp_x="new_x", sp_y="new_y",
+function overlay_gene(vs::VisiumObject, sp::CartanaObject, gene; vs_x="new_x", vs_y="new_y", sp_x="new_x", sp_y="new_y",
     vs_color=:red, sp_color=:blue, vs_markersize=7, canvas_size=(1800,500),x_lims=nothing, y_lims=nothing,
     sp_markersize=2, vs_title="Visium", sp_title="Cartana", order=true)
     vs_count=deepcopy(vs.norm_counts)
@@ -1131,7 +1131,7 @@ function overlay_gene(vs::visiumObj, sp::SpaObj, gene; vs_x="new_x", vs_y="new_y
     MK.current_figure()
 end
 
-function plot_spatial_gene_group(sp_list::Vector{SpaObj}, n_bin, genes; group_names::Union{Vector, String, Nothing}=nothing,
+function plot_spatial_gene_group(sp_list::Vector{CartanaObject}, n_bin, genes; group_names::Union{Vector, String, Nothing}=nothing,
     color_range::Vector=["white", "ivory","gold","orange","tomato","red"],legend_min::Union{Float64, Int64}=0, legend_max::Union{Float64, Int64}=1)
     n_obj = length(sp_list)
     all_genes = DataFrame()

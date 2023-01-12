@@ -1,4 +1,4 @@
-function run_SpaGCN(sp::SpaObj, count_path::String, python_path::String; 
+function run_SpaGCN(sp::AbstractSpaObj, count_path::String, python_path::String; 
             n_cluster::Int64=20, 
             l_val::Union{Float64, Nothing}=nothing, 
             res::Union{Float64, Nothing}=nothing, 
@@ -51,7 +51,7 @@ function run_SpaGCN(sp::SpaObj, count_path::String, python_path::String;
             return sp
 end
 
-function run_tangram(sp::SpaObj, data_path::String)
+function run_tangram(sp::AbstractSpaObj, data_path::String)
     py"""
     import os
     import numpy as np
@@ -135,7 +135,7 @@ function run_tangram(sp::SpaObj, data_path::String)
     return sp
 end
 
-function run_tangram2(sp::SpaObj,
+function run_tangram2(sp::AbstractSpaObj,
     scMat_path::String, scGenes_path::String, 
     scBarcodes_path::String, scMeta_path::String, 
     marker_path::String, cl_col::String; device1 = "cuda:0")
@@ -222,7 +222,7 @@ function run_tangram2(sp::SpaObj,
         return sp
 end
 
-function run_spaGE(sp::SpaObj, data_path::String, spaGE_path::String; npv::Int64=30)
+function run_spaGE(sp::AbstractSpaObj, data_path::String, spaGE_path::String; npv::Int64=30)
     pushfirst!(PyVector(pyimport("sys")."path"), spaGE_path)
     py"""
     import os
@@ -303,7 +303,7 @@ function run_spaGE(sp::SpaObj, data_path::String, spaGE_path::String; npv::Int64
     return sp
 end
 
-function run_gimVI(sp::SpaObj, data_path::String)
+function run_gimVI(sp::AbstractSpaObj, data_path::String)
     py"""
     import os
     import numpy as np
