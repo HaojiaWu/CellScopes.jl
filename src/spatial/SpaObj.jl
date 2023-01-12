@@ -185,7 +185,7 @@ function add_impdata(impute_obj::SpaImputeObj, imp_type::String, imp_data::DataF
 end
 
 function normalizeData(sp::AbstractSpaObj)
-    if isa(sp.norm_counts, DataFrame)
+    if isa(sp.normCount, DataFrame)
         println("Your data has been normalized. No need to normalize again.")
     else
         orig_count=deepcopy(sp.counts)
@@ -206,7 +206,7 @@ function normalizeData(sp::AbstractSpaObj)
         new_df[!,:gene]=orig_count[!,:gene]
         total_cell=length(names(new_df))
         new_df=new_df[!,[total_cell; collect(1:total_cell-1)]]
-        sp.norm_counts = new_df
+        sp.normCount = new_df
     end
     return sp
 end
@@ -234,7 +234,7 @@ function normalizeData(sp::DataFrame)
 end
 
 function polygons_cell_mapping(sp::AbstractSpaObj)
-    polygons=sp.polygons
+    polygons=sp.polygonData
     center_df=DataFrame()
     cell=Int[]
     X=Float64[]
@@ -273,19 +273,19 @@ function polygons_cell_mapping(sp::AbstractSpaObj)
     end
     println("Polygons have been mapped to the cells!")
     my_annot=DataFrame(polygon_number=collect(1:length(query_dist)), mapped_cell=query_dist);
-    from=sp.cells.cell
-    to=sp.cells.cluster
+    from=sp.spmetaData.cell.cell
+    to=sp.spmetaData.cell.cluster
     anno=mapvalues(my_annot, :mapped_cell, :cluster,from, to)
-    sp.poly_anno=anno
+    sp.spmetaData.polygon=anno
     return sp
 end
 
 function generate_polygon_counts(sp::AbstractSpaObj)
-    coord_molecules=sp.molecules
-    if isa(sp.poly_anno, Nothing)
+    coord_molecules=sp.spmetaData.molecule
+    if isa(sp.spmetaData.polygon, Nothing)
         error("Please run polygons_cell_mapping first!")
     end
-    anno=sp.poly_anno
+    anno=sp.spmetaData.polygon
     anno=rename!(anno, :polygon_number => :number)
     anno=rename!(anno, :mapped_cell => :cell)
     anno.cell=string.(anno.cell)
@@ -325,12 +325,12 @@ function subset_SpaObj(sp::AbstractSpaObj, cell_col::Union{String, Symbol}, subs
     spObj=deepcopy(sp)
     barcodes = deepcopy(subset_names)
     barcodes2 = [["gene"]; barcodes]
-    spObj.norm_counts=spObj.norm_counts[!, barcodes2]
+    spObj.normCount=spObj.normCount[!, barcodes2]
     spObj.counts=spObj.counts[!, barcodes2]
-    spObj.cells=filter(cell_col => x -> x in subset_names, spObj.cells)
+    spObj.spmetaData.cell=filter(cell_col => x -> x in subset_names, spObj.spmetaData.cell)
     if isa(sp, SpaObj)
         spObj.cell_names=subset_names
-        spObj.molecules=filter(cell_col => x -> x in subset_names, spObj.molecules)
+        spObj.spmetaData.molecule=filter(cell_col => x -> x in subset_names, spObj.spmetaData.molecule)
         spObj.cell_coord=filter(cell_col => x -> x in subset_names, spObj.cell_coord)
         spObj.mol_coord=filter(cell_col => x -> x in subset_names, spObj.mol_coord)    
     end
@@ -340,16 +340,16 @@ end
 function subset_SpaObj_cluster(sp::AbstractSpaObj, cluster_col::Union{String, Symbol}, cell_col::Union{String, Symbol}, subset_names::Union{Vector{String}, Vector{Int64}})
     spObj=deepcopy(sp)
     cluster_names = deepcopy(subset_names)
-    cell_coord = spObj.cells
+    cell_coord = spObj.spmetaData.cell
     cell_coord = filter(cluster_col => x-> x in cluster_names, cell_coord)
     barcodes = cell_coord[!, cell_col]
     barcodes2 = [["gene"]; barcodes]
-    spObj.norm_counts=spObj.norm_counts[!, barcodes2]
+    spObj.normCount=spObj.normCount[!, barcodes2]
     spObj.counts=spObj.counts[!, barcodes2]
-    spObj.cells=filter(cell_col => x -> x in barcodes, spObj.cells)
+    spObj.spmetaData.cell=filter(cell_col => x -> x in barcodes, spObj.spmetaData.cell)
      if isa(sp, SpaObj)
         spObj.cell_names=barcodes
-        spObj.molecules=filter(cell_col => x -> x in barcodes, spObj.molecules)
+        spObj.spmetaData.molecule=filter(cell_col => x -> x in barcodes, spObj.spmetaData.molecule)
         spObj.cell_coord=filter(cell_col => x -> x in barcodes, spObj.cell_coord)
         spObj.mol_coord=filter(cell_col => x -> x in barcodes, spObj.mol_coord)
     end

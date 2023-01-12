@@ -42,24 +42,26 @@ function reorder(df::DataFrame,
 end
 
 function compute_pearson_cor(sp::CartanaObject, cluster1::Union{Symbol, String}, cluster2::Union{Symbol, String}; color_scheme::String="lightgreyred",reverse_color::Bool=false)
-    df=sp.cells
+    df=sp.spmetaData.cell
     celltypes1=unique(df[!,cluster1])
     celltypes2=unique(df[!,cluster2])
-    norm_cells=sp.norm_counts
+    norm_cells=sp.normCounts
     df2=DataFrame([[] [] []],:auto)
     for i in celltypes1
         cols=DataFrame([[] [] []],:auto)
         for j in celltypes2
             x=filter(cluster1 => x-> x == i,df)
-            cell1=norm_cells[!, x.cell2]
+            cell1 = SubsetCount(norm_cells; cell_name=x.cell)
+            cell1 = cell1.count_mtx
             dg = deepcopy(cell1)
             dg.rowmean .= mean(Array(dg), dims=2)
-            x=dg.rowmean;
+            x=dg.rowmean
             y=filter(cluster2 => y-> y == j,df)
-            cell1=norm_cells[!, y.cell2]
+            cell1 = SubsetCount(norm_cells; cell_name=y.cell)
+            cell1 = cell1.count_mtx
             dg = deepcopy(cell1)
             dg.rowmean .= mean(Array(dg), dims=2)
-            y=dg.rowmean;
+            y=dg.rowmean
             cor_val=Statistics.cor(x,y)
             rows=DataFrame([string(i) string(j) cor_val],:auto)
             cols=[cols; rows]
@@ -78,17 +80,17 @@ end
 
 function compare_cell_distances(sp::CartanaObject,col::Union{String, Symbol}, target_cell::String, 
     cell1::String, cell2::String, radius::Union{Int64, Float64})
-    coord_cells=sp.cells
+    coord_cells=sp.spmetaData.cell
     if isa(col, String)
         col=Symbol(col)
     end
     target=filter(col => x -> x ==target_cell, coord_cells)
-    target_cells=target.cell2;
+    target_cells=target.cell
     df = Array{Int64}(undef, 0, 2)
     n= length(target_cells)
     p = Progress(n, dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, color=:blue)
     Threads.@threads for i in target_cells
-        ref_coord = filter(:cell2 => x-> x== i, coord_cells)
+        ref_coord = filter(:cell => x-> x== i, coord_cells)
         center_x = ref_coord.x[1]
         center_y = ref_coord.y[1]
         within_range=filter([:x, :y]=>(a,b)->scan_cells(a, b, center_x, center_y, radius),coord_cells)
@@ -129,8 +131,8 @@ function coord_transform(point, degree;)
 end
 
 function rotate_axis(sp::AbstractSpaObj, degree)
-    coord_cells=sp.cells
-    coord_molecules=sp.molecules
+    coord_cells=sp.spmetaData.cell
+    coord_molecules=sp.spmetaData.molecule
     new_x=[]
     new_y=[]
     for point in zip(coord_cells.x, coord_cells.y)
@@ -149,8 +151,8 @@ function rotate_axis(sp::AbstractSpaObj, degree)
     end
     coord_molecules.x=float.(new_x)
     coord_molecules.y=float.(new_y)
-    sp.cells=coord_cells
-    sp.molecules=coord_molecules
+    sp.spmetaData.cell=coord_cells
+    sp.spmetaData.molecule=coord_molecules
     return sp
 end
 
@@ -230,7 +232,7 @@ function slope2deg(slope::Float64)
 end
 
 function subset_fov(sp::CartanaObject, fov::Vector{Int64}, n_fields_x::Int64, n_fields_y::Int64)
-    df=sp.cells
+    df=sp.spmetaData.cell
     pts, centroids = split_field(df, n_fields_x, n_fields_y)
     pts_sub=pts[fov]
     min_pt=minimum(minimum(pts_sub))
@@ -273,7 +275,7 @@ function compute_new_coord(df, pt, center; span=150)
 end
 
 function compute_kidney_coordinates(sp::CartanaObject, center)
-    df = sp.cells
+    df = sp.spmetaData.cell
     kid_depth=[]
     kid_angle=[]
     n=length(df.x)
@@ -287,14 +289,14 @@ function compute_kidney_coordinates(sp::CartanaObject, center)
     end
     df[!,:depth]=kid_depth
     df[!,:angle]=kid_angle
-    sp.cells=df
-    molecules=sp.molecules
-    cells2=df.cell2
-    molecules=filter(:cell2=> x-> x in cells2, molecules)
-    from=df.cell2
+    sp.spmetaData.cell=df
+    molecules=sp.spmetaData.molecule
+    cells2=df.cell
+    molecules=filter(:cell=> x-> x in cells2, molecules)
+    from=df.cell
     to=df.depth
-    molecules_df=mapvalues(molecules, :cell2, :depth,from, to)
-    sp.molecules=molecules_df
+    molecules_df=mapvalues(molecules, :cell, :depth,from, to)
+    sp.spmetaData.molecule=molecules_df
     return sp
 end
 
@@ -401,7 +403,7 @@ function visium_deconvolution(vs::VisiumObject,sp::CartanaObject, spot_r::Union{
     vscell_col = "cell" , spcluster_col="celltype", vs_x = "new_x", vs_y = "new_y", 
     sp_x = "new_x", sp_y = "new_y")
     vs_cells = deepcopy(vs.cells)
-    sp_cells = deepcopy(sp.cells)
+    sp_cells = deepcopy(sp.spmetaData.cell)
     target_cells = vs_cells.cell
     celltypes = string.(keys(countmap(sp_cells[!, spcluster_col])))
     df1 = DataFrame()
@@ -444,7 +446,7 @@ function split_spatial(n_bin::Int64)
 end
 
 function bin_gene_spatial(sp::CartanaObject, n_bin::Int64; celltype::Union{String, Int64, Nothing}=nothing)
-    cells=deepcopy(sp.cells)
+    cells=deepcopy(sp.spmetaData.cell)
     if celltype !== nothing
         cells = filter(:celltype => x -> x == celltype, cells)
     end
@@ -457,11 +459,14 @@ function bin_gene_spatial(sp::CartanaObject, n_bin::Int64; celltype::Union{Strin
         cell1.bin .= n_seg * i
         new_df = [new_df; cell1]
     end
-    gene_expr = deepcopy(sp.norm_counts)
-    all_genes = gene_expr.gene
-    gene_expr = permutedims(gene_expr, 1)
-    rename!(gene_expr, :gene => :cell2)
-    df_proc = innerjoin(gene_expr, new_df, on = :cell2)
+    gene_expr = deepcopy(sp.normCount)
+    all_genes = gene_expr.gene_name
+    gene_expr = gene_expr.count_mtx
+    gene_expr = DataFrame(Matrix(gene_expr),:auto)
+    gene_expr.gene = all_genes
+    gene_expr = permutedims(gene_expr, end)
+    rename!(gene_expr, :gene => :cell)
+    df_proc = innerjoin(gene_expr, new_df, on = :cell)
     new_df2 = DataFrame()
     for gene in all_genes
         avg_expr=combine(groupby(df_proc, :bin), gene => mean => :avg_exp)

@@ -44,9 +44,9 @@ function run_SpaGCN(sp::AbstractSpaObj, count_path::String, python_path::String;
             clf.train(adata,adj,init_spa=true,init="louvain",res=res, tol=5e-3, lr=0.05, max_epochs=200)
             (y_pred, prob)=clf.predict()
             adata.obs["pred"]= y_pred
-            sp.cells.SpaGCN=y_pred
+            sp.spmetaData.cell.SpaGCN=y_pred
             refined_pred=spg.refine(sample_id=adata.obs.index.tolist(), pred=adata.obs["pred"].tolist(), dis=adj, shape="square")
-            sp.cells.SpaGCNrefined=refined_pred
+            sp.spmetaData.cell.SpaGCNrefined=refined_pred
             println("All done!")
             return sp
 end
@@ -124,12 +124,12 @@ function run_tangram(sp::AbstractSpaObj, data_path::String)
     new_df = permutedims(new_df, :cell)
     rename!(new_df, :cell => :gene)
     try
-        sp.imp_data
+        sp.imputeData
     catch test_impdata
         if isa(test_impdata, UndefRefError)
-            sp.imp_data = SpaImputeObj("tangram"; imp_data = new_df)
+            sp.imputeData = SpaImputeObj("tangram"; imp_data = new_df)
         else
-            sp.imp_data = add_impdata(sp.imp_data, "tangram", new_df)
+            sp.imputeData = add_impdata(sp.imputeData, "tangram", new_df)
         end
     end
     return sp
@@ -173,7 +173,7 @@ function run_tangram2(sp::AbstractSpaObj,
         adata.obs_names=cm.gene
         sc.pp.filter_genes(adata, min_cells=1)
         sc.pp.normalize_total(adata)
-        metadata = sp.cells
+        metadata = sp.spmetaData.cell
         adata.obs["x"] = metadata[!,:x]
         adata.obs["y"] = metadata[!,:y]
         sp_ad=adata
@@ -213,10 +213,10 @@ function run_tangram2(sp::AbstractSpaObj,
         tg_meta = sp_ad.obsm["tangram_ct_pred"]
         tg_meta = DataFrame(tg_meta,:auto)
         sp.imp_meta = tg_meta
-        if isa(sp.imp_data, Nothing)
-            sp.imp_data = SpaImputeObj("tangram"; imp_data = tg_count)
+        if isa(sp.imputeData, Nothing)
+            sp.imputeData = SpaImputeObj("tangram"; imp_data = tg_count)
         else
-            sp.imp_data = add_impdata(sp.imp_data, "tangram", tg_count)
+            sp.imputeData = add_impdata(sp.imputeData, "tangram", tg_count)
         end
         println("Tangram data was added to your SpaObj!")
         return sp
@@ -292,12 +292,12 @@ function run_spaGE(sp::AbstractSpaObj, data_path::String, spaGE_path::String; np
     new_df = permutedims(new_df, :cell)
     rename!(new_df, :cell => :gene)
     try
-        sp.imp_data
+        sp.imputeData
     catch test_impdata
         if isa(test_impdata, UndefRefError)
-            sp.imp_data = SpaImputeObj("SpaGE"; imp_data = new_df)
+            sp.imputeData = SpaImputeObj("SpaGE"; imp_data = new_df)
         else
-            sp.imp_data = add_impdata(sp.imp_data, "SpaGE", new_df)
+            sp.imputeData = add_impdata(sp.imputeData, "SpaGE", new_df)
         end
     end
     return sp
@@ -376,12 +376,12 @@ function run_gimVI(sp::AbstractSpaObj, data_path::String)
     new_df = permutedims(new_df, :cell)
     rename!(new_df, :cell => :gene)
     try
-        sp.imp_data
+        sp.imputeData
     catch test_impdata
         if isa(test_impdata, UndefRefError)
-            sp.imp_data = SpaImputeObj("gimVI"; imp_data = new_df)
+            sp.imputeData = SpaImputeObj("gimVI"; imp_data = new_df)
         else
-            sp.imp_data = add_impdata(sp.imp_data, "gimVI", new_df)
+            sp.imputeData = add_impdata(sp.imputeData, "gimVI", new_df)
         end
     end
     return sp
