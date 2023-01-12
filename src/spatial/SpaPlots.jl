@@ -143,7 +143,7 @@ function feature_plot(sp::AbstractSpaObj, genes; layer::String = "cells", x_col:
         if layer === "cells"
                 coord_cell=deepcopy(sp.cells)
                 norm_counts=deepcopy(sp.norm_counts)
-                if isa(sp, visiumObj)
+                if isa(sp, VisiumObject)
                     marker_size=8
                 else
                     marker_size=2
@@ -877,7 +877,7 @@ function plot_interactive(sp::AbstractSpaObj; layer::String = "cells", marker_co
     end
 end
 
-function plot_transcript_nuclei(sp::SpaObj, fov::Int64, n_fields_x::Int64, n_fields_y::Int64; noise_ann=nothing,annotation=:cell2,
+function plot_transcript_nuclei(sp::AbstractSpaObj, fov::Int64, n_fields_x::Int64, n_fields_y::Int64; noise_ann=nothing,annotation=:cell2,
     is_noise=nothing, draw_poly=false, marker_size=3)
     selected_view = subset_fov(sp, fov, n_fields_x, n_fields_y)
     xmin = trunc(Int64,minimum(selected_view.x))

@@ -128,7 +128,7 @@ function coord_transform(point, degree;)
     return (x_rot, y_rot)
 end
 
-function rotate_axis(sp::SpaObj, degree)
+function rotate_axis(sp::AbstractSpaObj, degree)
     coord_cells=sp.cells
     coord_molecules=sp.molecules
     new_x=[]
