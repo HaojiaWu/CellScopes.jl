@@ -30,7 +30,7 @@ function ScaleObject(count_mtx::AbstractMatrix{T}; scale_max::T = 10.0, do_scale
     return count_mtx
 end
 
-function ScaleObject(ct_obj::NormCountObject; features::Union{Vector{String}, Nothing}=nothing, scale_max::Real = 10.0, do_scale::Bool = true, do_center::Bool = true)
+function ScaleObject(ct_obj::NormCountObject; features::Union{Vector{String}, Nothing}=nothing, scale_max::T = 10.0, do_scale::Bool = true, do_center::Bool = true) where {T<:Real}
     if features !== nothing
         ct_obj = SubsetCount(ct_obj; genes = features)
     end
@@ -39,7 +39,7 @@ function ScaleObject(ct_obj::NormCountObject; features::Union{Vector{String}, No
     return scale_obj
 end
 
-function ScaleObject(sc_obj::scRNAObject; features::Union{Vector{String}, Nothing}=nothing, scale_max::Real = 10.0, do_scale::Bool = true, do_center::Bool = true)
+function ScaleObject(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; features::Union{Vector{String}, Nothing}=nothing, scale_max::T = 10.0, do_scale::Bool = true, do_center::Bool = true) where {T<:Real}
     scale_obj = ScaleObject(sc_obj.normCount; features = features, scale_max=scale_max, do_scale=do_scale, do_center=do_center)
     sc_obj.scaleCount = scale_obj
     return sc_obj
@@ -65,14 +65,14 @@ function FindVariableGenes(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, span
     return vst_data, Features
 end
 
-function FindVariableGenes(sc_obj::scRNAObject; nFeatures::Int64 = 2000, span::Float64 = 0.3)
+function FindVariableGenes(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; nFeatures::Int64 = 2000, span::Float64 = 0.3)
     vst_data, Features = FindVariableGenes(sc_obj.rawCount;  nFeatures = nFeatures, span = span)
     var_obj = VariableGeneObject(Features, vst_data)
     sc_obj.varGene = var_obj
     return sc_obj
 end
 
-function RunPCA(sc_obj::scRNAObject; method=:svd, pratio = 1, maxoutdim = 10)
+function RunPCA(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; method=:svd, pratio = 1, maxoutdim = 10)
     features = sc_obj.varGene.var_gene
     if length(sc_obj.scaleCount.gene_name) == length(sc_obj.rawCount.gene_name)
         new_count = SubsetCount(sc_obj.scaleCount; genes = features)
@@ -92,7 +92,7 @@ function RunPCA(sc_obj::scRNAObject; method=:svd, pratio = 1, maxoutdim = 10)
     return sc_obj
 end
 
-function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
+function RunClustering(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
     if isdefined(sc_obj.dimReduction, :umap)
         indices = sc_obj.dimReduction.umap.knn_data
     else
@@ -102,8 +102,8 @@ function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(),
     end
     n = size(indices, 2)
     adj_mat = Array{Int64}(undef, n, n)
-    for i in 1:n
-        for j in 1:size(indices, 1)
+    @simd for i in 1:n
+        @simd for j in 1:size(indices, 1)
             adj_mat[indices[j, i], i] = 1
             adj_mat[i, indices[j, i]] = 1
         end
@@ -127,7 +127,7 @@ function RunClustering(sc_obj::scRNAObject; n_neighbors=30, metric=CosineDist(),
     return sc_obj
 end
 
-function RunTSNE(sc_obj::scRNAObject; ndim::Int64 = 2, reduce_dims::Int64 = 10, max_iter::Int64 = 2000, perplexit::Real = 30.0, pca_init::Bool = true,  seed_use::Int64 = 1234)
+function RunTSNE(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; ndim::Int64 = 2, reduce_dims::Int64 = 10, max_iter::Int64 = 2000, perplexit::Real = 30.0, pca_init::Bool = true,  seed_use::Int64 = 1234)
     Random.seed!(seed_use)
     pca_mat = sc_obj.dimReduction.pca.cell_embedding
     pca_mat = pca_mat[:, 1:reduce_dims]
@@ -138,7 +138,7 @@ function RunTSNE(sc_obj::scRNAObject; ndim::Int64 = 2, reduce_dims::Int64 = 10, 
     return sc_obj
 end
 
-function RunUMAP(sc_obj::scRNAObject; ndim::Int64 = 2, reduce_dims::Int64 = 10, n_neighbors::Int64 = 30, n_epochs=300, init = :spectral, metric = CosineDist(), min_dist::Real = 0.4, seed_use::Int64 = 1234)
+function RunUMAP(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; ndim::Int64 = 2, reduce_dims::Int64 = 10, n_neighbors::Int64 = 30, n_epochs=300, init = :spectral, metric = CosineDist(), min_dist::Real = 0.4, seed_use::Int64 = 1234)
     Random.seed!(seed_use)
     pca_mat = sc_obj.dimReduction.pca.cell_embedding
     pca_mat = pca_mat[:, 1:reduce_dims]
@@ -155,7 +155,7 @@ function RunUMAP(sc_obj::scRNAObject; ndim::Int64 = 2, reduce_dims::Int64 = 10, 
     return sc_obj
 end
 
-function FindMarkers(sc_obj::scRNAObject; cluster_1::Union{String, Nothing}=nothing, cluster_2::Union{String, Nothing}=nothing, 
+function FindMarkers(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; cluster_1::Union{String, Nothing}=nothing, cluster_2::Union{String, Nothing}=nothing, 
     anno::Union{String, Symbol}="cluster", expr_cutoff=0.0, min_pct=0.1, p_cutoff = 0.05, only_pos = true)
     if isa(cluster_1, Nothing)
         error("Please provide the name of the cell cluster for which you wish to obtain the differential genes. The \"cluster_1\" parameter cannot be left blank.")
@@ -197,7 +197,7 @@ function FindMarkers(sc_obj::scRNAObject; cluster_1::Union{String, Nothing}=noth
     return test_result
 end
 
-function FindAllMarkers(sc_obj::scRNAObject; anno::Union{String, Symbol}="cluster", expr_cutoff=0.0, min_pct=0.1, p_cutoff = 0.05, only_pos = true)
+function FindAllMarkers(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; anno::Union{String, Symbol}="cluster", expr_cutoff=0.0, min_pct=0.1, p_cutoff = 0.05, only_pos = true)
     if isa(anno, String)
         anno = Symbol(anno)
     end
@@ -205,7 +205,7 @@ function FindAllMarkers(sc_obj::scRNAObject; anno::Union{String, Symbol}="cluste
     all_markers = DataFrame()
     n=length(all_clusters)
     p = Progress(n, dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=40, color=:black)
-    for i in 1:n
+    @simd for i in 1:n
         cluster = all_clusters[i]
         cl1_obj = ExtractClusterCount(sc_obj, cluster; anno = anno)
         from = all_clusters

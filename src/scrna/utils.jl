@@ -72,7 +72,7 @@ function SubsetCount(ct_obj::T;
     return new_obj
 end
 
-function ExtractClusterCount(sc_obj::scRNAObject, cl; count_type = "norm", anno = Union{String, Symbol}="cluster")
+function ExtractClusterCount(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}, cl; count_type = "norm", anno = Union{String, Symbol}="cluster")
     df = sc_obj.clustData.clustering
     if isa(anno, String)
         anno = Symbol(anno)
@@ -136,7 +136,7 @@ function jitter(x)
     end
 end
 
-function VariableGenes(sc_obj::scRNAObject)
+function VariableGenes(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject})
     vargenes = pbmc.varGene.var_gene
     return vargenes
 end

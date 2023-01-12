@@ -1,4 +1,4 @@
-function DimGraph(sc_obj::scRNAObject; anno::Union{Symbol, String}="cluster", dim_type::String="umap",
+function DimGraph(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; anno::Union{Symbol, String}="cluster", dim_type::String="umap",
     anno_color::Union{Nothing, Dict} = nothing, cell_order::Union{Vector{String}, Nothing}=nothing,
     x_lims=nothing, y_lims=nothing,canvas_size=(600,500),stroke_width=0.5,stroke_color=:transparent, 
         marker_size=2, label_size=20, label_color="black", label_offset=(0,0), do_label=true, do_legend=true,
@@ -69,7 +69,7 @@ function DimGraph(sc_obj::scRNAObject; anno::Union{Symbol, String}="cluster", di
         MK.current_figure()
 end
 
-function HighlightCells(sc_obj::scRNAObject, cl::String; dim_type="umap", anno::Union{String,Symbol}="cluster",
+function HighlightCells(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}, cl::String; dim_type="umap", anno::Union{String,Symbol}="cluster",
     canvas_size=(600,500),stroke_width::Float64=0.1, stroke_color="black", cell_color::String="red",
     marker_size=2,x_lims=nothing, y_lims=nothing)
     dim_data, x_col, y_col = GetDimData(sc_obj.dimReduction, dim_type)
@@ -96,7 +96,7 @@ function HighlightCells(sc_obj::scRNAObject, cl::String; dim_type="umap", anno::
     MK.current_figure()
 end
 
-function GeneDimGraph(sc_obj::scRNAObject, genes; dim_type::String = "umap", count_type = "norm",x_lims=nothing, y_lims=nothing, marker_size=4, order=true,
+function GeneDimGraph(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}, genes; dim_type::String = "umap", count_type = "norm",x_lims=nothing, y_lims=nothing, marker_size=4, order=true,
     color_keys::Union{Vector{String}, Tuple{String,String,String}}=("black","yellow","red"), do_dimname::Bool=false,
         split_by::Union{String, Symbol, Nothing}=nothing, titlesize::Int64 = 24, height::Real = 500, width::Real = 500)
         dim_data, x_col, y_col = GetDimData(sc_obj.dimReduction, dim_type)
@@ -134,7 +134,7 @@ function GeneDimGraph(sc_obj::scRNAObject, genes; dim_type::String = "umap", cou
                 df_plt = gene_data[!, [x_col, y_col, gene]]
                 gene_expr = float.(df_plt[!, gene])
                 if sum(gene_expr) !== 0.0
-                    colors = get(c_map, gene_expr, :extrema)
+                    @inbounds colors = get(c_map, gene_expr, :extrema)
                     plt_color = "#" .* hex.(colors)
                     df_plt.plt_color = plt_color
                     if order
@@ -178,14 +178,14 @@ function GeneDimGraph(sc_obj::scRNAObject, genes; dim_type::String = "umap", cou
                     df_plt = gene_data[!, [x_col, y_col, gene, split_by]]
                     gene_expr = float.(df_plt[!, gene])
                     if sum(gene_expr) !== 0.0
-                        colors = get(c_map, gene_expr, :extrema)
+                        @inbounds colors = get(c_map, gene_expr, :extrema)
                         plt_color = "#" .* hex.(colors)
                         df_plt.plt_color = plt_color
                         if order
                             df_plt = sort(df_plt, Symbol(gene))
                         end
                     else
-                        plt_color = repeat([color_keys[1]], length(gene_expr))
+                        @inbounds plt_color = repeat([color_keys[1]], length(gene_expr))
                         df_plt.plt_color = plt_color
                     end
                     df_plt = filter(split_by => x -> x === group, df_plt)
@@ -214,7 +214,7 @@ function GeneDimGraph(sc_obj::scRNAObject, genes; dim_type::String = "umap", cou
         MK.current_figure()
 end
 
-function GeneDotGraph(sc_obj::scRNAObject, genes::Union{Vector, String},
+function GeneDotGraph(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}, genes::Union{Vector, String},
     cluster::Union{Symbol, String};count_type = "norm" , expr_cutoff::Union{Float64, Int64}=0, split_by::Union{String, Nothing}=nothing,
     x_title="Gene", y_title = "Cell type", cell_order::Union{Vector, String, Nothing}=nothing,
     fontsize::Int64 = 12, color_scheme::String="yelloworangered",reverse_color::Bool=false,
@@ -288,7 +288,7 @@ else
     return p
 end
 
-function GeneVlnGraph(sc_obj::scRNAObject, genes; 
+function GeneVlnGraph(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}, genes; 
     count_type::String ="norm", group_by::String = "cluster", 
     pt_size::Real =0.5, line_width::Real = 0, alpha::Real=1,
     height::Real = 800, width::Real = 500, do_legend::Bool = false,
