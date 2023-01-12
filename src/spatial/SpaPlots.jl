@@ -145,7 +145,7 @@ function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, genes; laye
     y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order=true,
     color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray96","red","red3"])
         if layer === "cells"
-                coord_cell=deepcopy(sp.metaData.cell)
+                coord_cell=deepcopy(sp.spmetaData.cell)
                 if isa(sp, VisiumObject)
                     marker_size=8
                 else
@@ -194,7 +194,7 @@ function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, genes; laye
                 MK.Colorbar(fig[1,length(genes)+1], label = "Gene expression", colormap = c_map)
                 MK.current_figure()
         elseif layer === "transcripts"
-                coord_molecules=deepcopy(sp.metaData.molecule)
+                coord_molecules=deepcopy(sp.spmetaData.molecule)
                 if isa(x_lims, Nothing)
                     x_lims=(minimum(coord_molecules[!, x_col])-0.05*maximum(coord_molecules[!, x_col]),1.05*maximum(coord_molecules[!, x_col]))
                 end
@@ -220,7 +220,7 @@ function SpatialGeneDimGraphSplit(sp::Union{CartanaObject, VisiumObject}, gene::
     x_col::Union{String, Symbol}="x", y_col::Union{String, Symbol}="y", 
     cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order=true, 
         color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray96","red","red3"])
-               coord_cell=deepcopy(sp.metaData.cell)
+               coord_cell=deepcopy(sp.spmetaData.cell)
                if isa(sp, VisiumObject)
                    marker_size=8
                else
@@ -277,13 +277,13 @@ function SpatialGeneDimGraphOverlay(sp::Union{CartanaObject, VisiumObject}, gene
     molecule_colors::Union{Vector, Nothing}=nothing, overlay::Bool=false,
     order::Bool=false,x_lims=nothing, y_lims=nothing, pt_size=5,
     fig_height::Union{String, Int64,Nothing}=nothing, fig_width::Union{String, Int64, Nothing}=nothing)
-    coord_cell=deepcopy(sp.metaData.cell)
+    coord_cell=deepcopy(sp.spmetaData.cell)
     if isdefine(sp, :normCount)
         norm_counts=sp.normCount
     else
          error("Please normalize the data first!")
     end
-    coord_molecules=sp.metaData.molecule
+    coord_molecules=sp.spmetaData.molecule
     if isa(x_lims, Nothing)
         x_lims=(minimum(sp.cells.x)-0.05*maximum(sp.cells.x),1.05*maximum(sp.cells.x))
     end
@@ -429,7 +429,7 @@ function SpatialDimGraph(sp::Union{CartanaObject, VisiumObject}, anno::Union{Sym
         marker_size=1, label_size=50, label_color="black", label_offset=(0,0), do_label=true, do_legend=true,
         legend_size = 10, legend_fontsize = 16
     )
-    anno_df=deepcopy(sp.metaData.cell)
+    anno_df=deepcopy(sp.spmetaData.cell)
     anno_df[!, anno] = string.(anno_df[!, anno])
     if isa(x_lims, Nothing)
         x_lims=(minimum(anno_df[!,x_col])-0.05*maximum(anno_df[!,x_col]),1.05*maximum(anno_df[!,x_col]))
@@ -496,7 +496,7 @@ end
 function SpatialHighlightCell(sp::Union{CartanaObject, VisiumObject}, cell_hightlight::String, group_label::Union{String,Symbol};
     canvas_size=(900,1000),stroke_width::Float64=0.1, stroke_color="black", cell_color::String="red",
     marker_size=2,x_lims=nothing, y_lims=nothing)
-    coord_cell=deepcopy(sp.metaData.cell)
+    coord_cell=deepcopy(sp.spmetaData.cell)
     if isa(x_lims, Nothing)
         x_lims=(minimum(sp.cells.x)-0.05*maximum(sp.cells.x),1.05*maximum(sp.cells.x))
     end
@@ -518,7 +518,7 @@ function SpatialHighlightCell(sp::Union{CartanaObject, VisiumObject}, cell_hight
 end
 
 function SpatialGeneRank(sp::CartanaObject, cluster::String, celltype::String; num_gene::Int64=20)
-    genes=unique(sp.metaData.molecule.gene)
+    genes=unique(sp.spmetaData.molecule.gene)
     all_df=DataFrame()
     for (i, gene) in enumerate(genes)
         gene_expr = SubsetCount(norm_counts; gene_name = gene)
@@ -541,7 +541,7 @@ function SpatialGeneRank(sp::CartanaObject, cluster::String, celltype::String; n
         y={:rank,axis={title="Ranking", grid=false}})
 end
 
-function plot_impute_gene(sp::AbstractSpaObj, gene::String; data_type="predicted", imp_type::String="SpaGE", c_map=nothing, x_lims=nothing,
+function SpatialImputeGenePlot(sp::CartanaObject, gene::String; data_type="predicted", imp_type::String="SpaGE", c_map=nothing, x_lims=nothing,
     y_lims=nothing, canvas_size=(1000,1200), marker_size=2, order=true)
     if data_type === "predicted"
         if imp_type === "tangram"
@@ -554,7 +554,7 @@ function plot_impute_gene(sp::AbstractSpaObj, gene::String; data_type="predicted
             error("imp_type can only be \"tangram\", \"SpaGE\" and \"gimVI\"")
         end
     elseif data_type === "measured"
-        gene_count=sp.norm_counts
+        gene_count=sp.normCount
     else
         error("data argument can only be \"predicted\" or \"measured\"")
     end
@@ -597,7 +597,7 @@ function plot_impute_gene(sp::AbstractSpaObj, gene::String; data_type="predicted
     MK.current_figure()
 end
 
-function SpatialImputeGraph(impute_list::Vector{CartanaObject}, genes::Vector{String}; data_type="predicted", imp_type::String="SpaGE",
+function SpatialImputeGenePlot(impute_list::Vector{CartanaObject}, genes::Vector{String}; data_type="predicted", imp_type::String="SpaGE",
     c_map=nothing, marker_size = 2, order=false, canvas_size=(500, 550))
     fig = MK.Figure(resolution=(canvas_size[1] * length(genes) ,canvas_size[2] * length(impute_list)))
     for j in 1:length(genes)
@@ -722,10 +722,9 @@ function PlotPoint(sp::Union{CartanaObject, VisiumObject}, pt::Vector{Float64};
     MK.current_figure()
 end
 
-function plot_depth(sp::AbstractSpaObj; celltype::Union{String, Symbol} = :celltype,
-    cmap=nothing, cell_select=nothing, 
-    fontsize=16, scale=0.8, markers=nothing)
-        cells=sp.cells
+function PlotDepth(sp::Union{CartanaObject, VisiumObject}; celltype::Union{String, Symbol} = :celltype,
+    cmap=nothing, cell_select=nothing, fontsize=16, scale=0.8, markers=nothing)
+        cells=sp.spmetaData.cell
         celltypes=cell_select
         if isa(celltypes, Nothing)
             cell_order=combine(groupby(cells, celltype),:depth=>mean=>:mean)
@@ -751,14 +750,18 @@ function plot_depth(sp::AbstractSpaObj; celltype::Union{String, Symbol} = :cellt
             MK.translate!(d, 0, 0, -0.05i)
         end
         if markers !== nothing
-        molecules=sp.molecules
-        cell2=sp.cells.cell2
-        molecules=filter(:cell2=> x-> x in cell2, molecules)
+        molecules=sp.spmetaData.molecule
+        cell2=sp.spmetaData.cell.cell
+        molecules=filter(:cell=> x-> x in cell2, molecules)
         from=cell2
         to=cells.depth
-        molecules2=mapvalues(molecules, :cell2, :depth,from, to)
+        molecules2=mapvalues(molecules, :cell, :depth, from, to)
         markers=reverse(markers)
-        ax3=MK.Axis(fig[1, 3]; xticklabelsize=(fontsize-4) ,yticklabelsize=fontsize, xticksvisible=true, xticklabelsvisible=true, yticksvisible=true, yticklabelsvisible=true,xgridvisible = false,ygridvisible = false, title = "Transcript distribution from cortex to papilla",titlesize = fontsize,yticks = ((1:length(markers)) ./ scale,  markers))
+        ax3=MK.Axis(fig[1, 3]; xticklabelsize=(fontsize-4) ,yticklabelsize=fontsize, 
+            xticksvisible=true, xticklabelsvisible=true, yticksvisible=true, 
+            yticklabelsvisible=true,xgridvisible = false,ygridvisible = false, 
+            title = "Transcript distribution from cortex to papilla",
+            titlesize = fontsize,yticks = ((1:length(markers)) ./ scale,  markers))
             for j in length(markers):-1:1
                 cell_density2=filter(:gene => x -> x == markers[j], molecules2)
                 cell_density2=float.(cell_density2.depth)
@@ -771,12 +774,12 @@ function plot_depth(sp::AbstractSpaObj; celltype::Union{String, Symbol} = :cellt
         MK.current_figure()
 end
 
-function plot_depth_animation(sp::AbstractSpaObj, celltypes::Vector{String}, markers::Vector{String}; 
+function PlotDepthAnimation(sp::Union{CartanaObject, VisiumObject}, celltypes::Vector{String}, markers::Vector{String}; 
     group_label="celltype",gene_label="gene", cmap=nothing, bg_color="gray94",fontsize=16, scale=0.8, canvas_size=(1800,600), file_name="animation.gif", framerate=30,
     titles=["Cells colored by kidney depth","Cell distribution from cortex to papilla","Transcript distribution from cortex to papilla"])
-        cells=sp.cells
+        cells=sp.spmetaData.cell
         cells=filter(group_label => x-> x in celltypes, cells)
-        molecules=sp.molecules
+        molecules=sp.spmetaData.molecule
         molecules=filter(gene_label => x-> x in markers, cells)
         fig = MK.Figure(resolution=canvas_size)
         ax1=MK.Axis(fig[1, 1]; xticklabelsize=(fontsize-4), yticklabelsize=fontsize, xticksvisible=false, xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,xgridvisible = false,ygridvisible = false,title = titles[1],titlesize = fontsize)
@@ -839,13 +842,13 @@ function plot_depth_animation(sp::AbstractSpaObj, celltypes::Vector{String}, mar
         end
 end
 
-function plot_gene_depth(sp::AbstractSpaObj, gene::String;
+function PlotGeneDepth(sp::Union{CartanaObject, VisiumObject}, gene::String;
     c_map::Union{String, Symbol, Nothing}=nothing, cell_col="cell2",
     canvas_size =(1200,300),marker_size=4,
     stroke_width=0.5,stroke_color="gray94",
     expr_cutoff=0.25,n_bins=50
 )
-    coord_cell=sp.cells
+    coord_cell=sp.spmetaData.cell
     norm_counts=sp.norm_counts
     norm_counts=norm_counts[:, append!(["gene"],coord_cell[!, cell_col])]
     gene_expr=norm_counts[(norm_counts.gene .== gene), :]
