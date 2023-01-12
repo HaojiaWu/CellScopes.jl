@@ -53,23 +53,7 @@ mutable struct SpaCoordObj <: AbstractImagingObj
     molCoord::Union{DataFrame, Nothing}
     polygonCoord::Union{DataFrame, Nothing}
     otherCoord::Union{DataFrame, Nothing}
-    function SpaCoordObj(coord_type::String; 
-        coord_data::Union{SpaCountObj, Nothing}=nothing
-        )
-        coord_obj = new(nothing, nothing, nothing, nothing)
-        if coord_type === "cell_coord"
-            coord_obj.cellCoord = coord_data
-        elseif coord_type === "mol_coord"
-            coord_obj.molCoord = coord_data
-        elseif coord_type === "polygon_coord"
-            coord_obj.polygonCoord = coord_data
-        elseif coord_type === "other_coord"
-            coord_obj.otherCoord = coord_data
-        else
-            error("coord_type can only be \"cell_coord\", \"mol_coord\" and \"polygon_coord\", or \"other_coord\"!")
-        end
-        return coord_obj
-    end
+    SpaCoordObj(cellCoord, molCoord, polygonCoord, otherCoord) = new(cellCoord, molCoord, polygonCoord, otherCoord)
 end
 
 mutable struct CartanaObject <: AbstractImagingObj
@@ -121,8 +105,7 @@ mutable struct CartanaObject <: AbstractImagingObj
         spObj.metaData = meta
         cell_coord = cell_data[!, [x_col, y_col]]
         mol_coord = molecule_data[!, [x_col, y_col]]
-        coord = SpaCoordObj("cell_coord"; cell_coord)
-        coord.molCoord = mol_coord
+        coord = SpaCoordObj(cell_coord, mol_coord, nothing, nothing)
         spObj.dimData = coord
         println("CartanaObject was successfully created!")
         return spObj
