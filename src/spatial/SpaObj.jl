@@ -90,9 +90,9 @@ mutable struct CartanaObject <: AbstractImagingObj
         count_mat = counts.count_mtx
         gene_name = counts.gene_name
         cell_name = counts.cell_name
-        gene_kept = (vec ∘ collect)(rowSum(count_mat).>= min_gene)
+        gene_kept = (vec ∘ collect)(rowSum(count_mat).>= min_cell)
         gene_name = gene_name[gene_kept]
-        cell_kept = (vec ∘ collect)(colSum(count_mat) .>= min_cell)
+        cell_kept = (vec ∘ collect)(colSum(count_mat) .>= min_gene)
         cell_name = cell_name[cell_kept]
         count_mat = count_mat[gene_kept, cell_kept]
         if isa(meta_data, Nothing)
@@ -138,9 +138,9 @@ mutable struct VisiumObject <: AbstractSequencingObj
         count_mat = raw_count.count_mtx
         genes = raw_count.gene_name
         cells = raw_count.cell_name
-        gene_kept = (vec ∘ collect)(rowSum(count_mat).> min_gene)
+        gene_kept = (vec ∘ collect)(rowSum(count_mat).> min_cell)
         genes = genes[gene_kept]
-        cell_kept = (vec ∘ collect)(colSum(count_mat) .> min_cell)
+        cell_kept = (vec ∘ collect)(colSum(count_mat) .> min_gene)
         cells = cells[cell_kept]
         count_mat = count_mat[gene_kept, cell_kept]
         if isa(meta_data, Nothing)

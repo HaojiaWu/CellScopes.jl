@@ -143,9 +143,9 @@ mutable struct scRNAObject <: AbstractSingleCell
         count_mat = raw_count.count_mtx
         genes = raw_count.gene_name
         cells = raw_count.cell_name
-        gene_kept = (vec ∘ collect)(rowSum(count_mat).> min_gene)
+        gene_kept = (vec ∘ collect)(rowSum(count_mat).> min_cell)
         genes = genes[gene_kept]
-        cell_kept = (vec ∘ collect)(colSum(count_mat) .> min_cell)
+        cell_kept = (vec ∘ collect)(colSum(count_mat) .> min_gene)
         cells = cells[cell_kept]
         count_mat = count_mat[gene_kept, cell_kept]
         if isa(meta_data, Nothing)

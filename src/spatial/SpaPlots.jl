@@ -71,68 +71,72 @@ function plot_transcript_polygons(sp::AbstractSpaObj;
     return MK.current_figure()
 end
 
-function dot_plot(sp::AbstractSpaObj, genes::Union{Vector, String},
+function SpatialDotGraph(sp::Union{CartanaObject, VisiumObject}, genes::Union{Vector, String},
     cluster::Union{Symbol, String};expr_cutoff::Union{Float64, Int64}=0, split_by::Union{String, Nothing}=nothing,
     x_title="Gene",y_title="Cell type", cell_order::Union{Vector, String, Nothing}=nothing,
     fontsize::Int64=12, color_scheme::String="yelloworangered",reverse_color::Bool=false,
     fig_height::Union{String, Int64}=400, fig_width::Union{String, Int64}=400)
-if isa(sp.norm_counts, Nothing)
-    error("Please normalize the data first!")
-end
-if isa(split_by, Nothing)
-    all_df=DataFrame()
-    for (i, gene) in enumerate(genes)
-        gene_expr=sp.norm_counts[(sp.norm_counts.gene .== gene), :]
-        df = DataFrame()
-        df.gene=convert(Array{Float64,1}, vec(Matrix(gene_expr))[2:end])
-        df.celltype=string.(sp.cells[!, cluster])
-        avg_expr=combine(groupby(df, :celltype), :gene => mean => :avg_exp);
-        perc_expr=combine(groupby(df, :celltype), :gene => function(x) countmap(x.>expr_cutoff)[:1]*100/length(x) end => :perc_exp)
-        df_plt=innerjoin(avg_expr, perc_expr, on = :celltype)
-        df_plt.gene.=gene
-        all_df=[all_df; df_plt]
+    if isdefine(sp, :normCount)
+        norm_counts=sp.normCount
+    else
+        error("Please normalize the data first!")
     end
-    p=all_df |> @vlplot(:circle,
-        x={"gene:o", title="Gene", scale={
-                domain=genes
-            }, axis={labelFontSize=fontsize,titleFontSize=fontsize}},
-        y={"celltype:o", title="Cell type",
-           scale={
-                domain=cell_order
-            }, axis={labelFontSize=fontsize,titleFontSize=fontsize}},
-        color={"avg_exp:q",
-                scale={scheme=color_scheme,reverse=reverse_color}},
-        size={"perc_exp:q", legend={symbolFillColor="transparent"}},
-        height= fig_height, width=fig_width
-        )
-else
-    all_df=DataFrame()
-    for (i, gene) in enumerate(genes)
-        gene_expr=sp.norm_counts[(sp.norm_counts.gene .== gene), :]
-        df = DataFrame()
-        df.gene=convert(Array{Float64,1}, vec(Matrix(gene_expr))[2:end])
-        df.celltype=string.(sp.cells[!, cluster])
-        df.split_by = string.(sp.cells[!, split_by])
-        avg_expr=combine(groupby(df, [:celltype, :split_by]), :gene => mean => :avg_exp)
-        perc_expr=combine(groupby(df, [:celltype,:split_by]), :gene => function(x) countmap(x.>expr_cutoff)[:1]*100/length(x) end => :perc_exp)
-        df_plt=innerjoin(avg_expr, perc_expr, on = [:celltype,:split_by])
-        df_plt.gene.=gene
-        all_df=[all_df; df_plt]
-    end
-    p=all_df |> @vlplot(:circle,
-        x={"gene:o", title="Gene", scale={
-                domain=genes
-            }, axis={labelFontSize=fontsize,titleFontSize=fontsize}},
-        y={"celltype:o", title="Cell type",
-           scale={
-                domain=cell_order
-            }, axis={labelFontSize=fontsize,titleFontSize=fontsize}},
-        color={"avg_exp:q",
-                scale={scheme=color_scheme,reverse=reverse_color}},
-        size={"perc_exp:q", legend={symbolFillColor="transparent"}},
-        column={:split_by, header={labelFontSize=16, title=nothing}},
-        height= fig_height, width=fig_width
-        )        
+    if isa(split_by, Nothing)
+        all_df=DataFrame()
+        for (i, gene) in enumerate(genes)
+            gene_expr = SubsetCount(norm_counts; gene_name = gene)
+            gene_expr = Float64.(gene_expr.count_mtx)
+            df = DataFrame()
+            df.gene=gene_expr
+            df.celltype=string.(sp.cells[!, cluster])
+            avg_expr=combine(groupby(df, :celltype), :gene => mean => :avg_exp);
+            perc_expr=combine(groupby(df, :celltype), :gene => function(x) countmap(x.>expr_cutoff)[:1]*100/length(x) end => :perc_exp)
+            df_plt=innerjoin(avg_expr, perc_expr, on = :celltype)
+            df_plt.gene.=gene
+            all_df=[all_df; df_plt]
+        end
+        p=all_df |> @vlplot(:circle,
+            x={"gene:o", title="Gene", scale={
+                    domain=genes
+                }, axis={labelFontSize=fontsize,titleFontSize=fontsize}},
+            y={"celltype:o", title="Cell type",
+            scale={
+                    domain=cell_order
+                }, axis={labelFontSize=fontsize,titleFontSize=fontsize}},
+            color={"avg_exp:q",
+                    scale={scheme=color_scheme,reverse=reverse_color}},
+            size={"perc_exp:q", legend={symbolFillColor="transparent"}},
+            height= fig_height, width=fig_width
+            )
+    else
+        all_df=DataFrame()
+        for (i, gene) in enumerate(genes)
+            gene_expr = SubsetCount(norm_counts; gene_name = gene)
+            gene_expr = Float64.(gene_expr.count_mtx)
+            df = DataFrame()
+            df.gene=gene_expr
+            df.celltype=string.(sp.cells[!, cluster])
+            df.split_by = string.(sp.cells[!, split_by])
+            avg_expr=combine(groupby(df, [:celltype, :split_by]), :gene => mean => :avg_exp)
+            perc_expr=combine(groupby(df, [:celltype,:split_by]), :gene => function(x) countmap(x.>expr_cutoff)[:1]*100/length(x) end => :perc_exp)
+            df_plt=innerjoin(avg_expr, perc_expr, on = [:celltype,:split_by])
+            df_plt.gene.=gene
+            all_df=[all_df; df_plt]
+        end
+        p=all_df |> @vlplot(:circle,
+            x={"gene:o", title="Gene", scale={
+                    domain=genes
+                }, axis={labelFontSize=fontsize,titleFontSize=fontsize}},
+            y={"celltype:o", title="Cell type",
+            scale={
+                    domain=cell_order
+                }, axis={labelFontSize=fontsize,titleFontSize=fontsize}},
+            color={"avg_exp:q",
+                    scale={scheme=color_scheme,reverse=reverse_color}},
+            size={"perc_exp:q", legend={symbolFillColor="transparent"}},
+            column={:split_by, header={labelFontSize=16, title=nothing}},
+            height= fig_height, width=fig_width
+            )        
     end
     return p
 end
@@ -389,7 +393,7 @@ function SpatialGeneDimGraphPolygon(sp::Union{CartanaObject, VisiumObject}, gene
     MK.current_figure()
 end
 
-function plot_cell_polygons(sp::AbstractSpaObj, column::Union{Symbol, String};
+function SpatialCellPolygons(sp::AbstractSpaObj, column::Union{Symbol, String};
     anno_color::Union{Nothing, Dict} = nothing,
     x_lims=nothing, y_lims=nothing,canvas_size=(5000,6000),stroke_width=0.5,stroke_color="black"
     )
@@ -399,8 +403,8 @@ function plot_cell_polygons(sp::AbstractSpaObj, column::Union{Symbol, String};
     if isa(y_lims, Nothing)
         y_lims=(minimum(sp.cells.y)-0.05*maximum(sp.cells.y),1.05*maximum(sp.cells.y))
     end
-    anno_df=sp.poly_anno
-    polygons=sp.polygons
+    anno_df=sp.spmetaData.polygon
+    polygons=sp.polygonData
     if isa(column, String)
         colum=Symbol(column)
     end
@@ -419,13 +423,13 @@ function plot_cell_polygons(sp::AbstractSpaObj, column::Union{Symbol, String};
     return MK.current_figure()
 end
 
-function dim_plot(sp::AbstractSpaObj, anno::Union{Symbol, String}; 
+function SpatialDimGraph(sp::Union{CartanaObject, VisiumObject}, anno::Union{Symbol, String}; 
     anno_color::Union{Nothing, Dict} = nothing, x_col::String = "x", y_col::String = "y", cell_order::Union{Vector{String}, Nothing}=nothing,
     x_lims=nothing, y_lims=nothing,canvas_size=(5000,6000),stroke_width=0.5,stroke_color=:transparent, 
         marker_size=1, label_size=50, label_color="black", label_offset=(0,0), do_label=true, do_legend=true,
         legend_size = 10, legend_fontsize = 16
     )
-    anno_df=deepcopy(sp.cells)
+    anno_df=deepcopy(sp.metaData.cell)
     anno_df[!, anno] = string.(anno_df[!, anno])
     if isa(x_lims, Nothing)
         x_lims=(minimum(anno_df[!,x_col])-0.05*maximum(anno_df[!,x_col]),1.05*maximum(anno_df[!,x_col]))
@@ -442,7 +446,7 @@ function dim_plot(sp::AbstractSpaObj, anno::Union{Symbol, String};
         c_map = "#" .* hex.(c_map)
         anno_color=Dict(cell_anno .=> c_map)
     end
-    anno_df=transform(anno_df, anno => ByRow(x -> anno_color[x]) => :new_color)
+    anno_df=DataFrames.transform(anno_df, anno => ByRow(x -> anno_color[x]) => :new_color)
     fig = MK.Figure(resolution=canvas_size)
     ax1 = MK.Axis(fig[1,1]; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
         xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
@@ -489,10 +493,10 @@ function dim_plot(sp::AbstractSpaObj, anno::Union{Symbol, String};
     return MK.current_figure()
 end
 
-function highlight_cells(sp::AbstractSpaObj, cell_hightlight::String, group_label::Union{String,Symbol};
+function SpatialHighlightCell(sp::Union{CartanaObject, VisiumObject}, cell_hightlight::String, group_label::Union{String,Symbol};
     canvas_size=(900,1000),stroke_width::Float64=0.1, stroke_color="black", cell_color::String="red",
     marker_size=2,x_lims=nothing, y_lims=nothing)
-    coord_cells=sp.cells
+    coord_cell=deepcopy(sp.metaData.cell)
     if isa(x_lims, Nothing)
         x_lims=(minimum(sp.cells.x)-0.05*maximum(sp.cells.x),1.05*maximum(sp.cells.x))
     end
@@ -513,13 +517,14 @@ function highlight_cells(sp::AbstractSpaObj, cell_hightlight::String, group_labe
     MK.current_figure()
 end
 
-function plot_gene_rank(sp::AbstractSpaObj, cluster::String, celltype::String; num_gene::Int64=20)
-    genes=unique(sp.molecules.gene)
+function SpatialGeneRank(sp::CartanaObject, cluster::String, celltype::String; num_gene::Int64=20)
+    genes=unique(sp.metaData.molecule.gene)
     all_df=DataFrame()
     for (i, gene) in enumerate(genes)
-        gene_expr=sp.counts[(sp.counts.gene .== gene), :]
+        gene_expr = SubsetCount(norm_counts; gene_name = gene)
+        gene_expr = Float64.(gene_expr.count_mtx)
         df = DataFrame()
-        df.gene=convert(Array{Float64,1}, vec(Matrix(gene_expr))[2:end])
+        df.gene=gene_expr
         df.celltype=string.(sp.cells[!, cluster])
         avg_expr=combine(groupby(df, :celltype), :gene => mean => :avg_exp);
         avg_expr.gene .= gene
@@ -592,7 +597,7 @@ function plot_impute_gene(sp::AbstractSpaObj, gene::String; data_type="predicted
     MK.current_figure()
 end
 
-function plot_impute_group(impute_list::Vector{AbstractSpaObj}, genes::Vector{String}; data_type="predicted", imp_type::String="SpaGE",
+function SpatialImputeGraph(impute_list::Vector{CartanaObject}, genes::Vector{String}; data_type="predicted", imp_type::String="SpaGE",
     c_map=nothing, marker_size = 2, order=false, canvas_size=(500, 550))
     fig = MK.Figure(resolution=(canvas_size[1] * length(genes) ,canvas_size[2] * length(impute_list)))
     for j in 1:length(genes)
@@ -652,10 +657,10 @@ function plot_impute_group(impute_list::Vector{AbstractSpaObj}, genes::Vector{St
     MK.current_figure()
 end
 
-function plot_fov(sp::AbstractSpaObj, n_fields_x::Int64, n_fields_y::Int64; 
+function PlotFov(sp::CartanaObject, n_fields_x::Int64, n_fields_y::Int64; 
     x_col::Union{String, Symbol}="x", y_col::Union{String, Symbol}="y", group_label::Union{Nothing, String}=nothing, 
     canvas_size=(4000,4000), cell_highlight::Union{Nothing, String, Number}=nothing, shield::Bool= false, marker_size::Union{Int64, Float64}=2)
-    df = sp.cells
+    df = sp.spmetaData.cell
     pts, centroids=split_field(df, n_fields_x, n_fields_y)
     centroids=convert.(Tuple{Float64, Float64},centroids)
     x_lims=(minimum(df[!, x_col])-0.05*maximum(df[!, x_col]),1.05*maximum(df[!, x_col]))
@@ -678,8 +683,8 @@ function plot_fov(sp::AbstractSpaObj, n_fields_x::Int64, n_fields_y::Int64;
         error("Please indicate the cell type name to be highlighted!")
     else
         df[!,group_label]=string.(df[!,group_label])
-        df=transform(df, group_label => ByRow(name -> name == cell_highlight ? name : "others") => :newcell)
-        df=transform(df, :newcell => ByRow(name -> name =="others" ? "gray98" : "black") => :newcolor)
+        df=DataFrames.transform(df, group_label => ByRow(name -> name == cell_highlight ? name : "others") => :newcell)
+        df=DataFrames.transform(df, :newcell => ByRow(name -> name =="others" ? "gray98" : "black") => :newcolor)
         MK.scatter!(df[!, x_col],df[!, y_col]; strokecolor="black", color=df.newcolor, strokewidth=0.5,label="", markersize=marker_size)
     end
     if shield
@@ -698,10 +703,10 @@ function plot_fov(sp::AbstractSpaObj, n_fields_x::Int64, n_fields_y::Int64;
     MK.current_figure()
 end
 
-function plot_point(sp::AbstractSpaObj, pt::Vector{Float64}; 
+function PlotPoint(sp::Union{CartanaObject, VisiumObject}, pt::Vector{Float64}; 
     canvas_size=(4000,4000),marker_size=60, text_size=100, 
     pt_color="red", text_color="blue", label="point")
-    df = sp.cells
+    df = sp.spmetaData.cell
     pt2=MK.Point2f0(pt[1], pt[2])
     x_lims=(minimum(df.x)-0.05*maximum(df.x),1.05*maximum(df.x))
     y_lims=(minimum(df.y)-0.05*maximum(df.y),1.05*maximum(df.y))

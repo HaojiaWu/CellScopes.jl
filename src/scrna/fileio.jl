@@ -10,9 +10,9 @@ function read_10x(tenx_dir::String;
         cells = string.(cells.Column1)
         genes = CSV.File(tenx_dir * "/genes.tsv", header = false) |> DataFrame
         genes = string.(genes.Column2)
-        gene_kept = (vec ∘ collect)(rowSum(counts).> min_gene)
+        gene_kept = (vec ∘ collect)(rowSum(counts).> min_cell)
         genes = genes[gene_kept]
-        cell_kept = (vec ∘ collect)(colSum(counts) .> min_cell)
+        cell_kept = (vec ∘ collect)(colSum(counts) .> min_gene)
         cells = cells[cell_kept]
         counts = counts[gene_kept, cell_kept]
         gene_kept, gene_removed = check_duplicates(genes)
