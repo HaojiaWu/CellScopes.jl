@@ -1,12 +1,12 @@
 
-function NormalizeObject(mtx::AbstractMatrix{T}; scale_factor::T = 10000, norm_method = "logarithm", pseudocount::T = 1) where {T<:Real}
+function NormalizeObject(mtx::AbstractMatrix{<:Real}; scale_factor = 10000, norm_method = "logarithm", pseudocount = 1)
     n= size(mtx)[2]
     sum_val = sum(mtx, dims=1)
     norm_count = hcat(Folds.collect(log.((mtx[:, i] ./ sum_val[i]) .* scale_factor .+ pseudocount) for i in 1:n)...)
     return norm_count
 end
 
-function NormalizeObject(ct_obj::RawCountObject; scale_factor::T = 10000, norm_method = "logarithm", pseudocount::T = 1) where {T<:Real}
+function NormalizeObject(ct_obj::RawCountObject; scale_factor = 10000, norm_method = "logarithm", pseudocount = 1)
     norm_count = NormalizeObject(ct_obj.count_mtx; scale_factor=scale_factor, norm_method=norm_method, pseudocount=pseudocount)
     norm_obj = NormCountObject(norm_count, ct_obj.cell_name, ct_obj.gene_name, scale_factor, norm_method, pseudocount)
     return norm_obj
@@ -18,7 +18,7 @@ function NormalizeObject(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}
     return sc_obj
 end
 
-function ScaleObject(count_mtx::AbstractMatrix{T}; scale_max::T = 10.0, do_scale::Bool = true, do_center::Bool = true) where {T<:Real}
+function ScaleObject(count_mtx::AbstractMatrix{<:Real}; scale_max = 10.0, do_scale::Bool = true, do_center::Bool = true)
     rmean = mean(count_mtx, dims=2)
     rsd = sqrt.(var(count_mtx, dims=2))
     count_mtx = hcat(Folds.collect(count_mtx[i, :] .- rmean[i] for i in 1:length(rmean))...)
@@ -30,7 +30,7 @@ function ScaleObject(count_mtx::AbstractMatrix{T}; scale_max::T = 10.0, do_scale
     return count_mtx
 end
 
-function ScaleObject(ct_obj::NormCountObject; features::Union{Vector{String}, Nothing}=nothing, scale_max::T = 10.0, do_scale::Bool = true, do_center::Bool = true) where {T<:Real}
+function ScaleObject(ct_obj::NormCountObject; features::Union{Vector{String}, Nothing}=nothing, scale_max = 10.0, do_scale::Bool = true, do_center::Bool = true)
     if features !== nothing
         ct_obj = SubsetCount(ct_obj; genes = features)
     end
@@ -39,7 +39,7 @@ function ScaleObject(ct_obj::NormCountObject; features::Union{Vector{String}, No
     return scale_obj
 end
 
-function ScaleObject(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; features::Union{Vector{String}, Nothing}=nothing, scale_max::T = 10.0, do_scale::Bool = true, do_center::Bool = true) where {T<:Real}
+function ScaleObject(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; features::Union{Vector{String}, Nothing}=nothing, scale_max = 10.0, do_scale::Bool = true, do_center::Bool = true)
     scale_obj = ScaleObject(sc_obj.normCount; features = features, scale_max=scale_max, do_scale=do_scale, do_center=do_center)
     sc_obj.scaleCount = scale_obj
     return sc_obj

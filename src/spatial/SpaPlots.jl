@@ -190,10 +190,7 @@ function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, genes; laye
                 MK.Colorbar(fig[1,length(genes)+1], label = "Gene expression", colormap = c_map)
                 MK.current_figure()
         elseif layer === "transcripts"
-                coord_molecules=deepcopy(sp.molecules)
-                if isa(norm_counts, Nothing)
-                    error("Please normalize the data first!")
-                end
+                coord_molecules=deepcopy(sp.metaData.molecule)
                 if isa(x_lims, Nothing)
                     x_lims=(minimum(coord_molecules[!, x_col])-0.05*maximum(coord_molecules[!, x_col]),1.05*maximum(coord_molecules[!, x_col]))
                 end
@@ -202,12 +199,11 @@ function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, genes; laye
                 end
                 fig = MK.Figure(resolution = (500 * length(genes) ,550))
                 for (i, gene) in enumerate(genes)
-                    df_plt=transform(coord_molecules, :gene => ByRow(name -> name == gene ? "red" : color_keys[1]) => :forcolor)
+                    df_plt = DataFrames.transform(coord_molecules, :gene => ByRow(name -> name == gene ? "red" : color_keys[1]) => :forcolor)
                     ax1 = MK.Axis(fig[1,i]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
                                 xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
                                 xgridvisible = false, ygridvisible = false,yreversed=false, title = genes[i], 
                                 titlesize = 26 * (0.5*length(genes)+0.5))
-                    
                     MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.forcolor, strokewidth = 0, markersize = marker_size)
                 end
                 MK.current_figure()
@@ -216,14 +212,21 @@ function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, genes; laye
         end
 end
 
-function feature_plot_split(scObj::AbstractSpaObj, gene::String, split_by::String; x_col::Union{String, Symbol}="x",
-    y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order=true, 
+function SpatialGeneDimGraphSplit(sp::Union{CartanaObject, VisiumObject}, gene::String, split_by::String; 
+    x_col::Union{String, Symbol}="x", y_col::Union{String, Symbol}="y", 
+    cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order=true, 
         color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray96","red","red3"])
-                coord_cell=deepcopy(scObj.cells)
-                norm_counts=deepcopy(scObj.norm_counts)
-                if isa(norm_counts, Nothing)
+               coord_cell=deepcopy(sp.metaData.cell)
+               if isa(sp, VisiumObject)
+                   marker_size=8
+               else
+                   marker_size=2
+               end
+               if isdefine(sp, :normCount)
+                   norm_counts=sp.normCount
+               else
                     error("Please normalize the data first!")
-                end
+               end
                 if isa(x_lims, Nothing)
                     x_lims=(minimum(coord_cell[!, x_col])-0.05*maximum(coord_cell[!, x_col]),1.05*maximum(coord_cell[!, x_col]))
                 end
@@ -231,11 +234,10 @@ function feature_plot_split(scObj::AbstractSpaObj, gene::String, split_by::Strin
                     y_lims=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
                 end
                 group_names = unique(coord_cell[!, split_by])
-                gene_expr = norm_counts[(norm_counts.gene .== gene), :]
-                df = DataFrame()
-                gene_expr = convert(Array{Float64,1}, vec(Matrix(gene_expr))[2:end])
-                gene_expr = float.(gene_expr)
+                gene_expr = SubsetCount(norm_counts; gene_name = gene)
+                gene_expr = Float64.(gene_expr.count_mtx)
                 gene_expr = unit_range_scale(gene_expr)
+                df = DataFrame()
                 df.gene_expr = gene_expr
                 coord_cell[!, cell_col] = string.(coord_cell[!, cell_col])
                 df[!, cell_col] = string.(coord_cell[!, cell_col])
@@ -266,17 +268,18 @@ function feature_plot_split(scObj::AbstractSpaObj, gene::String, split_by::Strin
                 MK.current_figure()
 end
 
-function feature_plot_overlaid(sp::AbstractSpaObj, genes; layer::String="cells",
+function SpatialGeneDimGraphOverlay(sp::Union{CartanaObject, VisiumObject}, genes; layer::String="cells",
     color_scheme::String="magma",reverse_color::Bool=true, 
     molecule_colors::Union{Vector, Nothing}=nothing, overlay::Bool=false,
     order::Bool=false,x_lims=nothing, y_lims=nothing, pt_size=5,
     fig_height::Union{String, Int64,Nothing}=nothing, fig_width::Union{String, Int64, Nothing}=nothing)
-    coord_cell=sp.cells
-    norm_counts=sp.norm_counts
-    if isa(norm_counts, Nothing)
-        error("Please normalize the data first!")
+    coord_cell=deepcopy(sp.metaData.cell)
+    if isdefine(sp, :normCount)
+        norm_counts=sp.normCount
+    else
+         error("Please normalize the data first!")
     end
-    coord_molecules=sp.molecules 
+    coord_molecules=sp.metaData.molecule
     if isa(x_lims, Nothing)
         x_lims=(minimum(sp.cells.x)-0.05*maximum(sp.cells.x),1.05*maximum(sp.cells.x))
     end
@@ -287,9 +290,9 @@ function feature_plot_overlaid(sp::AbstractSpaObj, genes; layer::String="cells",
     if layer==="cells"
         all_df=DataFrame()
         for (i, gene) in enumerate(genes)
-            gene_expr=norm_counts[(norm_counts.gene .== gene), :]
+            gene_expr = SubsetCount(norm_counts; gene_name = gene)
+            gene_expr = Float64.(gene_expr.count_mtx)
             df = DataFrame()
-            df.gene_expr=convert(Array{Float64,1}, vec(Matrix(gene_expr))[2:end])
             coord_cell.cell=string.(coord_cell.cell)
             df.cell=string.(coord_cell[!, :cell])
             df_plt=innerjoin(df, coord_cell, on = :cell)
@@ -362,10 +365,10 @@ function feature_plot_overlaid(sp::AbstractSpaObj, genes; layer::String="cells",
     end
 end
 
-function plot_gene_polygons(sp::AbstractSpaObj, gene::String, c_map;
+function SpatialGeneDimGraphPolygon(sp::Union{CartanaObject, VisiumObject}, gene::String, c_map;
     x_lims=nothing, y_lims=nothing,canvas_size=(5000,6000),stroke_width=0.5,stroke_color="black"
     )
-    gene_expr=sp.poly_norm
+    gene_expr=sp.polynormCount
     polygons=sp.polygons
     if isa(x_lims, Nothing)
         x_lims=(minimum(sp.cells.x)-0.05*maximum(sp.cells.x),1.05*maximum(sp.cells.x))
