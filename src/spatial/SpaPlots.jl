@@ -161,12 +161,10 @@ function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, genes; laye
                 c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
                 fig = MK.Figure(resolution = (500 * length(genes) ,550))
                 for (i, gene) in enumerate(genes)
-                    gene_expr = SubsetCount
-                    gene_expr = norm_counts[(norm_counts.gene .== gene), :]
-                    df = DataFrame()
-                    gene_expr = convert(Array{Float64,1}, vec(Matrix(gene_expr))[2:end])
-                    gene_expr = float.(gene_expr)
+                    gene_expr = SubsetCount(norm_counts; gene_name = gene)
+                    gene_expr = Float64.(gene_expr.count_mtx)
                     gene_expr = unit_range_scale(gene_expr)
+                    df = DataFrame()
                     df.gene_expr = gene_expr
                     coord_cell[!, cell_col] = string.(coord_cell[!, cell_col])
                     df[!, cell_col] = string.(coord_cell[!, cell_col])
