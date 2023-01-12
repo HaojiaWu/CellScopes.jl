@@ -123,7 +123,9 @@ function RunClustering(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; 
     metric_type = string(metric)
     cluster_obj = ClusteringObject(df, metric_type, adj_mat, result, res)
     sc_obj.clustData = cluster_obj
-    sc_obj.metaData.cluster = df.cluster
+    if isa(sc_obj, scRNAObject)
+        sc_obj.metaData.cluster = df.cluster
+    else 
     return sc_obj
 end
 

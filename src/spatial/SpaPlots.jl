@@ -137,18 +137,19 @@ else
     return p
 end
 
-function feature_plot(sp::AbstractSpaObj, genes; layer::String = "cells", x_col::Union{String, Symbol}="x",
+function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, genes; layer::String = "cells", x_col::Union{String, Symbol}="x",
     y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order=true,
     color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray96","red","red3"])
         if layer === "cells"
-                coord_cell=deepcopy(sp.cells)
-                norm_counts=deepcopy(sp.norm_counts)
+                coord_cell=deepcopy(sp.metaData.cell)
                 if isa(sp, VisiumObject)
                     marker_size=8
                 else
                     marker_size=2
                 end
-                if isa(norm_counts, Nothing)
+                if isdefine(sp, :normCount)
+                    norm_counts=sp.normCount
+                else
                     error("Please normalize the data first!")
                 end
                 if isa(x_lims, Nothing)
@@ -160,6 +161,7 @@ function feature_plot(sp::AbstractSpaObj, genes; layer::String = "cells", x_col:
                 c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
                 fig = MK.Figure(resolution = (500 * length(genes) ,550))
                 for (i, gene) in enumerate(genes)
+                    gene_expr = SubsetCount
                     gene_expr = norm_counts[(norm_counts.gene .== gene), :]
                     df = DataFrame()
                     gene_expr = convert(Array{Float64,1}, vec(Matrix(gene_expr))[2:end])

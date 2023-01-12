@@ -4,7 +4,7 @@ abstract type AbstractSpaObj <: AbstractCellScope end
 abstract type AbstractImagingObj <: AbstractSpaObj end
 abstract type AbstractSequencingObj <: AbstractSpaObj end
 
-mutable struct SpaCountObj <: AbstractSpaObj
+mutable struct SpaCountObj <: AbstractCount
     count_mtx::AbstractMatrix{<:Real}
     cell_name::Vector{String}
     gene_name::Vector{String}
@@ -60,7 +60,8 @@ mutable struct CartanaObject <: AbstractImagingObj
     rawCount::Union{RawCountObject, Nothing}
     normCount::Union{NormCountObject, Nothing}
     scaleCount::Union{ScaleCountObject, Nothing}
-    metaData::Union{SpaMetaObj, Nothing}
+    metaData::Union{DataFrame, Nothing}
+    spmetaData::Union{SpaMetaObj, Nothing}
     varGene::Union{VariableGeneObject, Nothing}
     dimReduction::Union{ReductionObject, Nothing}
     clustData::Union{ClusteringObject, Nothing}
@@ -71,7 +72,7 @@ mutable struct CartanaObject <: AbstractImagingObj
     imageData::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}}
     polygonData::Array{Array{Float64, 2}, 1}
     function CartanaObject(molecule_data::DataFrame, cell_data::DataFrame, counts::RawCountObject; 
-        prefix::Union{String, Nothing}=nothing, postfix::Union{String, Nothing}=nothing, 
+        prefix::Union{String, Nothing}=nothing, postfix::Union{String, Nothing}=nothing, meta_data::Union{DataFrame, Nothing} = nothing,
         min_gene::Int64=0, min_cell::Int64=0, x_col::Union{String, Symbol} = "x", 
         y_col::Union{String, Symbol} = "y", cell_col::Union{String, Symbol} = "cell")
         if prefix !== nothing
@@ -94,6 +95,11 @@ mutable struct CartanaObject <: AbstractImagingObj
         cell_kept = (vec ∘ collect)(colSum(count_mat) .>= min_cell)
         cell_name = cell_name[cell_kept]
         count_mat = count_mat[gene_kept, cell_kept]
+        if isa(meta_data, Nothing)
+            nFeatures = vec(colSum(count_mat))
+            nGenes = vec(sum(x->x>0, count_mat, dims=1))
+            meta_data = DataFrame(Cell_id = cell_name, nFeatures=nFeatures, nGenes = nGenes)
+        end
         counts = RawCountObject(count_mat, cell_name, gene_name)
         cell_check = Folds.collect(x in cell_name for x in cell_data[!, cell_col])
         cell_data = cell_data[cell_check, :]
@@ -101,13 +107,14 @@ mutable struct CartanaObject <: AbstractImagingObj
         molecule_data = molecule_data[cell_check, :]
         spObj=new(counts)
         meta = SpaMetaObj(cell_data, molecule_data, nothing)
-        spObj.metaData = meta
+        spObj.spmetaData = meta
         cell_coord = cell_data[!, [x_col, y_col]]
         mol_coord = molecule_data[!, [x_col, y_col]]
         coord = SpaCoordObj(cell_coord, mol_coord, nothing, nothing)
         spObj.coordData = coord
-        println("CartanaObject was successfully created!")
+        spObj.metaData = meta_data
         return spObj
+        println("CartanaObject was successfully created!")
     end
 end
 
@@ -115,7 +122,8 @@ mutable struct VisiumObject <: AbstractSequencingObj
     rawCount::Union{RawCountObject, Nothing}
     normCount::Union{NormCountObject, Nothing}
     scaleCount::Union{ScaleCountObject, Nothing}
-    metaData::Union{SpaMetaObj, Nothing}
+    metaData::Union{DataFrame, Nothing}
+    spmetaData::Union{SpaMetaObj, Nothing}
     varGene::Union{VariableGeneObject, Nothing}
     dimReduction::Union{ReductionObject, Nothing}
     clustData::Union{ClusteringObject, Nothing}
@@ -148,12 +156,18 @@ mutable struct VisiumObject <: AbstractSequencingObj
             println("Adding postfix " * postfix * " to all cells...")
             cellnames = raw_count.cell_name .* "_" .* postfix
         end
+        if isa(meta_data, Nothing)
+            nFeatures = vec(colSum(count_mat))
+            nGenes = vec(sum(x->x>0, count_mat, dims=1))
+            meta_data = DataFrame(Cell_id = cells, nFeatures=nFeatures, nGenes = nGenes)
+        end
         count_obj = RawCountObject(count_mat, cells, genes)
         visium_obj = new(count_obj)
         meta = SpaMetaObj(meta_data)
-        visium_obj.metaData = meta
-        println("VisiumObject was successfully created!")
+        visium_obj.spmetaData = meta
+        visium_obj.metaData = meta_data
         return visium_obj
+        println("VisiumObject was successfully created!")
     end
 end
 
