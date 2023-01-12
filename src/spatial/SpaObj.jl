@@ -100,8 +100,7 @@ mutable struct CartanaObject <: AbstractImagingObj
         cell_check = Folds.collect(x in cell_name for x in molecule_data[!, cell_col])
         molecule_data = molecule_data[cell_check, :]
         spObj=new(counts)
-        meta = SpaMetaObj(cell_data, nothing, nothing)
-        meta.molecule = molecule_data
+        meta = SpaMetaObj(cell_data, molecule_data, nothing)
         spObj.metaData = meta
         cell_coord = cell_data[!, [x_col, y_col]]
         mol_coord = molecule_data[!, [x_col, y_col]]

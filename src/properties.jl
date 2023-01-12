@@ -48,7 +48,7 @@ end
 
 function Base.show(io::IO, sp_obj::CartanaObject)
     println(io, "SpaObj in CellScopes.jl")
-    println("Genes x Cells = ", size(sp_obj.counts)[1], " x ", size(sp_obj.counts)[2])
+    println("Genes x Cells = ", size(sp_obj.rawCount)[1], " x ", size(sp_obj.rawCount)[2])
     println("Available data:")
     all_field = fieldnames(CartanaObject)
     for i in all_field
