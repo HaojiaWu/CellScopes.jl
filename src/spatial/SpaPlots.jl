@@ -195,13 +195,8 @@ function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, gene_list::
                         n_col1 = 2*(i-3*(n_rows-1))-1
                         n_col2 = 2*(i-3*(n_rows-1))
                     end
-                    if do_dimname
-                        x_label = names(df_plt)[1]
-                        y_label = names(df_plt)[2]
-                    else
-                        x_label = ""
-                        y_label = ""
-                    end
+                    x_label = ""
+                    y_label = ""
                     ax1 = MK.Axis(fig[n_row,n_col1]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
                     xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
                     xgridvisible = false, ygridvisible = false,yreversed=false, title = gene_list[i], 
