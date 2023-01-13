@@ -143,8 +143,14 @@ end
 
 function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, gene_list::Union{Vector{String}, Tuple{String}}; layer::String = "cells", x_col::Union{String, Symbol}="x",
     y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order::Bool=true, scale::Bool = false,titlesize::Int64=24, height::Real = 500, width::Real = 500,
-    color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray96","red","red3"])
-        if layer === "cells"
+    color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray94","orange","red3"])
+    n_rows = Int(ceil(length(gene_list) / 3))
+    if length(gene_list) < 4
+        n_cols = length(gene_list)
+    else
+        n_cols = 3
+    end
+    if layer === "cells"
                 coord_cell=deepcopy(sp.spmetaData.cell)
                 if isa(sp, VisiumObject)
                     marker_size=8
@@ -161,12 +167,6 @@ function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, gene_list::
                 end
                 if isa(y_lims, Nothing)
                     y_lims=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
-                end
-                n_rows = Int(ceil(length(gene_list) / 3))
-                if length(gene_list) < 4
-                    n_cols = length(gene_list)
-                else
-                    n_cols = 3
                 end
                 c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
                 fig = MK.Figure(resolution = (width * n_cols, height * n_rows))
@@ -201,12 +201,10 @@ function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, gene_list::
                         n_col1 = 2*(i-3*(n_rows-1))-1
                         n_col2 = 2*(i-3*(n_rows-1))
                     end
-                    x_label = ""
-                    y_label = ""
                     ax1 = MK.Axis(fig[n_row,n_col1]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
                     xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
                     xgridvisible = false, ygridvisible = false,yreversed=false, title = gene_list[i], 
-                    titlesize = titlesize, xlabel = x_label, ylabel = y_label, 
+                    titlesize = titlesize, xlabel = "", ylabel = "", 
                     xlabelsize = titlesize -4, ylabelsize = titlesize -4)
                     MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.plt_color, strokewidth = 0, markersize = marker_size)
                     MK.Colorbar(fig[n_row,n_col2], label = "", colormap = c_map, width=10, limits = (0, maximum(gene_expr)))
@@ -220,14 +218,28 @@ function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, gene_list::
                 if isa(y_lims, Nothing)
                     y_lims=(minimum(coord_molecules[!, y_col])-0.05*maximum(coord_molecules[!, y_col]),1.05*maximum(coord_molecules[!, y_col]))
                 end
-                fig = MK.Figure(resolution = (500 * length(gene_list) ,550))
+                fig = MK.Figure(resolution = (width * n_cols, height * n_rows))
                 for (i, gene) in enumerate(gene_list)
-                    df_plt = DataFrames.transform(coord_molecules, :gene => ByRow(name -> name == gene ? "red" : color_keys[1]) => :forcolor)
-                    ax1 = MK.Axis(fig[1,i]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
-                                xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
-                                xgridvisible = false, ygridvisible = false,yreversed=false, title = gene_list[i], 
-                                titlesize = 26 * (0.5*length(gene_list)+0.5))
-                    MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.forcolor, strokewidth = 0, markersize = marker_size)
+                    n_row = Int(ceil(i/3))
+                    if i < 4
+                        n_col = i
+                    else
+                        n_col = i-3*(n_rows-1)
+                    end
+                    df_plt = DataFrames.transform(coord_molecules, :gene => ByRow(name -> name == gene ? color_keys[3] : color_keys[1]) => :forcolor)
+                    df_plt1 = filter(:forcolor => x -> x == color_keys[1], df_plt)
+                    df_plt2 = filter(:forcolor => x -> x == color_keys[3], df_plt)
+                    ax1 = MK.Axis(fig[n_row,n_col]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
+                    xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
+                    xgridvisible = false, ygridvisible = false,yreversed=false, title = gene_list[i], 
+                    titlesize = titlesize, xlabel = "", ylabel = "", 
+                    xlabelsize = titlesize -4, ylabelsize = titlesize -4)
+                    if order
+                        MK.scatter!(ax1, df_plt1[!, x_col], df_plt1[!, y_col]; color = df_plt1.forcolor, strokewidth = 0, markersize = marker_size)
+                        MK.scatter!(ax1, df_plt2[!, x_col], df_plt2[!, y_col]; color = df_plt2.forcolor, strokewidth = 0, markersize = marker_size)
+                    else
+                        MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.forcolor, strokewidth = 0, markersize = marker_size)
+                    end
                 end
                 MK.current_figure()
         else
