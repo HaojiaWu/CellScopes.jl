@@ -177,7 +177,7 @@ function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, gene_list::
                     df_plt = innerjoin(df, coord_cell, on = cell_col)
                     df_plt.gene .= gene
                     if sum(gene_expr) > 0.0
-                        colors = get.(Ref(c_map), (gene_expr .- minimum(gene_expr)) ./ maximum(gene_expr))
+                        colors = get(c_map, gene_expr, :extrema)
                         plt_color = "#" .* hex.(colors)
                         df_plt.plt_color = plt_color
                         if order
