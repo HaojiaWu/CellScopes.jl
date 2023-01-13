@@ -84,7 +84,7 @@ function SpatialDotGraph(sp::Union{CartanaObject, VisiumObject}, genes::Union{Ve
     if isa(split_by, Nothing)
         all_df=DataFrame()
         for (i, gene) in enumerate(genes)
-            gene_expr = SubsetCount(norm_counts; genes = gene)
+            gene_expr = SubsetCount(norm_counts; genes = [gene])
             gene_expr = Float64.(gene_expr.count_mtx)
             df = DataFrame()
             df.gene=gene_expr
@@ -111,7 +111,7 @@ function SpatialDotGraph(sp::Union{CartanaObject, VisiumObject}, genes::Union{Ve
     else
         all_df=DataFrame()
         for (i, gene) in enumerate(genes)
-            gene_expr = SubsetCount(norm_counts; genes = gene)
+            gene_expr = SubsetCount(norm_counts; genes = [gene])
             gene_expr = Float64.(gene_expr.count_mtx)
             df = DataFrame()
             df.gene=gene_expr
@@ -165,7 +165,7 @@ function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, gene_list::
                 c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
                 fig = MK.Figure(resolution = (500 * length(gene_list) ,550))
                 for (i, gene) in enumerate(gene_list)
-                    gene_expr = SubsetCount(norm_counts; genes = gene)
+                    gene_expr = SubsetCount(norm_counts; genes = [gene])
                     gene_expr = Float64.(gene_expr.count_mtx)
                     gene_expr = unit_range_scale(gene_expr)
                     df = DataFrame()
@@ -238,7 +238,7 @@ function SpatialGeneDimGraphSplit(sp::Union{CartanaObject, VisiumObject}, gene::
                     y_lims=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
                 end
                 group_names = unique(coord_cell[!, split_by])
-                gene_expr = SubsetCount(norm_counts; genes = gene)
+                gene_expr = SubsetCount(norm_counts; genes = [gene])
                 gene_expr = Float64.(gene_expr.count_mtx)
                 gene_expr = unit_range_scale(gene_expr)
                 df = DataFrame()
@@ -294,7 +294,7 @@ function SpatialGeneDimGraphOverlay(sp::Union{CartanaObject, VisiumObject}, gene
     if layer==="cells"
         all_df=DataFrame()
         for (i, gene) in enumerate(genes)
-            gene_expr = SubsetCount(norm_counts; genes = gene)
+            gene_expr = SubsetCount(norm_counts; genes = [gene])
             gene_expr = Float64.(gene_expr.count_mtx)
             df = DataFrame()
             coord_cell.cell=string.(coord_cell.cell)
@@ -381,7 +381,7 @@ function SpatialGeneDimGraphPolygon(sp::Union{CartanaObject, VisiumObject}, gene
         y_lims=(minimum(sp.spmetaData.cell.y)-0.05*maximum(sp.spmetaData.cell.y),1.05*maximum(sp.spmetaData.cell.y))
     end
     cs = c_map
-    gene_val = SubsetCount(gene_expr; genes = gene)
+    gene_val = SubsetCount(gene_expr; genes = [gene])
     gene_val = Float64.(gene_val.count_mtx)
     colors = get.(Ref(cs), (gene_val .- minimum(gene_val)) ./ maximum(gene_val))
     plt_color="#" .* hex.(colors)
@@ -523,7 +523,7 @@ function SpatialGeneRank(sp::CartanaObject, cluster::String, celltype::String; n
     all_df=DataFrame()
     for (i, gene) in enumerate(genes)
         norm_counts = sp.normCount
-        gene_expr = SubsetCount(norm_counts; genes = gene)
+        gene_expr = SubsetCount(norm_counts; genes = [gene])
         gene_expr = Float64.(gene_expr.count_mtx)
         df = DataFrame()
         df.gene=gene_expr
@@ -561,11 +561,11 @@ function SpatialImputeGenePlot(sp::CartanaObject, gene::String; data_type="predi
         error("data argument can only be \"predicted\" or \"measured\"")
     end
     df3=deepcopy(sp.spmetaData.cell)
-    all_genes = gene_count.gene
+    all_genes = gene_count.gene_name
     if !(gene in all_genes)
-        gene_expr=zeros(ncol(gene_count))
+        gene_expr=zeros(ncol(gene_count.count_mtx))
     else
-        gene_expr = SubsetCount(gene_count; genes = gene)
+        gene_expr = SubsetCount(gene_count; genes = [gene])
         gene_expr = Float64.(gene_expr.count_mtx)
         gene_expr=scale_data(gene_expr)
     end
@@ -616,10 +616,10 @@ function SpatialImputeGenePlot(impute_list::Vector{CartanaObject}, genes::Vector
                 else
                     error("imp_type can only be \"tangram\", \"SpaGE\" and \"gimVI\"")
                 end
-                gene_expr= SubsetCount(impute_data; genes = gene)
+                gene_expr= SubsetCount(impute_data; genes = [gene])
                 gene_expr = Float64.(gene_expr.count_mtx)
             elseif data_type === "measured"
-                gene_expr=SubsetCount(impute_list[i].normCount; genes = gene)
+                gene_expr=SubsetCount(impute_list[i].normCount; genes = [gene])
                 gene_expr = Float64.(gene_expr.count_mtx)
             else
                 error("data_type can only be \"predicted\" or \"measured\"")
@@ -853,7 +853,7 @@ function PlotGeneDepth(sp::Union{CartanaObject, VisiumObject}, gene::String;
 )
     coord_cell=sp.spmetaData.cell
     norm_counts=sp.normCount
-    gene_expr = SubsetCount(norm_counts; genes = gene)
+    gene_expr = SubsetCount(norm_counts; genes = [gene])
     gene_expr = Float64.(gene_expr.count_mtx)
     df = DataFrame()
     df.gene_expr=gene_expr
@@ -961,14 +961,14 @@ function CompareGeneImputation(sp1::CartanaObject,sp2::CartanaObject, genes::Uni
     end
         all_df=DataFrame()
         for (i, gene) in enumerate(genes)
-            gene_expr= SubsetCount(ct_mtx1; genes = gene)
+            gene_expr= SubsetCount(ct_mtx1; genes = [gene])
             gene_expr = Float64.(gene_expr.count_mtx)
             df = DataFrame()
             df.gene=gene_expr
             df.celltype=string.(sp1.spmetaData.cell[!, cluster])
             avg_expr1=combine(groupby(df, :celltype), :gene => mean => :avg_exp)
             avg_expr1.group .= sp1_name
-            gene_expr= SubsetCount(ct_mtx2; genes = gene)
+            gene_expr= SubsetCount(ct_mtx2; genes = [gene])
             gene_expr = Float64.(gene_expr.count_mtx)
             df = DataFrame()
             df.gene=gene_expr
@@ -1024,7 +1024,7 @@ function PlotHeatmap(sp::CartanaObject, genes::Union{Vector, String},
     if isa(split_by, Nothing)
         all_df=DataFrame()
         for (i, gene) in enumerate(genes)
-            gene_expr= SubsetCount(ct_mtx; genes = gene)
+            gene_expr= SubsetCount(ct_mtx; genes = [gene])
             gene_expr = Float64.(gene_expr.count_mtx)
             df = DataFrame()
             df.gene=gene_expr
@@ -1053,7 +1053,7 @@ function PlotHeatmap(sp::CartanaObject, genes::Union{Vector, String},
     else
         all_df=DataFrame()
         for (i, gene) in enumerate(genes)
-            gene_expr= SubsetCount(ct_mtx; genes = gene)
+            gene_expr= SubsetCount(ct_mtx; genes = [gene])
             gene_expr = Float64.(gene_expr.count_mtx)
             df = DataFrame()
             df.gene=unit_range_scale(gene_expr)
@@ -1109,7 +1109,7 @@ function VisiumCartanaOverlayGene(vs::VisiumObject, sp::CartanaObject, gene; vs_
     sp_markersize=2, vs_title="Visium", sp_title="Cartana", order=true)
     vs_count=deepcopy(vs.normCount)
     sp_count=deepcopy(sp.normCount)
-    gene_expr= SubsetCount(vs_count; genes = gene)
+    gene_expr= SubsetCount(vs_count; genes = [gene])
     gene_expr = Float64.(gene_expr.count_mtx)
     gene_expr=unit_range_scale(gene_expr)
     df1=DataFrame()
@@ -1122,7 +1122,7 @@ function VisiumCartanaOverlayGene(vs::VisiumObject, sp::CartanaObject, gene; vs_
     df1.color2=plt_color2
     df1.x = vs.spmetaData.cell[!, vs_x]
     df1.y = vs.spmetaData.cells[!, vs_y]
-    gene_expr= SubsetCount(sp_count; genes = gene)
+    gene_expr= SubsetCount(sp_count; genes = [gene])
     gene_expr = Float64.(gene_expr.count_mtx)
     gene_expr=unit_range_scale(gene_expr)
     df2=DataFrame()
