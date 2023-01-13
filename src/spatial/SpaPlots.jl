@@ -780,68 +780,69 @@ end
 function PlotDepthAnimation(sp::Union{CartanaObject, VisiumObject}, celltypes::Vector{String}, markers::Vector{String}; 
     group_label="celltype",gene_label="gene", cmap=nothing, bg_color="gray94",fontsize=16, scale=0.8, canvas_size=(1800,600), file_name="animation.gif", framerate=30,
     titles=["Cells colored by kidney depth","Cell distribution from cortex to papilla","Transcript distribution from cortex to papilla"])
-        cells=sp.spmetaData.cell
-        cells=filter(group_label => x-> x in celltypes, cells)
-        molecules=sp.spmetaData.molecule
-        molecules=filter(gene_label => x-> x in markers, cells)
-        fig = MK.Figure(resolution=canvas_size)
-        ax1=MK.Axis(fig[1, 1]; xticklabelsize=(fontsize-4), yticklabelsize=fontsize, xticksvisible=false, xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,xgridvisible = false,ygridvisible = false,title = titles[1],titlesize = fontsize)
-        ax2=MK.Axis(fig[1, 3]; xticklabelsize=(fontsize-4) ,yticklabelsize=fontsize, xticksvisible=true, xticklabelsvisible=true, yticksvisible=true, yticklabelsvisible=true,xgridvisible = false,ygridvisible = false, title = titles[2],titlesize = fontsize,yticks = ((1:length(celltypes)) ./ scale,  celltypes))
-        ax3=MK.Axis(fig[1, 2]; xticklabelsize=(fontsize-4) ,yticklabelsize=fontsize, xticksvisible=true, xticklabelsvisible=true, yticksvisible=true, yticklabelsvisible=true,xgridvisible = false,ygridvisible = false, title = titles[3],titlesize = fontsize,yticks = ((1:length(markers)) ./ scale,  markers))
-        MK.scatter!(ax1, cells.x, cells.y; color = bg_color, markersize = 2)
-        celltypes=reverse(celltypes)
-        for i in length(celltypes):-1:1
-            celltype=celltypes[i]
-            cell_density0=filter(:celltype => x -> x == celltype, cells)
-            cell_density0=float.(cell_density0.depth)
-            d0 = MK.density!(ax2, cell_density0,npoints=200, offset = i / scale, 
+    cells=sp.spmetaData.cell
+    cells=filter(group_label => x-> x in celltypes, cells)
+    molecules=sp.spmetaData.molecule
+    molecules=filter(gene_label => x-> x in markers, cells)
+    fig = MK.Figure(resolution=canvas_size)
+    ax1=MK.Axis(fig[1, 1]; xticklabelsize=(fontsize-4), yticklabelsize=fontsize, xticksvisible=false, xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,xgridvisible = false,ygridvisible = false,title = titles[1],titlesize = fontsize)
+    ax2=MK.Axis(fig[1, 3]; xticklabelsize=(fontsize-4) ,yticklabelsize=fontsize, xticksvisible=true, xticklabelsvisible=true, yticksvisible=true, yticklabelsvisible=true,xgridvisible = false,ygridvisible = false, title = titles[2],titlesize = fontsize,yticks = ((1:length(celltypes)) ./ scale,  celltypes))
+    ax3=MK.Axis(fig[1, 2]; xticklabelsize=(fontsize-4) ,yticklabelsize=fontsize, xticksvisible=true, xticklabelsvisible=true, yticksvisible=true, yticklabelsvisible=true,xgridvisible = false,ygridvisible = false, title = titles[3],titlesize = fontsize,yticks = ((1:length(markers)) ./ scale,  markers))
+    MK.scatter!(ax1, cells.x, cells.y; color = bg_color, markersize = 2)
+    celltypes=reverse(celltypes)
+    for i in length(celltypes):-1:1
+        celltype=celltypes[i]
+        cell_density0=filter(:celltype => x -> x == celltype, cells)
+        cell_density0=float.(cell_density0.depth)
+        d0 = MK.density!(ax2, cell_density0,npoints=200, offset = i / scale, 
+            color = bg_color, strokewidth = 1, strokecolor = :black)
+        MK.translate!(d0, 0, 0, -0.05i)
+    end
+    markers = reverse(markers)
+    for j in length(markers):-1:1
+        mol_density0=filter(gene_label => x -> x == markers[j], molecules)
+        mol_density0=float.(mol_density0.depth)
+        f0 = MK.density!(ax3, mol_density0,npoints=200, offset = j / scale,
                 color = bg_color, strokewidth = 1, strokecolor = :black)
-            MK.translate!(d0, 0, 0, -0.05i)
-        end
-        markers = reverse(markers)
-        for j in length(markers):-1:1
-            mol_density0=filter(gene_label => x -> x == markers[j], molecules)
-            mol_density0=float.(mol_density0.depth)
-            f0 = MK.density!(ax3, mol_density0,npoints=200, offset = j / scale,
-                    color = bg_color, strokewidth = 1, strokecolor = :black)
-            MK.translate!(f0, 0, 0, -0.05j)
-        end
-        timestamps = range(0.01, 1, length=framerate)
-        MK.record(fig, file_name, timestamps; framerate = framerate) do t
-                cells_t=filter(:depth => x -> x < t, cells)
-                cell_stats_t=countmap(cells_t.celltype)
-                depth_val = cells_t.depth
-                depth_val=float.(depth_val)
-                cs = ColorSchemes.ColorScheme([colorant"#0d2232",colorant"#1b326e",colorant"#473899",colorant"#6e4b8e",colorant"#935c87",colorant"#a6606c",colorant"#dc7f60",colorant"#eea152",colorant"#f2cd5d", colorant"#ecf975"])
+        MK.translate!(f0, 0, 0, -0.05j)
+    end
+    timestamps = range(0.01, 1, length=framerate)
+    MK.record(fig, file_name, timestamps; framerate = framerate) do t
+            cells_t=filter(:depth => x -> x < t, cells)
+            cell_stats_t=countmap(cells_t.celltype)
+            depth_val = cells_t.depth
+            depth_val=float.(depth_val)
+            cs = ColorSchemes.ColorScheme([colorant"#0d2232",colorant"#1b326e",colorant"#473899",colorant"#6e4b8e",colorant"#935c87",colorant"#a6606c",colorant"#dc7f60",colorant"#eea152",colorant"#f2cd5d", colorant"#ecf975"])
+            colors = get.(Ref(cs), (depth_val .- minimum(depth_val)) ./ maximum(depth_val))
+            cell_colors="#" .* hex.(colors)
+            MK.scatter!(ax1, cells_t.x, cells_t.y; color = cell_colors, markersize = 2)
+            for i in 13:-1:1
+                cell_density=filter(:celltype => x -> x == celltypes[i], cells)
+                cell_density=float.(cell_density.depth)
+                cs = ColorSchemes.ColorScheme([colorant"#0d2232",colorant"#1b326e",colorant"#473899",colorant"#6e4b8e",colorant"#935c87",colorant"#a6606c",colorant"#dc7f60",colorant"#eea152",colorant"#f2cd5d", colorant"#ecf975", "colorant" * "\"" * bg_color * "\""])
+                sort!(depth_val)
                 colors = get.(Ref(cs), (depth_val .- minimum(depth_val)) ./ maximum(depth_val))
                 cell_colors="#" .* hex.(colors)
-                MK.scatter!(ax1, cells_t.x, cells_t.y; color = cell_colors, markersize = 2)
-                for i in 13:-1:1
-                    cell_density=filter(:celltype => x -> x == celltypes[i], cells)
-                    cell_density=float.(cell_density.depth)
-                    cs = ColorSchemes.ColorScheme([colorant"#0d2232",colorant"#1b326e",colorant"#473899",colorant"#6e4b8e",colorant"#935c87",colorant"#a6606c",colorant"#dc7f60",colorant"#eea152",colorant"#f2cd5d", colorant"#ecf975", "colorant" * "\"" * bg_color * "\""])
-                    sort!(depth_val)
-                    colors = get.(Ref(cs), (depth_val .- minimum(depth_val)) ./ maximum(depth_val))
-                    cell_colors="#" .* hex.(colors)
-                    d = MK.density!(ax2, cell_density,npoints=200, offset = i / 0.5, 
-                        color = :x, colormap = cell_colors, colorrange = (0, t),
+                d = MK.density!(ax2, cell_density,npoints=200, offset = i / 0.5, 
+                    color = :x, colormap = cell_colors, colorrange = (0, t),
+                    strokewidth = 1, strokecolor = :black)
+                MK.translate!(d, 0, 0, -0.05i)
+            end
+            molecule_t=filter(:depth=> x-> x < t, molecules2)
+            for j in 13:-1:1
+                mol_density=filter(gene_label => x -> x == markers[j], molecules)
+                mol_density=float.(mol_density.depth)
+                cs = ColorSchemes.ColorScheme([colorant"#0d2232",colorant"#1b326e",colorant"#473899",colorant"#6e4b8e",colorant"#935c87",colorant"#a6606c",colorant"#dc7f60",colorant"#eea152",colorant"#f2cd5d", colorant"#ecf975", "colorant" * "\"" * bg_color * "\""])
+                depth_val=molecule_t.depth
+                sort!(depth_val)
+                colors = get.(Ref(cs), (depth_val .- minimum(depth_val)) ./ maximum(depth_val))
+                mol_colors="#" .* hex.(colors)
+                f = MK.density!(ax3, mol_density,npoints=200, offset = j / 0.5,
+                        color = :x, colormap = mol_colors, colorrange = (0, t),
                         strokewidth = 1, strokecolor = :black)
-                    MK.translate!(d, 0, 0, -0.05i)
-                end
-                molecule_t=filter(:depth=> x-> x < t, molecules2)
-                for j in 13:-1:1
-                    mol_density=filter(gene_label => x -> x == markers[j], molecules)
-                    mol_density=float.(mol_density.depth)
-                    cs = ColorSchemes.ColorScheme([colorant"#0d2232",colorant"#1b326e",colorant"#473899",colorant"#6e4b8e",colorant"#935c87",colorant"#a6606c",colorant"#dc7f60",colorant"#eea152",colorant"#f2cd5d", colorant"#ecf975", "colorant" * "\"" * bg_color * "\""])
-                    depth_val=molecule_t.depth
-                    sort!(depth_val)
-                    colors = get.(Ref(cs), (depth_val .- minimum(depth_val)) ./ maximum(depth_val))
-                    mol_colors="#" .* hex.(colors)
-                    f = MK.density!(ax3, mol_density,npoints=200, offset = j / 0.5,
-                            color = :x, colormap = mol_colors, colorrange = (0, t),
-                            strokewidth = 1, strokecolor = :black)
-                    MK.translate!(f, 0, 0, -0.05j)
-                end
+                MK.translate!(f, 0, 0, -0.05j)
+            end
+        end
 end
 
 function PlotGeneDepth(sp::Union{CartanaObject, VisiumObject}, gene::String;
