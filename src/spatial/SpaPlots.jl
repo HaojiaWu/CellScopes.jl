@@ -187,11 +187,28 @@ function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, gene_list::
                         plt_color = repeat([color_keys[1]], length(gene_expr))
                         df_plt.plt_color = plt_color
                     end
-                    ax1 = MK.Axis(fig[1,i]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
-                                        xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
-                                        xgridvisible = false, ygridvisible = false,yreversed=false, title = gene_list[i], 
-                                        titlesize = 26)
+                    n_row = Int(ceil(i/3))
+                    if i < 4
+                        n_col1 = 2i-1
+                        n_col2 = 2i
+                    else
+                        n_col1 = 2*(i-3*(n_rows-1))-1
+                        n_col2 = 2*(i-3*(n_rows-1))
+                    end
+                    if do_dimname
+                        x_label = names(df_plt)[1]
+                        y_label = names(df_plt)[2]
+                    else
+                        x_label = ""
+                        y_label = ""
+                    end
+                    ax1 = MK.Axis(fig[n_row,n_col1]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
+                    xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
+                    xgridvisible = false, ygridvisible = false,yreversed=false, title = gene_list[i], 
+                    titlesize = titlesize, xlabel = x_label, ylabel = y_label, 
+                    xlabelsize = titlesize -4, ylabelsize = titlesize -4)
                     MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.plt_color, strokewidth = 0, markersize = marker_size)
+                    MK.Colorbar(fig[n_row,n_col2], label = "", colormap = c_map, width=10, limits = (0, maximum(gene_expr)))
                 end
                 MK.Colorbar(fig[1,length(gene_list)+1], label = "Gene expression", colormap = c_map)
                 MK.current_figure()
