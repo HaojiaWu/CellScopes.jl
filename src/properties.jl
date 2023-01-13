@@ -56,7 +56,6 @@ function Base.show(io::IO, sp_obj::CartanaObject)
             println("- ", string(i))
         end
     end
-    
     println("All fields:")
     [println("- ", string(i)) for i in fieldnames(typeof(sp_obj))]
 end

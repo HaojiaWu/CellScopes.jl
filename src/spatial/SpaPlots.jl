@@ -842,7 +842,6 @@ function PlotDepthAnimation(sp::Union{CartanaObject, VisiumObject}, celltypes::V
                             strokewidth = 1, strokecolor = :black)
                     MK.translate!(f, 0, 0, -0.05j)
                 end
-        end
 end
 
 function PlotGeneDepth(sp::Union{CartanaObject, VisiumObject}, gene::String;
@@ -1078,7 +1077,7 @@ function PlotHeatmap(sp::CartanaObject, genes::Union{Vector, String},
             column={:split_by, header={labelFontSize=16, title=nothing}},
             height= fig_height, width=fig_width
             )        
-        end
+    end
         return p
 end
 
