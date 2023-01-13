@@ -162,6 +162,12 @@ function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, gene_list::
                 if isa(y_lims, Nothing)
                     y_lims=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
                 end
+                n_rows = Int(ceil(length(gene_list) / 3))
+                if length(gene_list) < 4
+                    n_cols = length(gene_list)
+                else
+                    n_cols = 3
+                end
                 c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
                 fig = MK.Figure(resolution = (500 * length(gene_list) ,550))
                 for (i, gene) in enumerate(gene_list)
