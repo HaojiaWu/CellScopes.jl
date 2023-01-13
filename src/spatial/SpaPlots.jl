@@ -142,7 +142,7 @@ function SpatialDotGraph(sp::Union{CartanaObject, VisiumObject}, genes::Union{Ve
 end
 
 function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, gene_list::Union{Vector{String}, Tuple{String}}; layer::String = "cells", x_col::Union{String, Symbol}="x",
-    y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order=true, scale = false,
+    y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order::Bool=true, scale::Bool = false,titlesize::Int64=24,
     color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray96","red","red3"])
         if layer === "cells"
                 coord_cell=deepcopy(sp.spmetaData.cell)
