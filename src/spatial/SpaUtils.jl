@@ -464,7 +464,7 @@ function bin_gene_spatial(sp::CartanaObject, n_bin::Int64; celltype::Union{Strin
     gene_expr = gene_expr.count_mtx
     gene_expr = DataFrame(Matrix(gene_expr),:auto)
     gene_expr.gene = all_genes
-    gene_expr = permutedims(gene_expr, end)
+    gene_expr = permutedims(gene_expr, ncol(gene_expr))
     rename!(gene_expr, :gene => :cell)
     df_proc = innerjoin(gene_expr, new_df, on = :cell)
     new_df2 = DataFrame()
