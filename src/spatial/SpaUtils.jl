@@ -482,3 +482,12 @@ function pd_to_df(df_pd)
     df = DataFrame(Any[Array(df_pd[c].values) for c in colnames], colnames)
 end
 
+function ctobj_to_df(ct_obj::AbstractCount)
+    count_mat = ct_obj.count_mtx'
+    count_df = DataFrame(count_mat, :auto)
+    rename!(count_df, ct_obj.gene_name)
+    count_df = hcat(ct_obj.cell_name, count_df)
+    rename!(count_df, :x1 => :Cell_ID)
+    return count_df
+end
+
