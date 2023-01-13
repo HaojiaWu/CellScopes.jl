@@ -141,7 +141,7 @@ function SpatialDotGraph(sp::Union{CartanaObject, VisiumObject}, genes::Union{Ve
     return p
 end
 
-function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, genes; layer::String = "cells", x_col::Union{String, Symbol}="x",
+function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, gene_list::Union{Vector{String}, Tuple{String}}; layer::String = "cells", x_col::Union{String, Symbol}="x",
     y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order=true,
     color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray96","red","red3"])
         if layer === "cells"
@@ -163,8 +163,8 @@ function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, genes; laye
                     y_lims=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
                 end
                 c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
-                fig = MK.Figure(resolution = (500 * length(genes) ,550))
-                for (i, gene) in enumerate(genes)
+                fig = MK.Figure(resolution = (500 * length(gene_list) ,550))
+                for (i, gene) in enumerate(gene_list)
                     gene_expr = SubsetCount(norm_counts; genes = gene)
                     gene_expr = Float64.(gene_expr.count_mtx)
                     gene_expr = unit_range_scale(gene_expr)
@@ -187,11 +187,11 @@ function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, genes; laye
                     end
                     ax1 = MK.Axis(fig[1,i]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
                                         xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
-                                        xgridvisible = false, ygridvisible = false,yreversed=false, title = genes[i], 
+                                        xgridvisible = false, ygridvisible = false,yreversed=false, title = gene_list[i], 
                                         titlesize = 26)
                     MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.plt_color, strokewidth = 0, markersize = marker_size)
                 end
-                MK.Colorbar(fig[1,length(genes)+1], label = "Gene expression", colormap = c_map)
+                MK.Colorbar(fig[1,length(gene_list)+1], label = "Gene expression", colormap = c_map)
                 MK.current_figure()
         elseif layer === "transcripts"
                 coord_molecules=deepcopy(sp.spmetaData.molecule)
@@ -201,13 +201,13 @@ function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, genes; laye
                 if isa(y_lims, Nothing)
                     y_lims=(minimum(coord_molecules[!, y_col])-0.05*maximum(coord_molecules[!, y_col]),1.05*maximum(coord_molecules[!, y_col]))
                 end
-                fig = MK.Figure(resolution = (500 * length(genes) ,550))
-                for (i, gene) in enumerate(genes)
+                fig = MK.Figure(resolution = (500 * length(gene_list) ,550))
+                for (i, gene) in enumerate(gene_list)
                     df_plt = DataFrames.transform(coord_molecules, :gene => ByRow(name -> name == gene ? "red" : color_keys[1]) => :forcolor)
                     ax1 = MK.Axis(fig[1,i]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
                                 xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
-                                xgridvisible = false, ygridvisible = false,yreversed=false, title = genes[i], 
-                                titlesize = 26 * (0.5*length(genes)+0.5))
+                                xgridvisible = false, ygridvisible = false,yreversed=false, title = gene_list[i], 
+                                titlesize = 26 * (0.5*length(gene_list)+0.5))
                     MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.forcolor, strokewidth = 0, markersize = marker_size)
                 end
                 MK.current_figure()
