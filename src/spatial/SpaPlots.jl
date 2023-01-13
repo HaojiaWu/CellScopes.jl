@@ -142,7 +142,7 @@ function SpatialDotGraph(sp::Union{CartanaObject, VisiumObject}, genes::Union{Ve
 end
 
 function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, gene_list::Union{Vector{String}, Tuple{String}}; layer::String = "cells", x_col::Union{String, Symbol}="x",
-    y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order=true,
+    y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order=true, scale = false,
     color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray96","red","red3"])
         if layer === "cells"
                 coord_cell=deepcopy(sp.spmetaData.cell)
@@ -167,7 +167,9 @@ function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, gene_list::
                 for (i, gene) in enumerate(gene_list)
                     gene_expr = SubsetCount(norm_counts; genes = [gene])
                     gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
-                    gene_expr = unit_range_scale(gene_expr)
+                    if scale
+                        gene_expr = unit_range_scale(gene_expr)
+                    end
                     df = DataFrame()
                     df.gene_expr = gene_expr
                     coord_cell[!, cell_col] = string.(coord_cell[!, cell_col])
@@ -217,7 +219,7 @@ function SpatialGeneDimGraph(sp::Union{CartanaObject, VisiumObject}, gene_list::
 end
 
 function SpatialGeneDimGraphSplit(sp::Union{CartanaObject, VisiumObject}, gene::String, split_by::String; 
-    x_col::Union{String, Symbol}="x", y_col::Union{String, Symbol}="y", 
+    x_col::Union{String, Symbol}="x", y_col::Union{String, Symbol}="y", scale = false,
     cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order=true, 
         color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray96","red","red3"])
                coord_cell=deepcopy(sp.spmetaData.cell)
@@ -240,7 +242,9 @@ function SpatialGeneDimGraphSplit(sp::Union{CartanaObject, VisiumObject}, gene::
                 group_names = unique(coord_cell[!, split_by])
                 gene_expr = SubsetCount(norm_counts; genes = [gene])
                 gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
-                gene_expr = unit_range_scale(gene_expr)
+                if scale
+                    gene_expr = unit_range_scale(gene_expr)
+                end
                 df = DataFrame()
                 df.gene_expr = gene_expr
                 coord_cell[!, cell_col] = string.(coord_cell[!, cell_col])
@@ -1003,7 +1007,7 @@ end
 function PlotHeatmap(sp::CartanaObject, gene_list::Union{Vector, String},
     cluster::Union{Symbol, String};assay_use::String="measured",expr_cutoff::Union{Float64, Int64}=0, split_by::Union{String, Nothing}=nothing,
     x_title="Gene",y_title="Cell type", cell_order::Union{Vector, String, Nothing}=nothing,
-    fontsize::Int64=12, color_scheme::String="yelloworangered",reverse_color::Bool=false,scale::Bool=true,
+    fontsize::Int64=12, color_scheme::String="yelloworangered",reverse_color::Bool=false,scale::Bool=false,
     fig_height::Union{String, Int64}=400, fig_width::Union{String, Int64}=400)
     all_df=DataFrame()
     if assay_use === "measured"
@@ -1056,7 +1060,10 @@ function PlotHeatmap(sp::CartanaObject, gene_list::Union{Vector, String},
             gene_expr= SubsetCount(ct_mtx; genes = [gene])
             gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
             df = DataFrame()
-            df.gene=unit_range_scale(gene_expr)
+            if scale
+                gene_expr =unit_range_scale(gene_expr)
+            end
+            df.gene = gene_expr
             df.celltype=string.(sp.spmetaData.cell[!, cluster])
             df.split_by = string.(sp.spmetaData.cell[!, split_by])
             avg_expr=combine(groupby(df, [:celltype, :split_by]), :gene => mean => :avg_exp)
@@ -1106,12 +1113,14 @@ end
 
 function VisiumCartanaOverlayGene(vs::VisiumObject, sp::CartanaObject, gene; vs_x="new_x", vs_y="new_y", sp_x="new_x", sp_y="new_y",
     vs_color=:red, sp_color=:blue, vs_markersize=7, canvas_size=(1800,500),x_lims=nothing, y_lims=nothing,
-    sp_markersize=2, vs_title="Visium", sp_title="Cartana", order=true)
+    sp_markersize=2, vs_title="Visium", sp_title="Cartana", order=true, scale = true)
     vs_count=deepcopy(vs.normCount)
     sp_count=deepcopy(sp.normCount)
     gene_expr= SubsetCount(vs_count; genes = [gene])
     gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
-    gene_expr=unit_range_scale(gene_expr)
+    if scale
+        gene_expr=unit_range_scale(gene_expr)
+    end
     df1=DataFrame()
     df1.gene_expr = gene_expr
     c_map = ColorSchemes.ColorScheme([colorant"gray96",colorant"red",colorant"red3"])
@@ -1124,7 +1133,9 @@ function VisiumCartanaOverlayGene(vs::VisiumObject, sp::CartanaObject, gene; vs_
     df1.y = vs.spmetaData.cells[!, vs_y]
     gene_expr= SubsetCount(sp_count; genes = [gene])
     gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
-    gene_expr=unit_range_scale(gene_expr)
+    if scale
+        gene_expr=unit_range_scale(gene_expr)
+    end
     df2=DataFrame()
     df2.gene_expr = gene_expr
     c_map = ColorSchemes.ColorScheme([colorant"gray96",colorant"blue",colorant"blue3"])
