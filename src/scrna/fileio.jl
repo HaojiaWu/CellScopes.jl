@@ -27,3 +27,6 @@ function SaveObj(sc_obj::AbstractCellScope; key::String = "CSObject", filename::
     JLD2.save(filename, key, sc_obj)
 end
 
+function LoadObj(;filename::String = "cs_obj.jld2")
+    JLD2.load(filename)
+end
