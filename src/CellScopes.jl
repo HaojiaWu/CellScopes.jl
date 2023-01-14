@@ -44,7 +44,7 @@ using Polynomials
 using FileIO
 
 include("scrna/objects.jl")
-include("spatial/SpaObj.jl")
+include("spatial/sp_objects.jl")
 include("properties.jl")
 include("scrna/processing.jl")
 include("scrna/utils.jl")
