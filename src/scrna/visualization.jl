@@ -1,9 +1,9 @@
-function DimGraph(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; anno::Union{Symbol, String}="cluster", dim_type::String="umap",
+function dim_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; anno::Union{Symbol, String}="cluster", dim_type::String="umap",
     anno_color::Union{Nothing, Dict} = nothing, cell_order::Union{Vector{String}, Nothing}=nothing,
     x_lims=nothing, y_lims=nothing,canvas_size=(600,500),stroke_width=0.5,stroke_color=:transparent, 
         marker_size=2, label_size=20, label_color="black", label_offset=(0,0), do_label=true, do_legend=true,
         legend_size = 10, legend_fontsize = 16)   
-        dim_data,x_col, y_col = GetDimData(sc_obj.dimReduction, dim_type)
+        dim_data,x_col, y_col = get_dim_data(sc_obj.dimReduction, dim_type)
         meta_data = sc_obj.metaData
         if isa(x_lims, Nothing)
             x_lims=(minimum(dim_data[!,x_col])-0.05*maximum(dim_data[!,x_col]),1.05*maximum(dim_data[!,x_col]))
@@ -69,10 +69,10 @@ function DimGraph(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; anno:
         MK.current_figure()
 end
 
-function HighlightCells(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}, cl::String; dim_type="umap", anno::Union{String,Symbol}="cluster",
+function highlight_cells(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}, cl::String; dim_type="umap", anno::Union{String,Symbol}="cluster",
     canvas_size=(600,500),stroke_width::Float64=0.1, stroke_color="black", cell_color::String="red",
     marker_size=2,x_lims=nothing, y_lims=nothing)
-    dim_data, x_col, y_col = GetDimData(sc_obj.dimReduction, dim_type)
+    dim_data, x_col, y_col = get_dim_data(sc_obj.dimReduction, dim_type)
     meta_data = sc_obj.metaData
     dim_data.cluster = meta_data.cluster
     if isa(x_lims, Nothing)
@@ -96,16 +96,16 @@ function HighlightCells(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject},
     MK.current_figure()
 end
 
-function GeneDimGraph(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}, genes; dim_type::String = "umap", count_type = "norm",x_lims=nothing, y_lims=nothing, marker_size=4, order=true,
+function feature_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}, genes; dim_type::String = "umap", count_type = "norm",x_lims=nothing, y_lims=nothing, marker_size=4, order=true,
     color_keys::Union{Vector{String}, Tuple{String,String,String}}=("black","yellow","red"), do_dimname::Bool=false,
         split_by::Union{String, Symbol, Nothing}=nothing, titlesize::Int64 = 24, height::Real = 500, width::Real = 500)
-        dim_data, x_col, y_col = GetDimData(sc_obj.dimReduction, dim_type)
+        dim_data, x_col, y_col = get_dim_data(sc_obj.dimReduction, dim_type)
         if count_type === "norm"
-            ct_obj = SubsetCount(sc_obj.normCount; genes = genes)
+            ct_obj = subset_count(sc_obj.normCount; genes = genes)
         elseif count_type === "raw"
-            ct_obj = SubsetCount(sc_obj.rawCount; genes = genes)
+            ct_obj = subset_count(sc_obj.rawCount; genes = genes)
         elseif count_type === "scale"
-            ct_obj = SubsetCount(sc_obj.scaleCount; genes = genes)
+            ct_obj = subset_count(sc_obj.scaleCount; genes = genes)
         else
             println("count_type can only be \"raw\", \"norm\" or \"scale\"!")
         end
@@ -214,24 +214,24 @@ function GeneDimGraph(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}, g
         MK.current_figure()
 end
 
-function GeneDotGraph(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}, genes::Union{Vector, String},
+function dot_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}, genes::Union{Vector, String},
     cluster::Union{Symbol, String};count_type = "norm" , expr_cutoff::Union{Float64, Int64}=0, split_by::Union{String, Nothing}=nothing,
     x_title="Gene", y_title = "Cell type", cell_order::Union{Vector, String, Nothing}=nothing,
     fontsize::Int64 = 12, color_scheme::String="yelloworangered",reverse_color::Bool=false,
     height::Union{String, Int64}=400, width::Union{String, Int64}=400)
     if count_type === "norm"
-        ct_obj = SubsetCount(sc_obj.normCount; genes = genes)
+        ct_obj = subset_count(sc_obj.normCount; genes = genes)
     elseif count_type === "raw"
-        ct_obj = SubsetCount(sc_obj.rawCount; genes = genes)
+        ct_obj = subset_count(sc_obj.rawCount; genes = genes)
     elseif count_type === "scale"
-        ct_obj = SubsetCount(sc_obj.scaleCount; genes = genes)
+        ct_obj = subset_count(sc_obj.scaleCount; genes = genes)
     else
         println("count_type can only be \"raw\", \"norm\" or \"scale\"!")
     end
 if isa(split_by, Nothing)
     all_df=DataFrame()
     for (i, gene) in enumerate(genes)
-        gene_expr = SubsetCount(ct_obj; genes = [gene]).count_mtx
+        gene_expr = subset_count(ct_obj; genes = [gene]).count_mtx
         gene_expr = vec(gene_expr)
         df = DataFrame()
         df.gene = gene_expr
@@ -258,7 +258,7 @@ if isa(split_by, Nothing)
 else
     all_df=DataFrame()
     for (i, gene) in enumerate(genes)
-        gene_expr = SubsetCount(ct_obj; genes = [gene]).count_mtx
+        gene_expr = subset_count(ct_obj; genes = [gene]).count_mtx
         gene_expr = vec(gene_expr)
         df = DataFrame()
         df.gene = gene_expr
@@ -288,17 +288,17 @@ else
     return p
 end
 
-function GeneVlnGraph(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}, genes; 
+function violin_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}, genes; 
     count_type::String ="norm", group_by::String = "cluster", 
     pt_size::Real =0.5, line_width::Real = 0, alpha::Real=1,
     height::Real = 800, width::Real = 500, do_legend::Bool = false,
     col_use::Union{Vector, Symbol, Nothing}=nothing)
     if count_type === "norm"
-        ct_obj = SubsetCount(sc_obj.normCount; genes = genes)
+        ct_obj = subset_count(sc_obj.normCount; genes = genes)
     elseif count_type === "raw"
-        ct_obj = SubsetCount(sc_obj.rawCount; genes = genes)
+        ct_obj = subset_count(sc_obj.rawCount; genes = genes)
     elseif count_type === "scale"
-        ct_obj = SubsetCount(sc_obj.scaleCount; genes = genes)
+        ct_obj = subset_count(sc_obj.scaleCount; genes = genes)
     else
         println("count_type can only be \"raw\", \"norm\" or \"scale\"!")
     end

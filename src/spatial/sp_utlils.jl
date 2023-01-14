@@ -12,7 +12,7 @@ function make_cell_proportion_df(cell_stat::DataFrame;
     return cell_counts
 end
 
-function mapvalues(df::DataFrame,
+function map_values(df::DataFrame,
         old_col::Union{Symbol, String},
         new_col::Union{Symbol, String},
         from::Union{Vector, String, Float64, Int64},
@@ -36,7 +36,7 @@ function reorder(df::DataFrame,
     end
     old_order=unique(df[!,col])
     order_index=collect(1:length(old_order))
-    df = mapvalues(df, col, :order_index, order_by, order_index)
+    df = map_values(df, col, :order_index, order_by, order_index)
     sort!(df, :order_index)
     return df
 end
@@ -51,13 +51,13 @@ function compute_pearson_cor(sp::CartanaObject, cluster1::Union{Symbol, String},
         cols=DataFrame([[] [] []],:auto)
         for j in celltypes2
             x=filter(cluster1 => x-> x == i,df)
-            cell1 = SubsetCount(norm_cells; cell_name=x.cell)
+            cell1 = subset_count(norm_cells; cell_name=x.cell)
             cell1 = cell1.count_mtx
             dg = deepcopy(cell1)
             dg.rowmean .= mean(Array(dg), dims=2)
             x=dg.rowmean
             y=filter(cluster2 => y-> y == j,df)
-            cell1 = SubsetCount(norm_cells; cell_name=y.cell)
+            cell1 = subset_count(norm_cells; cell_name=y.cell)
             cell1 = cell1.count_mtx
             dg = deepcopy(cell1)
             dg.rowmean .= mean(Array(dg), dims=2)
@@ -295,7 +295,7 @@ function compute_kidney_coordinates(sp::CartanaObject, center)
     molecules=filter(:cell=> x-> x in cells2, molecules)
     from=df.cell
     to=df.depth
-    molecules_df=mapvalues(molecules, :cell, :depth,from, to)
+    molecules_df=map_values(molecules, :cell, :depth,from, to)
     sp.spmetaData.molecule=molecules_df
     return sp
 end

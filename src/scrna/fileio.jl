@@ -23,10 +23,12 @@ function read_10x(tenx_dir::String;
     end
 end
 
-function SaveObj(sc_obj::AbstractCellScope; key::String = "CSObject", filename::String = "cs_obj.jld2")
-    JLD2.save(filename, key, sc_obj)
+function save(sc_obj::AbstractCellScope; filename::String = "cs_obj.jld2")
+    JLD2.save(filename, "key", sc_obj)
 end
 
-function LoadObj(;filename::String = "cs_obj.jld2")
-    JLD2.load(filename)
+function load(;filename::String = "cs_obj.jld2")
+    cs = JLD2.load(filename)
+    cs = cs["key"]
+    return cs
 end

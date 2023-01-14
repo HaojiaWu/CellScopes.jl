@@ -44,7 +44,7 @@ function check_duplicates(arr)
     return uniq_arr, removed_positions
 end
 
-function SubsetCount(ct_obj::T; 
+function subset_count(ct_obj::T; 
     genes::Union{Vector{String}, Nothing} = nothing, 
     cells::Union{Vector{String}, Nothing} = nothing) where T <: AbstractCount
     all_genes = ct_obj.gene_name
@@ -72,7 +72,7 @@ function SubsetCount(ct_obj::T;
     return new_obj
 end
 
-function ExtractClusterCount(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}, cl; count_type = "norm", anno = Union{String, Symbol}="cluster")
+function extract_cluster_count(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}, cl; count_type = "norm", anno = Union{String, Symbol}="cluster")
     df = sc_obj.clustData.clustering
     if isa(anno, String)
         anno = Symbol(anno)
@@ -88,10 +88,10 @@ function ExtractClusterCount(sc_obj::Union{scRNAObject, VisiumObject, CartanaObj
     else 
         println("count_type can only be \"raw\", \"norm\" or \"scale\"!")
     end
-    cl_ct = SubsetCount(ct_obj; cells = cl_cell)
+    cl_ct = subset_count(ct_obj; cells = cl_cell)
 end
 
-function GetDimData(dim_obj::AbstractDimReduction, dim_type::String)
+function get_dim_data(dim_obj::AbstractDimReduction, dim_type::String)
     if dim_type === "pca"
        dim_data = dim_obj.pca.cell_embedding
        dim_data = DataFrame(dim_data, :auto)
@@ -136,7 +136,7 @@ function jitter(x)
     end
 end
 
-function VariableGenes(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject})
+function variable_genes(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject})
     vargenes = pbmc.varGene.var_gene
     return vargenes
 end
