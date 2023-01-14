@@ -50,8 +50,10 @@ include("scrna/processing.jl")
 include("scrna/utils.jl")
 include("scrna/visualization.jl")
 include("scrna/fileio.jl")
-include("spatial/SpaPlots.jl")
-include("spatial/SpaUtils.jl")
-include("spatial/SpaAnalysis.jl")
+include("spatial/sp_plots.jl")
+include("spatial/sp_utils.jl")
+include("spatial/sp_analysis.jl")
+include("spatial/sp_processing.jl")
+
 
 end
