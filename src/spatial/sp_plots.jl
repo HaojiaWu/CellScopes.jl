@@ -89,8 +89,8 @@ function sp_dot_plot(sp::Union{CartanaObject, VisiumObject}, genes::Union{Vector
             df = DataFrame()
             df.gene=gene_expr
             df.celltype=string.(sp.spmetaData.cell[!, cluster])
-            avg_expr=combine(groupby(df, :celltype), :gene => mean => :avg_exp);
-            perc_expr=combine(groupby(df, :celltype), :gene => function(x) countmap(x.>expr_cutoff)[:1]*100/length(x) end => :perc_exp)
+            avg_expr=DataFrames.combine(groupby(df, :celltype), :gene => mean => :avg_exp);
+            perc_expr=DataFrames.combine(groupby(df, :celltype), :gene => function(x) countmap(x.>expr_cutoff)[:1]*100/length(x) end => :perc_exp)
             df_plt=innerjoin(avg_expr, perc_expr, on = :celltype)
             df_plt.gene.=gene
             all_df=[all_df; df_plt]
@@ -117,8 +117,8 @@ function sp_dot_plot(sp::Union{CartanaObject, VisiumObject}, genes::Union{Vector
             df.gene=gene_expr
             df.celltype=string.(sp.spmetaData.cell[!, cluster])
             df.split_by = string.(sp.spmetaData.cell[!, split_by])
-            avg_expr=combine(groupby(df, [:celltype, :split_by]), :gene => mean => :avg_exp)
-            perc_expr=combine(groupby(df, [:celltype,:split_by]), :gene => function(x) countmap(x.>expr_cutoff)[:1]*100/length(x) end => :perc_exp)
+            avg_expr=DataFrames.combine(groupby(df, [:celltype, :split_by]), :gene => mean => :avg_exp)
+            perc_expr=DataFrames.combine(groupby(df, [:celltype,:split_by]), :gene => function(x) countmap(x.>expr_cutoff)[:1]*100/length(x) end => :perc_exp)
             df_plt=innerjoin(avg_expr, perc_expr, on = [:celltype,:split_by])
             df_plt.gene.=gene
             all_df=[all_df; df_plt]
