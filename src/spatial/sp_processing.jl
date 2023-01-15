@@ -28,7 +28,7 @@ function polygons_cell_mapping(sp::CartanaObject)
     n=length(query_coord)
     query_dist=[]
     p = Progress(n, dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, color=:blue)
-    Threads.@threads for j in 1:length(query_coord)
+    for j in 1:length(query_coord)
         ref_dist=[]
         for i in 1:length(ref_coord)
             ref_dist=push!(ref_dist, Distances.euclidean(query_coord[j],ref_coord[i]))
@@ -40,7 +40,49 @@ function polygons_cell_mapping(sp::CartanaObject)
     my_annot=DataFrame(polygon_number=collect(1:length(query_dist)), mapped_cell=query_dist);
     from=sp.spmetaData.cell.cell
     to=sp.spmetaData.cell.cluster
+    prefix = split(sp.spmetaData.cell.cell[1], "_")
+    if length(prefix) > 1
+        my_annot.mapped_cell = prefix[1] * "_" .* string.(my_annot.mapped_cell);
+    end
     anno=map_values(my_annot, :mapped_cell, :cluster,from, to)
     sp.spmetaData.polygon=anno
+    return sp
+end
+
+function generate_polygon_counts(sp::AbstractSpaObj)
+    coord_molecules = deepcopy(sp.spmetaData.molecule)
+    if isa(sp.spmetaData.polygon, Nothing)
+        error("Please run polygons_cell_mapping first!")
+    end
+    anno = deepcopy(sp.spmetaData.polygon)
+    anno = rename!(anno, :polygon_number => :number)
+    anno = rename!(anno, :mapped_cell => :cell)
+    anno.cell = string.(anno.cell)
+    coord_molecules.cell = string.(coord_molecules.cell)
+    join_df = innerjoin(coord_molecules[!,[:gene,:cell]],anno[!,[:number,:cell]], on=:cell)
+    join_df.gene = string.(join_df.gene)
+    gdf = groupby(join_df, :gene)
+    new_df = DataFrame()
+    for (i, df) in enumerate(gdf)
+        map_dict = countmap(df.number)
+        anno1 = DataFrame(cell=collect(keys(map_dict)),count=collect(values(map_dict)))
+        anno1.gene .= gdf[i].gene[1]
+        new_df = [new_df;anno1]
+    end
+    final_df = unstack(new_df, :cell, :gene, :count)
+    final_df .= ifelse.(isequal.(final_df, missing), 0, final_df)
+    final_df = mapcols(ByRow(Int64), final_df);
+    prefix = split(sp.spmetaData.cell.cell[1], "_")
+    if length(prefix) > 1
+        final_df.cell = prefix[1] * "_" .* string.(final_df.cell)
+    end
+    cellnames = final_df.cell
+    genenames = names(final_df)[2:end]
+    final_df = convert(SparseMatrixCSC{Int64, Int64},Matrix(final_df[!,2:end])')
+    raw_count = RawCountObject(final_df, cellnames, genenames)
+    norm_count = normalize_object(raw_count)
+    sp.polyCount = raw_count
+    sp.polynormCount = norm_count
+    println("Polygon counts was normalized!")
     return sp
 end

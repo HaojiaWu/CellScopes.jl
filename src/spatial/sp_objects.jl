@@ -211,69 +211,6 @@ function normalizeData(sp::AbstractSpaObj)
     return sp
 end
 
-function normalizeData(sp::DataFrame)
-    orig_count=deepcopy(sp)
-    for celln in DataFrames.names(orig_count)[2:end]
-        if celln !==String
-            celln = string(celln)
-        end
-        orig_count[!, celln] = orig_count[!, celln] ./ sum(orig_count[!, celln])
-    end
-    new_df=Matrix(orig_count[!,2:end])
-    dt = StatsBase.fit(UnitRangeTransform, new_df, dims=2)
-    new_df=StatsBase.transform(dt, new_df)
-    new_df=DataFrame(new_df,:auto)
-    replace_nan(v) = map(x -> isnan(x) ? zero(x) : x, v)
-    new_df = map(replace_nan, eachcol(new_df))
-    new_df = DataFrame(new_df, :auto)
-    DataFrames.rename!(new_df, DataFrames.names(orig_count)[2:end])
-    new_df[!,:gene]=orig_count[!,:gene]
-    total_cell=length(names(new_df))
-    new_df=new_df[!,[total_cell; collect(1:total_cell-1)]]
-    return new_df
-end
-
-function generate_polygon_counts(sp::AbstractSpaObj)
-    coord_molecules=sp.spmetaData.molecule
-    if isa(sp.spmetaData.polygon, Nothing)
-        error("Please run polygons_cell_mapping first!")
-    end
-    anno=sp.spmetaData.polygon
-    anno=rename!(anno, :polygon_number => :number)
-    anno=rename!(anno, :mapped_cell => :cell)
-    anno.cell=string.(anno.cell)
-    coord_molecules.cell=string.(coord_molecules.cell)
-    join_df=innerjoin(coord_molecules[!,[:gene,:cell]],anno[!,[:number,:cell]], on=:cell)
-    join_df.cell=parse.(Int64, join_df.cell)
-    join_df.gene=string.(join_df.gene)
-    gdf = groupby(join_df, :gene);
-    new_df=DataFrame()
-    for (i, df) in enumerate(gdf)
-        map_dict=countmap(df.number)
-        anno1=DataFrame(cell=collect(keys(map_dict)),count=collect(values(map_dict)))
-        anno1.gene.=gdf[i].gene[1]
-        new_df=[new_df;anno1]
-    end
-    final_df=unstack(new_df, :cell, :gene, :count)
-    final_df .= ifelse.(isequal.(final_df, missing), 0, final_df)
-    final_df=mapcols(ByRow(Int64), final_df)
-    sp.poly_counts=final_df
-    println("Poly_counts was added to SpaData!")
-    norm_df=mapcols(ByRow(Float64), final_df[!,2:end])
-    norm_df=Matrix(norm_df)
-    norm_df=norm_df'
-    dt = StatsBase.fit(UnitRangeTransform, norm_df, dims=2)
-    norm_df=StatsBase.transform(dt, norm_df)
-    norm_df=norm_df'
-    norm_df=DataFrame(norm_df,:auto)
-    DataFrames.rename!(norm_df, DataFrames.names(final_df)[2:end])
-    norm_df.cell=final_df.cell
-    sort!(norm_df, :cell)
-    sp.poly_norm=norm_df
-    println("Poly_counts was normalized!")
-    return sp
-end
-
 function subset_SpaObj(sp::AbstractSpaObj, cell_col::Union{String, Symbol}, subset_names::Union{Vector{String}, Vector{Int64}})
     spObj=deepcopy(sp)
     barcodes = deepcopy(subset_names)

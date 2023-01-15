@@ -144,7 +144,7 @@ end
 function sp_feature_plot(sp::Union{CartanaObject, VisiumObject}, gene_list::Union{Vector{String}, Tuple{String}}; layer::String = "cells", x_col::Union{String, Symbol}="x",
     y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order::Bool=true, scale::Bool = false,titlesize::Int64=24, 
     height::Real = 500, width::Real = 500, combine = true,
-    color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray96","red","red3"])
+    color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray94","orange","red3"])
     n_rows = Int(ceil(length(gene_list) / 3))
     if length(gene_list) < 4
         n_cols = length(gene_list)
@@ -433,10 +433,11 @@ function SpatialGeneDimGraphOverlay(sp::Union{CartanaObject, VisiumObject}, gene
 end
 =#
 
-function sp_gene_polygons(sp::Union{CartanaObject, VisiumObject}, gene::String, c_map;
-    x_lims=nothing, y_lims=nothing,canvas_size=(5000,6000),stroke_width=0.5,stroke_color="black"
+function sp_gene_polygons(sp::CartanaObject, gene::String;
+    color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray94","orange","red3"],
+    x_lims=nothing, y_lims=nothing,canvas_size=(900,1000),stroke_width=0.5,stroke_color="black"
     )
-    gene_expr=sp.polynormCount
+    norm_count=sp.polynormCount
     polygons=sp.polygonData
     if isa(x_lims, Nothing)
         x_lims=(minimum(sp.spmetaData.cell.x)-0.05*maximum(sp.spmetaData.cell.x),1.05*maximum(sp.spmetaData.cell.x))
@@ -444,15 +445,15 @@ function sp_gene_polygons(sp::Union{CartanaObject, VisiumObject}, gene::String, 
     if isa(y_lims, Nothing)
         y_lims=(minimum(sp.spmetaData.cell.y)-0.05*maximum(sp.spmetaData.cell.y),1.05*maximum(sp.spmetaData.cell.y))
     end
-    cs = c_map
-    gene_val = subset_count(gene_expr; genes = [gene])
-    gene_val = (vec ∘ collect)(gene_val.count_mtx)
-    colors = get.(Ref(cs), (gene_val .- minimum(gene_val)) ./ maximum(gene_val))
+    c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
+    gene_expr = subset_count(norm_count; genes = [gene])
+    gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
+    colors = get(c_map, gene_expr, :extrema)
     plt_color="#" .* hex.(colors)
     fig = MK.Figure(resolution=canvas_size)
     fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
         xgridvisible = false,ygridvisible = false);
-    MK.poly!([MK.Point2.(eachrow(p)) for p in polygons]; strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width,label="")
+    MK.poly!(Folds.collect(MK.Point2.(eachrow(p)) for p in polygons); strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width,label="")
     MK.xlims!(MK.current_axis(), x_lims)
     MK.ylims!(MK.current_axis(), y_lims)
     MK.current_figure()
