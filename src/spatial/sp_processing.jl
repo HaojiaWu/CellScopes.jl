@@ -52,9 +52,7 @@ function generate_polygon_counts(sp::AbstractSpaObj)
         error("Please run polygons_cell_mapping first!")
     end
     anno = deepcopy(sp.spmetaData.polygon)
-    new_cell = unique(sp.spmetaData.polygon.mapped_cell)
     coord_molecules.cell = string.(coord_molecules.cell)
-    coord_molecules = filter(:cell => x -> x ∈ new_cell, coord_molecules)
     anno = rename!(anno, :polygon_number => :number)
     anno = rename!(anno, :mapped_cell => :cell)
     anno.cell = string.(anno.cell)
@@ -71,6 +69,7 @@ function generate_polygon_counts(sp::AbstractSpaObj)
     final_df = unstack(new_df, :cell, :gene, :count)
     final_df .= ifelse.(isequal.(final_df, missing), 0, final_df)
     final_df = mapcols(ByRow(Int64), final_df);
+    sort!(final_df, :cell)
     prefix = split(sp.spmetaData.cell.cell[1], "_")
     if length(prefix) > 1
         final_df.cell = prefix[1] * "_" .* string.(final_df.cell)
