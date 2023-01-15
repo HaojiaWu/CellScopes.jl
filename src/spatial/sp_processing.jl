@@ -29,10 +29,7 @@ function polygons_cell_mapping(sp::CartanaObject)
     query_dist=[]
     p = Progress(n, dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, color=:blue)
     for j in 1:length(query_coord)
-        ref_dist=[]
-        for i in 1:length(ref_coord)
-            ref_dist=push!(ref_dist, Distances.euclidean(query_coord[j],ref_coord[i]))
-        end
+        ref_dist=[Distances.euclidean(query_coord[j],ref_coord[i]) for i in 1:length(ref_coord)]
         query_dist=push!(query_dist,findmin(ref_dist)[2])
         next!(p)
     end
@@ -55,10 +52,12 @@ function generate_polygon_counts(sp::AbstractSpaObj)
         error("Please run polygons_cell_mapping first!")
     end
     anno = deepcopy(sp.spmetaData.polygon)
+    new_cell = unique(sp.spmetaData.polygon.mapped_cell)
+    coord_molecules.cell = string.(coord_molecules.cell)
+    coord_molecules = filter(:cell => x -> x ∈ new_cell, coord_molecules)
     anno = rename!(anno, :polygon_number => :number)
     anno = rename!(anno, :mapped_cell => :cell)
     anno.cell = string.(anno.cell)
-    coord_molecules.cell = string.(coord_molecules.cell)
     join_df = innerjoin(coord_molecules[!,[:gene,:cell]],anno[!,[:number,:cell]], on=:cell)
     join_df.gene = string.(join_df.gene)
     gdf = groupby(join_df, :gene)
