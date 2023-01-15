@@ -433,9 +433,9 @@ function SpatialGeneDimGraphOverlay(sp::Union{CartanaObject, VisiumObject}, gene
 end
 =#
 
-function sp_gene_polygons(sp::CartanaObject, gene::String;
+function plot_gene_polygons(sp::CartanaObject, gene::String;
     color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray94","orange","red3"],
-    x_lims=nothing, y_lims=nothing,canvas_size=(900,1000),stroke_width=0.5,stroke_color="black"
+    x_lims=nothing, y_lims=nothing,canvas_size=(900,1000),stroke_width=0,stroke_color="black"
     )
     norm_count=sp.polynormCount
     polygons=sp.polygonData
@@ -453,15 +453,15 @@ function sp_gene_polygons(sp::CartanaObject, gene::String;
     fig = MK.Figure(resolution=canvas_size)
     fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
         xgridvisible = false,ygridvisible = false);
-    MK.poly!(Folds.collect(MK.Point2.(eachrow(p)) for p in polygons); strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width,label="")
+    MK.poly!([MK.Point2.(eachrow(p)) for p in polygons]; strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width,label="")
     MK.xlims!(MK.current_axis(), x_lims)
     MK.ylims!(MK.current_axis(), y_lims)
     MK.current_figure()
 end
 
-function sp_cell_polygons(sp::AbstractSpaObj, column::Union{Symbol, String};
+function plot_cell_polygons(sp::CartanaObject, anno;
     anno_color::Union{Nothing, Dict} = nothing,
-    x_lims=nothing, y_lims=nothing,canvas_size=(5000,6000),stroke_width=0.5,stroke_color="black"
+    x_lims=nothing, y_lims=nothing,canvas_size=(900,1000),stroke_width=0,stroke_color="black"
     )
     if isa(x_lims, Nothing)
         x_lims=(minimum(sp.spmetaData.cell.x)-0.05*maximum(sp.spmetaData.cell.x),1.05*maximum(sp.spmetaData.cell.x))
@@ -471,15 +471,16 @@ function sp_cell_polygons(sp::AbstractSpaObj, column::Union{Symbol, String};
     end
     anno_df=sp.spmetaData.polygon
     polygons=sp.polygonData
-    if isa(column, String)
-        colum=Symbol(column)
+    if isa(anno, String)
+        anno=Symbol(anno)
     end
     if isa(anno_color, Nothing)
-        cell_anno=unique(anno_df[!,column])
-        c_map=hex.(Colors.distinguishable_colors(length(cell_anno), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15)))
+        cell_anno=unique(anno_df[!,anno])
+        c_map= Colors.distinguishable_colors(length(cell_anno), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
+        c_map = "#" .* hex.(c_map)
         anno_color=Dict(cell_anno .=> c_map)
     end
-    anno_df = DataFrames.transform(anno_df, column => ByRow(x -> anno_color[x]) => :new_color)
+    anno_df = DataFrames.transform(anno_df, anno => ByRow(x -> anno_color[x]) => :new_color)
     fig = MK.Figure(resolution=canvas_size)
     fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
                 xgridvisible = false,ygridvisible = false);
@@ -559,18 +560,18 @@ function sp_dim_plot(sp::Union{CartanaObject, VisiumObject}, anno::Union{Symbol,
     return MK.current_figure()
 end
 
-function sp_highlight_cells(sp::Union{CartanaObject, VisiumObject}, cell_hightlight::String, group_label::Union{String,Symbol};
+function sp_highlight_cells(sp::Union{CartanaObject, VisiumObject}, cell_hightlight::String, anno::Union{String,Symbol};
     canvas_size=(900,1000),stroke_width::Float64=0.1, stroke_color="black", cell_color::String="red",
     marker_size=2,x_lims=nothing, y_lims=nothing)
-    coord_cell=deepcopy(sp.spmetaData.cell)
+    coord_cells=deepcopy(sp.spmetaData.cell)
     if isa(x_lims, Nothing)
         x_lims=(minimum(sp.spmetaData.cell.x)-0.05*maximum(sp.spmetaData.cell.x),1.05*maximum(sp.spmetaData.cell.x))
     end
     if isa(y_lims, Nothing)
         y_lims=(minimum(sp.spmetaData.cell.y)-0.05*maximum(sp.spmetaData.cell.y),1.05*maximum(sp.spmetaData.cell.y))
     end
-    coord_cells[!,group_label]=string.(coord_cells[!,group_label])
-    coord_cells=DataFrames.transform(coord_cells, group_label => ByRow(name -> name == cell_hightlight ? name : "others") => :newcell)
+    coord_cells[!,anno]=string.(coord_cells[!,anno])
+    coord_cells=DataFrames.transform(coord_cells, anno => ByRow(name -> name == cell_hightlight ? name : "others") => :newcell)
     coord_cells=DataFrames.transform(coord_cells, :newcell => ByRow(name -> name =="others" ? "gray90" : cell_color) => :newcolor)
     fig = MK.Figure(resolution=canvas_size)
     fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, 
@@ -583,7 +584,7 @@ function sp_highlight_cells(sp::Union{CartanaObject, VisiumObject}, cell_hightli
     MK.current_figure()
 end
 
-function sp_gene_rank(sp::CartanaObject, cluster::String, celltype::String; num_gene::Int64=20)
+function sp_gene_rank(sp::CartanaObject, celltype::String, cluster::String; num_gene::Int64=20)
     gene_list=unique(sp.spmetaData.molecule.gene)
     all_df=DataFrame()
     for (i, gene) in enumerate(gene_list)

@@ -1,4 +1,4 @@
-function polygons_cell_mapping(sp::CartanaObject)
+function polygons_cell_mapping(sp::CartanaObject; anno::Union{String, Symbol}="cluster")
     polygons=sp.polygonData
     center_df=DataFrame()
     cell=Int[]
@@ -36,7 +36,7 @@ function polygons_cell_mapping(sp::CartanaObject)
     println("Polygons have been mapped to the cells!")
     my_annot=DataFrame(polygon_number=collect(1:length(query_dist)), mapped_cell=query_dist);
     from=sp.spmetaData.cell.cell
-    to=sp.spmetaData.cell.cluster
+    to=sp.spmetaData.cell[!, anno]
     prefix = split(sp.spmetaData.cell.cell[1], "_")
     if length(prefix) > 1
         my_annot.mapped_cell = prefix[1] * "_" .* string.(my_annot.mapped_cell);
