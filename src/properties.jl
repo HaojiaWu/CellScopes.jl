@@ -28,7 +28,7 @@ function Base.show(io::IO, count::AbstractCount)
     [println("- ", string(i)) for i in fieldnames(typeof(count))]
 end
 
-function Base.show(io::IO, obj_type::Union{AbstractDimReduction, ClusteringObject, VariableGeneObject, UndefinedObject, SpaImputeObj, VisiumObject})
+function Base.show(io::IO, obj_type::Union{AbstractDimReduction, ClusteringObject, VariableGeneObject, UndefinedObject, SpaImputeObj, VisiumImgObject})
     println(io, string(typeof(obj_type)))
     println("All fields:")
     [println("- ", string(i)) for i in fieldnames(typeof(obj_type))]
@@ -46,11 +46,15 @@ matchtype(field) = @match field begin
     uns::UndefinedObject => println("- Undefined slot")
 end
 
-function Base.show(io::IO, sp_obj::CartanaObject)
-    println(io, "CartanaObject in CellScopes.jl")
+function Base.show(io::IO, sp_obj::Union{CartanaObject, VisiumObject})
+    if isa(sp_obj, CartanaObject)
+        println(io, "CartanaObject in CellScopes.jl")
+    else
+        println(io, "VisiumObject in CellScopes.jl")
+    end
     println("Genes x Cells = ", size(sp_obj.rawCount.count_mtx)[1], " x ", size(sp_obj.rawCount.count_mtx)[2])
     println("Available data:")
-    all_field = fieldnames(CartanaObject)
+    all_field = fieldnames(typeof(sp_obj))
     for i in all_field
         if isdefined(sp_obj, i)
             println("- ", string(i))
