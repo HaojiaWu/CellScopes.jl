@@ -82,13 +82,12 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject}, gene_list::Unio
     if layer === "cells"
             if isa(sp, VisiumObject)
                 coord_cell = deepcopy(sp.spmetaData)
-                coord_cell[!, anno] = sp.metaData[!, anno]
                 x_col = Symbol(x_col)
                 y_col = Symbol(y_col)
-                rename!(coord_cell, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
+                cell_col = Symbol(cell_col)
+                rename!(coord_cell, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [cell_col, x_col, y_col])
             else
                 coord_cell=deepcopy(sp.spmetaData.cell)
-                coord_cell[!, anno] = string.(coord_cell[!, anno])
             end
                 if isa(sp, VisiumObject)
                     marker_size=8
