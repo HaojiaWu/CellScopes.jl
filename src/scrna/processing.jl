@@ -92,7 +92,7 @@ function run_pca(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; method
     return sc_obj
 end
 
-function run_clustering(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
+function run_clustering_atlas(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
     if isdefined(sc_obj.dimReduction, :umap)
         indices = sc_obj.dimReduction.umap.knn_data
     else
@@ -125,6 +125,43 @@ function run_clustering(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject};
     sc_obj.clustData = cluster_obj
     sc_obj.metaData.cluster = df.cluster
     return sc_obj
+end
+
+function RunClustering_small(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
+    knn_data = [collect(i) for i in eachrow(sc_obj.dimReduction.pca.cell_embedding)]
+    graph = nndescent(knn_data, n_neighbors, metric)
+    indices, dist_mat = knn_matrices(graph);
+    n = size(indices, 2)  
+    adj_mat = zeros(Int64, n, n)
+    for i in 1:n
+        adj_mat = Folds.collect(adj_mat[indices[j, i], i] = 1 for j in 1:size(indices, 1))
+        adj_mat = Folds.collect(adj_mat[i, indices[j, i]] = 1 for j in 1:size(indices, 1))
+    end
+    Random.seed!(seed_use)
+    result = Leiden.leiden(adj_mat, resolution = res);
+    df = DataFrame()
+    for (i, members) in enumerate(result.partition)
+        cells = sc_obj.rawCount.cell_name[members]
+        df1 = DataFrame(cluster = repeat([string(i)], length(cells)), cell_id=cells)
+        df = [df;df1]
+    end
+    df = df[indexin(colnames(sc_obj), df.cell_id),:];
+    metric_type = string(metric)
+    cluster_obj = ClusteringObject(df, metric_type, adj_mat, result, res)
+    sc_obj.clustData = cluster_obj
+    sc_obj.metaData.cluster = df.cluster
+    return sc_obj
+end
+
+function RunClustering(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
+    n = size(sc_obj.rawCount.count_mtx, 2)
+    if n < 10000
+        obj = RunClustering_small(sc_obj; n_neighbors=n_neighbors, metric=metric, res= res, seed_use=seed_use)
+        return obj
+    else
+        obj = RunClustering_atlas(sc_obj; n_neighbors=n_neighbors, metric=metric, res= res, seed_use=seed_use)
+        return obj
+    end
 end
 
 function run_tsne(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; ndim::Int64 = 2, reduce_dims::Int64 = 10, max_iter::Int64 = 2000, perplexit::Real = 30.0, pca_init::Bool = true,  seed_use::Int64 = 1234)
