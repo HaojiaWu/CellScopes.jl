@@ -56,9 +56,9 @@ function read_visium(visium_dir::String;
     cell_file = visium_dir * "/filtered_feature_bc_matrix/barcodes.tsv.gz"
     count_file = visium_dir * "/filtered_feature_bc_matrix/matrix.mtx.gz"
     # prepare counts
-    genes = DataFrame(load(File(format"TSV", gene_file); header_exists=false))
+    genes = DataFrame(CSVFiles.load(CSVFiles.File(format"TSV", gene_file); header_exists=false))
     genes = string.(genes.Column2)
-    cells = DataFrame(load(File(format"TSV", cell_file); header_exists=false))
+    cells = DataFrame(CSVFiles.load(CSVFiles.File(format"TSV", cell_file); header_exists=false))
     cells = string.(cells.Column1)
     counts = MatrixMarket.mmread(gunzip(count_file))
     gene_kept = (vec ∘ collect)(rowSum(counts).> min_cell)
