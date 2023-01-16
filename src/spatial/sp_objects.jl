@@ -118,19 +118,28 @@ mutable struct CartanaObject <: AbstractImagingObj
     end
 end
 
+mutable struct VisiumImgObject <: AbstractImagingObj
+    highresImage::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Nothing}
+    lowresImage::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Nothing}
+    detectedTissue::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Nothing}
+    alignedImage::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Nothing}
+    jsonParameters::Union{Dict{String, Any}, Nothing}
+    VisiumImgObject(highresImage, lowresImage, detectedTissue, alignedImage, jsonParameters) = new(highresImage, lowresImage, detectedTissue, alignedImage, jsonParameters)
+end
+
 mutable struct VisiumObject <: AbstractSequencingObj
     rawCount::Union{RawCountObject, Nothing}
     normCount::Union{NormCountObject, Nothing}
     scaleCount::Union{ScaleCountObject, Nothing}
     metaData::Union{DataFrame, Nothing}
-    spmetaData::Union{SpaMetaObj, Nothing}
+    spmetaData::Union{DataFrame, Nothing}
     varGene::Union{VariableGeneObject, Nothing}
     dimReduction::Union{ReductionObject, Nothing}
     clustData::Union{ClusteringObject, Nothing}
-    coordData::Union{SpaCoordObj, Nothing}
-    imageData::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}}
+    imageData::Union{VisiumImgObject, Nothing}
     function VisiumObject(raw_count::RawCountObject; 
             meta_data::Union{DataFrame, Nothing} = nothing,
+            sp_meta::Union{DataFrame, Nothing} = nothing,
             min_gene::Int64 = 0,
             min_cell::Int64 = 0,
             prefix::Union{String, Nothing} = nothing,
@@ -143,11 +152,6 @@ mutable struct VisiumObject <: AbstractSequencingObj
         cell_kept = (vec ∘ collect)(colSum(count_mat) .> min_gene)
         cells = cells[cell_kept]
         count_mat = count_mat[gene_kept, cell_kept]
-        if isa(meta_data, Nothing)
-            nFeatures = vec(colSum(count_mat))
-            nGenes = vec(sum(x->x>0, count_mat, dims=1))
-            meta_data = DataFrame(Cell_id = raw_count.cell_name, nFeatures=nFeatures, nGenes = nGenes)
-        end
         if prefix !== nothing
             println("Adding prefix " * prefix * " to all cells...")
             cellnames = prefix * "_" .* raw_count.cell_name
@@ -163,8 +167,9 @@ mutable struct VisiumObject <: AbstractSequencingObj
         end
         count_obj = RawCountObject(count_mat, cells, genes)
         visium_obj = new(count_obj)
-        meta = SpaMetaObj(meta_data)
-        visium_obj.spmetaData = meta
+        if sp_meta !== nothing
+            visium_obj.spmetaData = sp_meta
+        end
         visium_obj.metaData = meta_data
         return visium_obj
         println("VisiumObject was successfully created!")

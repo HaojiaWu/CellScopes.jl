@@ -491,3 +491,15 @@ function ctobj_to_df(ct_obj::AbstractCount)
     return count_df
 end
 
+function gunzip(fname) ## function from https://github.com/JuliaSparse/MatrixMarket.jl/blob/570c6d4e443d464605264b30c76b32bec102b3b8/test/dl-matrixmarket.jl
+    destname, ext = splitext(fname)
+    if ext != ".gz"
+        error("gunzip: $fname: unknown suffix -- ignored")
+    end
+    open(destname, "w") do f
+        GZip.open(fname) do g
+            write(f, read(g, String))
+        end
+    end
+    destname
+end

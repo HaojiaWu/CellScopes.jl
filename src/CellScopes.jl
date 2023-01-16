@@ -42,6 +42,7 @@ import PlotlyJS as plyjs
 using Images
 using Polynomials
 using FileIO
+using CSVFiles
 
 include("scrna/objects.jl")
 include("spatial/sp_objects.jl")

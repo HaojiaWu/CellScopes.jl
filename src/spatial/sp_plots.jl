@@ -1,76 +1,4 @@
 
-function plot_transcript_polygons(sp::AbstractSpaObj; 
-        genes::Union{Vector, Symbol, String}="Podxl", 
-        colors::Union{Vector, Symbol, String}="blue", 
-        bg_color::Union{Vector, Symbol, String}="gray95",
-        markersize =2, segline_size=0.5, offset=(0, 0),
-        canvas_size=(5000,6000),x_lims=nothing, y_lims=nothing, 
-        annotation::Union{<:AbstractVector, Symbol, Nothing}=nothing,
-        ann_colors::Union{Nothing, Dict}=nothing, noise_ann = nothing,
-        show_legend=false,legend_fontsize=12, transparency=0.5,
-        is_noise::Union{Vector, BitArray, Symbol, Nothing}=nothing,
-        legend_kwargs::Union{Dict, NamedTuple, Nothing}=nothing,
-        noise_kwargs::Union{Dict, NamedTuple, Nothing}=nothing
-    )
-    df_spatial=sp.spmetaData.cell
-    polygons=sp.polygonData
-    legend_args_default = (bgcolor=Colors.RGBA(1, 1, 1, 0.85),);
-    legend_kwargs = B.update_args(legend_args_default, legend_kwargs)
-    noise_args_default = (marker=:xcross, markersize=(0.3 * markersize), strokewidth=0, color="gray50")
-    noise_kwargs = B.update_args(noise_args_default, noise_kwargs)
-    if annotation !== nothing
-        if typeof(annotation) === Symbol
-            annotation = df_spatial[!,annotation]
-        end
-        annotation = ["$a" for a in annotation]
-        if noise_ann !== nothing
-            noise_ann = "$noise_ann"
-        end
-    end
-    other_genes=unique(df_spatial.gene_id[Not(in.(df_spatial.gene_id, [Set(genes)]))])
-    other_colors=repeat([(bg_color,0.1)],length(other_genes))
-    all_genes=[genes; other_genes]
-    all_colors=[colors; other_colors]
-    map_color=Dict(all_genes .=> all_colors)
-    df_spatial=DataFrames.transform(df_spatial, :gene_id => ByRow(x -> map_color[x]) => :new_color)
-    if isa(x_lims, Nothing)
-        x_lims=(minimum(sp.spmetaData.cell.x)-0.05*maximum(sp.spmetaData.cell.x),1.05*maximum(sp.spmetaData.cell.x))
-    end
-    if isa(y_lims, Nothing)
-        y_lims=(minimum(sp.spmetaData.cell.y)-0.05*maximum(sp.spmetaData.cell.y),1.05*maximum(sp.spmetaData.cell.y))
-    end   
-    fig = MK.Figure(resolution=canvas_size)
-    fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false);
-    ann_vals = annotation[annotation .!= noise_ann] |> unique |> sort
-    c_map = Colors.distinguishable_colors(length(ann_vals), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
-    for (color, ann) in zip(c_map, ann_vals)
-        style_dict = (ann_colors === nothing) ? Dict() : Dict(:color => ann_colors[ann])
-        MK.scatter!(df_spatial.x[annotation .== ann] .+ offset[1], df_spatial.y[annotation .== ann] .+ offset[2];
-            strokewidth=0, markersize=markersize, label=ann, color=color, style_dict...)
-    end
-    if show_legend
-        MK.axislegend(;legend_kwargs...)
-    end
-    MK.poly!([MK.Point2.(eachrow(p .+ [offset[1] offset[2]])) for p in polygons]; strokecolor="black", color="transparent", strokewidth=segline_size,label="")
-    colors2 = df_spatial[!,:new_color]
-    if typeof(is_noise) === Symbol
-        is_noise = df_spatial[!,is_noise]
-    end
-    if is_noise !== nothing
-        df_noise = df_spatial[is_noise,:]
-        df_spatial = df_spatial[.!is_noise,:]
-        colors2 = colors2[.!is_noise]
-    end
-    if is_noise !== nothing
-        MK.scatter!(df_noise.x .+ offset[1], df_noise.y .+ offset[2];  noise_kwargs...)
-    end
-    MK.scatter!(df_spatial.x .+ offset[1], df_spatial.y .+ offset[2]; color=colors2,
-            strokewidth=0, markersize=markersize)
-    MK.xlims!(MK.current_axis(), xlims .+ offset[1])
-    MK.ylims!(MK.current_axis(), ylims .+ offset[2])
-    return MK.current_figure()
-end
-
 function sp_dot_plot(sp::Union{CartanaObject, VisiumObject}, genes::Union{Vector, String},
     cluster::Union{Symbol, String};expr_cutoff::Union{Float64, Int64}=0, split_by::Union{String, Nothing}=nothing,
     x_title="Gene",y_title="Cell type", cell_order::Union{Vector, String, Nothing}=nothing,
@@ -274,165 +202,6 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject}, gene_list::Unio
         end
 end
 
-#= Scenario where it needs split_by condition is less likely to happen in spatial data so this function will be dropped.
-function SpatialGeneDimGraphSplit(sp::Union{CartanaObject, VisiumObject}, gene::String, split_by::String; 
-    x_col::Union{String, Symbol}="x", y_col::Union{String, Symbol}="y", scale = false,
-    cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order=true, 
-        color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray96","red","red3"])
-               coord_cell=deepcopy(sp.spmetaData.cell)
-               if isa(sp, VisiumObject)
-                   marker_size=8
-               else
-                   marker_size=2
-               end
-               if isdefined(sp, :normCount)
-                   norm_counts=sp.normCount
-               else
-                    error("Please normalize the data first!")
-               end
-                if isa(x_lims, Nothing)
-                    x_lims=(minimum(coord_cell[!, x_col])-0.05*maximum(coord_cell[!, x_col]),1.05*maximum(coord_cell[!, x_col]))
-                end
-                if isa(y_lims, Nothing)
-                    y_lims=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
-                end
-                group_names = unique(coord_cell[!, split_by])
-                gene_expr = subset_count(norm_counts; genes = [gene])
-                gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
-                if scale
-                    gene_expr = unit_range_scale(gene_expr)
-                end
-                df = DataFrame()
-                df.gene_expr = gene_expr
-                coord_cell[!, cell_col] = string.(coord_cell[!, cell_col])
-                df[!, cell_col] = string.(coord_cell[!, cell_col])
-                df.split_by = string.(coord_cell[!, split_by])
-                df_plt = innerjoin(df, coord_cell, on = cell_col)
-                c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
-                if sum(gene_expr) > 0.0
-                    colors = get.(Ref(c_map), (gene_expr .- minimum(gene_expr)) ./ maximum(gene_expr))
-                    plt_color = "#" .* hex.(colors)
-                    df_plt.plt_color = plt_color
-                else
-                    plt_color = repeat([color_keys[1]], length(gene_expr))
-                    df_plt.plt_color = plt_color
-                end
-                fig = MK.Figure(resolution = (500 * length(group_names) ,550))
-                for (i, group_name) in enumerate(group_names)
-                    df_plt1 = filter(:split_by => x -> x == group_name, df_plt)
-                    if order
-                        df_plt1 = sort(df_plt1,:gene_expr)
-                    end
-                    ax1 = MK.Axis(fig[1,i]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
-                                        xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
-                                        xgridvisible = false, ygridvisible = false,yreversed=false, title = group_name, 
-                                        titlesize = 26)
-                    MK.scatter!(ax1, df_plt1[!, x_col], df_plt1[!, y_col]; color = df_plt1.plt_color, strokewidth = 0, markersize = marker_size)
-                end
-                MK.Colorbar(fig[1,length(group_names)+1], label = gene, colormap = c_map)
-                MK.current_figure()
-end
-=#
-
-#= vegalite for ploting large data points is too slow.
-function SpatialGeneDimGraphOverlay(sp::Union{CartanaObject, VisiumObject}, genes; layer::String="cells",
-    color_scheme::String="magma",reverse_color::Bool=true, 
-    molecule_colors::Union{Vector, Nothing}=nothing, overlay::Bool=false,
-    order::Bool=false,x_lims=nothing, y_lims=nothing, pt_size=5,
-    fig_height::Union{String, Int64,Nothing}=nothing, fig_width::Union{String, Int64, Nothing}=nothing)
-    coord_cell=deepcopy(sp.spmetaData.cell)
-    if isdefined(sp, :normCount)
-        norm_counts=sp.normCount
-    else
-         error("Please normalize the data first!")
-    end
-    coord_molecules=sp.spmetaData.molecule
-    if isa(x_lims, Nothing)
-        x_lims=(minimum(sp.spmetaData.cell.x)-0.05*maximum(sp.spmetaData.cell.x),1.05*maximum(sp.spmetaData.cell.x))
-    end
-    if isa(y_lims, Nothing)
-        y_lims=(minimum(sp.spmetaData.cell.y)-0.05*maximum(sp.spmetaData.cell.y),1.05*maximum(sp.spmetaData.cell.y))
-    end
-    limits(x,y)=x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2]
-    if layer==="cells"
-        all_df=DataFrame()
-        for (i, gene) in enumerate(genes)
-            gene_expr = subset_count(norm_counts; genes = [gene])
-            gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
-            df = DataFrame()
-            coord_cell.cell=string.(coord_cell.cell)
-            df.cell=string.(coord_cell[!, :cell])
-            df_plt=innerjoin(df, coord_cell, on = :cell)
-            df_plt.gene.=gene
-            all_df=[all_df; df_plt]
-        end
-        if order
-            sort!(all_df, :gene_expr)
-        end
-        all_df=filter([:x, :y] => limits,all_df)
-        p=all_df |> @vlplot(
-            mark={:point, filled=true, size=pt_size},
-            x={:x,axis={title="", grid=false,ticks=false, labels=false},
-                scale={zero=false}},
-            y={:y,axis={title="", grid=false,ticks=false, labels=false},
-                scale={zero=false}},
-            color={"gene_expr:q", scale={scheme=color_scheme,reverse=reverse_color},
-            legend={title="Expression", labelFontSize=15}},
-            column={:gene, header={labelFontSize=20, title=nothing}},
-            width=fig_width, height=fig_height)  
-    elseif layer==="molecules"
-        new_df=DataFrames.transform(coord_molecules, :gene => ByRow(name -> name in genes ? name : "others") => :new_gene)
-        if overlay          
-            genes2=append!(["others"],genes)
-            molecule_colors2=append!(["#cdcdd1"],molecule_colors)
-            if order
-                new_df=reorder(new_df, :new_gene,genes2)
-            end
-            new_df=filter([:x, :y] => limits,new_df)
-            p=new_df |> @vlplot(
-                    mark={:point, filled=true, size=pt_size},
-                    x={:x,axis={title="", grid=false,ticks=false, labels=false},
-                        scale = {zero=false}},
-                    y={:y,axis={title="",grid=false,ticks=false, labels=false},
-                        scale = {zero=false}},
-                    color={:new_gene,  
-                        scale={domain=genes2,
-                            range=molecule_colors2},
-                        legend={values=genes, labelFontSize=12, title="Genes"},
-                        },width=fig_width, height=fig_height)
-        else
-            all_df=DataFrame()
-            for (i, gene) in enumerate(genes)
-                df_plt=DataFrames.transform(coord_molecules, :gene => ByRow(name -> name ==gene ? name : "others") => :new_gene)
-                df_plt=DataFrames.transform(coord_molecules, :gene => ByRow(name -> name ==gene ? "target" : "background") => :forcolor)
-                df_plt.facet.=[gene]
-                all_df=[all_df; df_plt]
-            end
-            if order
-                all_df = reorder(all_df, :forcolor, ["background","target"])
-            end
-            all_df=filter([:x, :y] => limits,all_df)
-            p=all_df |> @vlplot(
-                    mark={:point, filled=true, size=pt_size},
-                    x={:x,axis={title="", grid=false,ticks=false, labels=false},
-                        scale = {zero=false}},
-                    y={:y,axis={title="",grid=false,ticks=false, labels=false},
-                        scale = {zero=false}},
-                    color={:forcolor,  
-                        scale={domain=["target","background"],
-                            range=["red","#cdcdd1"]},
-                        legend={labelFontSize=12, title=""},
-                        },
-                    column={:facet, header={labelFontSize=20, title=nothing}},
-                    width=fig_width, height=fig_height)
-        end
-        return p
-    else
-        println("Layer must be \"cells\" or \"molecules\"")
-    end
-end
-=#
-
 function plot_gene_polygons(sp::CartanaObject, gene::String;
     color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray94","orange","red3"],
     x_lims=nothing, y_lims=nothing,canvas_size=(900,1000),stroke_width=0,stroke_color="black"
@@ -452,7 +221,7 @@ function plot_gene_polygons(sp::CartanaObject, gene::String;
     plt_color="#" .* hex.(colors)
     fig = MK.Figure(resolution=canvas_size)
     fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
-        xgridvisible = false,ygridvisible = false);
+        xgridvisible = false,ygridvisible = false)
     MK.poly!([MK.Point2.(eachrow(p)) for p in polygons]; strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width,label="")
     MK.xlims!(MK.current_axis(), x_lims)
     MK.ylims!(MK.current_axis(), y_lims)
@@ -485,6 +254,71 @@ function plot_cell_polygons(sp::CartanaObject, anno;
     fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
                 xgridvisible = false,ygridvisible = false);
     MK.poly!([MK.Point2.(eachrow(p)) for p in polygons]; strokecolor=stroke_color, color=anno_df.new_color, strokewidth=stroke_width,label="")
+    MK.xlims!(MK.current_axis(), x_lims)
+    MK.ylims!(MK.current_axis(), y_lims)
+    return MK.current_figure()
+end
+
+function plot_transcript_polygons(sp::CartanaObject; 
+    gene_list::Union{Vector, Symbol, String, Nothing}=nothing, 
+    gene_colors::Union{Vector, Symbol, String, Nothing}=nothing, 
+    bg_color::Union{Vector, Symbol, String}="gray95",
+    stroke_color::Union{Vector, Symbol, String}="black",
+    marker_size = 2, stroke_width=0.1,
+    canvas_size=(900,1000),x_lims=nothing, y_lims=nothing, 
+    anno::Union{Symbol, String, Nothing}=nothing,
+    ann_colors::Union{Nothing, Dict}=nothing
+)
+    if isa(gene_list, Nothing)
+        error("Please enter a gene or a list of gene. \"gene_list\" can not be empty.")
+    end
+    if isa(gene_colors, Nothing)
+        error("Please define the colors to label the genes. \"gene_colors\" can not be empty.")
+    end
+    df_spatial=sp.spmetaData.molecule
+    polygons=sp.polygonData
+    df_spatial[!, anno] = string.(df_spatial[!, anno])
+    other_genes=unique(df_spatial.gene[Not(in.(df_spatial.gene, [Set(gene_list)]))])
+    other_colors=repeat([(bg_color,0.1)],length(other_genes))
+    all_genes=[gene_list; other_genes]
+    all_colors=[gene_colors; other_colors]
+    map_color=Dict(all_genes .=> all_colors)
+    df_spatial=DataFrames.transform(df_spatial, :gene => ByRow(x -> map_color[x]) => :new_color)
+    if isa(x_lims, Nothing)
+        x_lims=(minimum(df_spatial.x)-0.05*maximum(df_spatial.x),1.05*maximum(df_spatial.x))
+    end
+    if isa(y_lims, Nothing)
+        y_lims=(minimum(df_spatial.y)-0.05*maximum(df_spatial.y),1.05*maximum(df_spatial.y))
+    end 
+    if isa(anno, Nothing)
+        error("Please define the cell type annotation column. \"anno\" can not be empty.")
+    end
+    if isa(anno, String)
+        anno = Symbol(anno)
+    end
+    anno_df=sp.spmetaData.polygon
+    if isa(ann_colors, Nothing)
+        cell_anno=unique(anno_df[!,anno])
+        c_map=Colors.distinguishable_colors(length(cell_anno), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
+        c_map = "#" .* hex.(c_map)
+        ann_colors=Dict(cell_anno .=> c_map)
+    end
+    anno_df[!, anno] = string.(anno_df[!, anno])
+    anno_df=DataFrames.transform(anno_df, anno => ByRow(x -> ann_colors[x]) => :new_color)
+    df_spatial1=filter(:gene => x -> x in other_genes, df_spatial)
+    colors1 = df_spatial1[!,:new_color]
+    df_spatial2=filter(:gene => x -> x in gene_list, df_spatial)
+    colors2 = df_spatial2[!,:new_color]
+    fig = MK.Figure(resolution=canvas_size)
+    fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, 
+        xticksvisible=false, xticklabelsvisible=false, yticksvisible=false, 
+        yticklabelsvisible=false, xgridvisible = false, ygridvisible = false)
+    MK.poly!([MK.Point2.(eachrow(p)) for p in polygons]; 
+        strokecolor=stroke_color, color=anno_df.new_color, strokewidth=stroke_width,label="")
+    MK.scatter!(df_spatial1.x, df_spatial1.y; color=colors1,
+            strokewidth=0, markersize=marker_size*0.25)
+    MK.scatter!(df_spatial2.x, df_spatial2.y; color=colors2,
+            strokewidth=0, markersize=marker_size)
     MK.xlims!(MK.current_axis(), x_lims)
     MK.ylims!(MK.current_axis(), y_lims)
     return MK.current_figure()
