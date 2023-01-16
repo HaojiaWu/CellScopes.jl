@@ -80,7 +80,16 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject}, gene_list::Unio
         n_cols = 3
     end
     if layer === "cells"
+            if isa(sp, VisiumObject)
+                coord_cell = deepcopy(sp.spmetaData)
+                coord_cell[!, anno] = sp.metaData[!, anno]
+                x_col = Symbol(x_col)
+                y_col = Symbol(y_col)
+                rename!(coord_cell, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
+            else
                 coord_cell=deepcopy(sp.spmetaData.cell)
+                coord_cell[!, anno] = string.(coord_cell[!, anno])
+            end
                 if isa(sp, VisiumObject)
                     marker_size=8
                 else
@@ -140,6 +149,9 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject}, gene_list::Unio
                 end
                 MK.current_figure()
         elseif layer === "transcripts"
+                if isa(sp, VisiumObject)
+                    error("Visium object doesn't support transcript plot.")
+                end
                 coord_molecules=deepcopy(sp.spmetaData.molecule)
                 if isa(x_lims, Nothing)
                     x_lims=(minimum(coord_molecules[!, x_col])-0.05*maximum(coord_molecules[!, x_col]),1.05*maximum(coord_molecules[!, x_col]))
