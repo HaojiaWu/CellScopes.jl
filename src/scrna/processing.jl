@@ -133,9 +133,15 @@ function run_clustering_small(sc_obj::Union{scRNAObject, VisiumObject, CartanaOb
     indices, dist_mat = knn_matrices(graph);
     n = size(indices, 2)  
     adj_mat = zeros(Int64, n, n)
-    for i in 1:n
-        adj_mat = Folds.collect(adj_mat[indices[j, i], i] = 1 for j in 1:size(indices, 1))
-        adj_mat = Folds.collect(adj_mat[i, indices[j, i]] = 1 for j in 1:size(indices, 1))
+    for i in 1:size(indices, 2)
+        for j in 1:size(indices, 1)
+            adj_mat[indices[j, i], i] = 1
+        end
+    end
+    for i in 1:size(indices, 2)
+        for j in 1:size(indices, 1)
+            adj_mat[i, indices[j, i]] = 1
+        end
     end
     Random.seed!(seed_use)
     result = Leiden.leiden(adj_mat, resolution = res);
