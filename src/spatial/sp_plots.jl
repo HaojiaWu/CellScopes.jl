@@ -335,7 +335,7 @@ function sp_dim_plot(sp::Union{CartanaObject, VisiumObject}, anno::Union{Symbol,
         anno_df[!, anno] = sp.metaData[!, anno]
         x_col = Symbol(x_col)
         y_col = Symbol(y_col)
-        rename!(anno_df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] => [:cell, x_col, y_col])
+        rename!(anno_df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
     else
         anno_df=deepcopy(sp.spmetaData.cell)
         anno_df[!, anno] = string.(anno_df[!, anno])
