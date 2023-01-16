@@ -1,7 +1,7 @@
 colSum(mtx::AbstractMatrix{<:Real}) = sum(mtx, dims=1)
 rowSum(mtx::AbstractMatrix{<:Real}) = sum(mtx, dims=2)
-rownames(sc_obj::scRNAObject) = sc_obj.rawCount.gene_name
-colnames(sc_obj::scRNAObject) = sc_obj.rawCount.cell_name
+rownames(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}) = sc_obj.rawCount.gene_name
+colnames(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}) = sc_obj.rawCount.cell_name
 rownames(ct_mat::AbstractCount) = ct_mat.gene_name
 colnames(ct_mat::AbstractCount) = ct_mat.cell_name
 
