@@ -330,8 +330,16 @@ function sp_dim_plot(sp::Union{CartanaObject, VisiumObject}, anno::Union{Symbol,
         marker_size=1, label_size=50, label_color="black", label_offset=(0,0), do_label=true, do_legend=true,
         legend_size = 10, legend_fontsize = 16
     )
-    anno_df=deepcopy(sp.spmetaData.cell)
-    anno_df[!, anno] = string.(anno_df[!, anno])
+    if isa(sp, VisiumObject)
+        anno_df = deepcopy(sp.spmetaData)
+        anno_df[!, anno] = sp.metaData[!, anno]
+        x_col = Symbol(x_col)
+        y_col = Symbol(y_col)
+        rename!(anno_df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] => [:cell, x_col, y_col])
+    else
+        anno_df=deepcopy(sp.spmetaData.cell)
+        anno_df[!, anno] = string.(anno_df[!, anno])
+    end
     if isa(x_lims, Nothing)
         x_lims=(minimum(anno_df[!,x_col])-0.05*maximum(anno_df[!,x_col]),1.05*maximum(anno_df[!,x_col]))
     end

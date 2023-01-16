@@ -84,5 +84,6 @@ function read_visium(visium_dir::String;
     vsm_obj = VisiumObject(rawcount)
     vsm_obj.spmetaData = positions
     vsm_obj.imageData = image_obj
+    vsm_obj.spmetaData = vsm_obj.spmetaData[indexin(vsm_obj.metaData.Cell_id, vsm_obj.spmetaData.barcode),:]
     return vsm_obj
 end
