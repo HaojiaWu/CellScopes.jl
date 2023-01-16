@@ -43,6 +43,7 @@ using Images
 using Polynomials
 using FileIO
 using CSVFiles
+using GZip
 
 include("scrna/objects.jl")
 include("spatial/sp_objects.jl")
