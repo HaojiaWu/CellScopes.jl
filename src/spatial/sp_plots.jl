@@ -71,8 +71,8 @@ end
 
 function sp_feature_plot(sp::Union{CartanaObject, VisiumObject}, gene_list::Union{Vector{String}, Tuple{String}}; layer::String = "cells", x_col::Union{String, Symbol}="x",
     y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order::Bool=true, scale::Bool = false,titlesize::Int64=24, 
-    height::Real = 500, width::Real = 500, combine = true,
-    color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray94","orange","red3"])
+    height::Real = 500, width::Real = 500, combine = true, img_res::String = "low",  adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3,
+    color_keys=["gray94","orange","red3"], alpha::Real = 1)
     n_rows = Int(ceil(length(gene_list) / 3))
     if length(gene_list) < 4
         n_cols = length(gene_list)
@@ -80,137 +80,159 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject}, gene_list::Unio
         n_cols = 3
     end
     if layer === "cells"
-            if isa(sp, VisiumObject)
-                coord_cell = deepcopy(sp.spmetaData)
-                x_col = Symbol(x_col)
-                y_col = Symbol(y_col)
-                cell_col = Symbol(cell_col)
-                rename!(coord_cell, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [cell_col, x_col, y_col])
+        if isa(sp, VisiumObject)
+            coord_cell = deepcopy(sp.spmetaData)
+            x_col = Symbol(x_col)
+            y_col = Symbol(y_col)
+            rename!(coord_cell, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
+            if img_res == "high"
+                scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
+            elseif img_res == "low"
+                scale_factor = sp.imageData.jsonParameters["tissue_lowres_scalef"]
             else
-                coord_cell=deepcopy(sp.spmetaData.cell)
+                error("img_res can only be \"high\" or \"low\"!")
             end
+            coord_cell[!, x_col] =  coord_cell[!, x_col] .* scale_factor
+            coord_cell[!, y_col] =  coord_cell[!, y_col] .* scale_factor
+        else
+            coord_cell=deepcopy(sp.spmetaData.cell)
+        end
+            if isdefined(sp, :normCount)
+                norm_counts=sp.normCount
+            else
+                error("Please normalize the data first!")
+            end
+            if isa(x_lims, Nothing)
+                x_lims=(minimum(coord_cell[!, x_col])-0.05*maximum(coord_cell[!, x_col]),1.05*maximum(coord_cell[!, x_col]))
+            end
+            if isa(y_lims, Nothing)
+                y_lims=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
+            end
+            c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
+            fig = MK.Figure(resolution = (width * n_cols, height * n_rows))
+            for (i, gene) in enumerate(gene_list)
+                gene_expr = subset_count(norm_counts; genes = [gene])
+                gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
+                if scale
+                    gene_expr = unit_range_scale(gene_expr)
+                end
+                df = DataFrame()
+                df.gene_expr = gene_expr
+                coord_cell[!, cell_col] = string.(coord_cell[!, cell_col])
+                df[!, cell_col] = string.(coord_cell[!, cell_col])
+                df_plt = innerjoin(df, coord_cell, on = cell_col)
+                df_plt.gene .= gene
+                if sum(gene_expr) > 0.0
+                    colors = get(c_map, gene_expr, :extrema)
+                    plt_color = "#" .* hex.(colors)
+                    plt_color = [(i, alpha) for i in plt_color]
+                    df_plt.plt_color = plt_color
+                    if order
+                        df_plt = sort(df_plt,:gene_expr)
+                    end
+                else
+                    plt_color = repeat([color_keys[1]], length(gene_expr))
+                    df_plt.plt_color = plt_color
+                end
+                n_row = Int(ceil(i/3))
+                if i < 4
+                    n_col1 = 2i-1
+                    n_col2 = 2i
+                else
+                    n_col1 = 2*(i-3*(n_rows-1))-1
+                    n_col2 = 2*(i-3*(n_rows-1))
+                end
+                ax1 = MK.Axis(fig[n_row,n_col1]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
+                xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
+                xgridvisible = false, ygridvisible = false,yreversed=false, title = gene_list[i], 
+                titlesize = titlesize, xlabel = "", ylabel = "", 
+                xlabelsize = titlesize -4, ylabelsize = titlesize -4)
                 if isa(sp, VisiumObject)
-                    marker_size=8
+                    xmin = trunc(Int64, x_lims[1])
+                    xmax = trunc(Int64, x_lims[2])
+                    ymin = trunc(Int64, y_lims[1])
+                    ymax = trunc(Int64, y_lims[2])
+                    if img_res == "high"
+                        img = deepcopy(sp.imageData.highresImage)
+                    else
+                        img = deepcopy(sp.imageData.lowresImage)
+                    end
+                    img2 = img[xmin:xmax,ymin:ymax]
+                    img2 = augment(img2, ColorJitter(adjust_contrast, adjust_brightness))
+                    df_plt[!, x_col] = df_plt[!, x_col] .- xmin
+                    df_plt[!, y_col] = df_plt[!, y_col] .- ymin
+                    MK.image!(ax1, img2)
+                end
+                MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.plt_color, strokewidth = 0, markersize = marker_size)
+                MK.Colorbar(fig[n_row,n_col2], label = "", colormap = c_map, width=10, limits = (0, maximum(gene_expr)))
+            end
+            MK.current_figure()
+    elseif layer === "transcripts"
+            if isa(sp, VisiumObject)
+                error("Visium object doesn't support transcript plot.")
+            end
+            coord_molecules=deepcopy(sp.spmetaData.molecule)
+            if isa(x_lims, Nothing)
+                x_lims=(minimum(coord_molecules[!, x_col])-0.05*maximum(coord_molecules[!, x_col]),1.05*maximum(coord_molecules[!, x_col]))
+            end
+            if isa(y_lims, Nothing)
+                y_lims=(minimum(coord_molecules[!, y_col])-0.05*maximum(coord_molecules[!, y_col]),1.05*maximum(coord_molecules[!, y_col]))
+            end
+            if combine
+                c_map=Colors.distinguishable_colors(length(gene_list), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
+                c_map = "#" .* hex.(c_map)
+                gene_color=Dict(gene_list .=> c_map)
+                gene_color["others"] = color_keys[1]
+                from = collect(keys(gene_color))
+                to = collect(values(gene_color))
+                df_plt=DataFrames.transform(coord_molecules, :gene => ByRow(name -> name ∈ gene_list ? name : "others") => :new_gene)
+                df_plt = map_values(df_plt, :new_gene, :forcolor, from, to)
+                df_plt.forcolor = [(i, alpha) for i in df_plt.forcolor]
+                df_plt1 = filter(:gene => x -> x ∈ gene_list, df_plt)
+                df_plt2 = filter(:gene => x -> x ∉ gene_list, df_plt)
+                fig = MK.Figure(resolution = (width, height))
+                ax1 = MK.Axis(fig[1,1]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
+                    xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
+                    xgridvisible = false, ygridvisible = false,yreversed=false, title = "All transcripts", 
+                    titlesize = titlesize, xlabel = "", ylabel = "", 
+                    xlabelsize = titlesize -4, ylabelsize = titlesize -4)
+                if order
+                    MK.scatter!(ax1, df_plt2[!, x_col], df_plt2[!, y_col]; color = df_plt2.forcolor, strokewidth = 0, markersize = marker_size)
+                    MK.scatter!(ax1, df_plt1[!, x_col], df_plt1[!, y_col]; color = df_plt1.forcolor, strokewidth = 0, markersize = marker_size)
                 else
-                    marker_size=2
+                    MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.forcolor, strokewidth = 0, markersize = marker_size)
                 end
-                if isdefined(sp, :normCount)
-                    norm_counts=sp.normCount
-                else
-                    error("Please normalize the data first!")
-                end
-                if isa(x_lims, Nothing)
-                    x_lims=(minimum(coord_cell[!, x_col])-0.05*maximum(coord_cell[!, x_col]),1.05*maximum(coord_cell[!, x_col]))
-                end
-                if isa(y_lims, Nothing)
-                    y_lims=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
-                end
-                c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
+                MK.current_figure()
+            else
                 fig = MK.Figure(resolution = (width * n_cols, height * n_rows))
                 for (i, gene) in enumerate(gene_list)
-                    gene_expr = subset_count(norm_counts; genes = [gene])
-                    gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
-                    if scale
-                        gene_expr = unit_range_scale(gene_expr)
-                    end
-                    df = DataFrame()
-                    df.gene_expr = gene_expr
-                    coord_cell[!, cell_col] = string.(coord_cell[!, cell_col])
-                    df[!, cell_col] = string.(coord_cell[!, cell_col])
-                    df_plt = innerjoin(df, coord_cell, on = cell_col)
-                    df_plt.gene .= gene
-                    if sum(gene_expr) > 0.0
-                        colors = get(c_map, gene_expr, :extrema)
-                        plt_color = "#" .* hex.(colors)
-                        df_plt.plt_color = plt_color
-                        if order
-                            df_plt = sort(df_plt,:gene_expr)
-                        end
-                    else
-                        plt_color = repeat([color_keys[1]], length(gene_expr))
-                        df_plt.plt_color = plt_color
-                    end
                     n_row = Int(ceil(i/3))
                     if i < 4
-                        n_col1 = 2i-1
-                        n_col2 = 2i
+                        n_col = i
                     else
-                        n_col1 = 2*(i-3*(n_rows-1))-1
-                        n_col2 = 2*(i-3*(n_rows-1))
+                        n_col = i-3*(n_rows-1)
                     end
-                    ax1 = MK.Axis(fig[n_row,n_col1]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
+                    df_plt = DataFrames.transform(coord_molecules, :gene => ByRow(name -> name == gene ? color_keys[3] : color_keys[1]) => :forcolor)
+                    df_plt.forcolor = [(i, alpha) for i in df_plt.forcolor]
+                    df_plt1 = filter(:forcolor => x -> x == color_keys[1], df_plt)
+                    df_plt2 = filter(:forcolor => x -> x == color_keys[3], df_plt)
+                    ax1 = MK.Axis(fig[n_row,n_col]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
                     xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
                     xgridvisible = false, ygridvisible = false,yreversed=false, title = gene_list[i], 
                     titlesize = titlesize, xlabel = "", ylabel = "", 
                     xlabelsize = titlesize -4, ylabelsize = titlesize -4)
-                    MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.plt_color, strokewidth = 0, markersize = marker_size)
-                    MK.Colorbar(fig[n_row,n_col2], label = "", colormap = c_map, width=10, limits = (0, maximum(gene_expr)))
-                end
-                MK.current_figure()
-        elseif layer === "transcripts"
-                if isa(sp, VisiumObject)
-                    error("Visium object doesn't support transcript plot.")
-                end
-                coord_molecules=deepcopy(sp.spmetaData.molecule)
-                if isa(x_lims, Nothing)
-                    x_lims=(minimum(coord_molecules[!, x_col])-0.05*maximum(coord_molecules[!, x_col]),1.05*maximum(coord_molecules[!, x_col]))
-                end
-                if isa(y_lims, Nothing)
-                    y_lims=(minimum(coord_molecules[!, y_col])-0.05*maximum(coord_molecules[!, y_col]),1.05*maximum(coord_molecules[!, y_col]))
-                end
-                if combine
-                    c_map=Colors.distinguishable_colors(length(gene_list), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
-                    c_map = "#" .* hex.(c_map)
-                    gene_color=Dict(gene_list .=> c_map)
-                    gene_color["others"] = color_keys[1]
-                    from = collect(keys(gene_color))
-                    to = collect(values(gene_color))
-                    df_plt=DataFrames.transform(coord_molecules, :gene => ByRow(name -> name ∈ gene_list ? name : "others") => :new_gene)
-                    df_plt=map_values(df_plt, :new_gene, :forcolor, from, to)
-                    df_plt1 = filter(:gene => x -> x ∈ gene_list, df_plt)
-                    df_plt2 = filter(:gene => x -> x ∉ gene_list, df_plt)
-                    fig = MK.Figure(resolution = (width, height))
-                    ax1 = MK.Axis(fig[1,1]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
-                        xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
-                        xgridvisible = false, ygridvisible = false,yreversed=false, title = "All transcripts", 
-                        titlesize = titlesize, xlabel = "", ylabel = "", 
-                        xlabelsize = titlesize -4, ylabelsize = titlesize -4)
                     if order
-                        MK.scatter!(ax1, df_plt2[!, x_col], df_plt2[!, y_col]; color = df_plt2.forcolor, strokewidth = 0, markersize = marker_size)
                         MK.scatter!(ax1, df_plt1[!, x_col], df_plt1[!, y_col]; color = df_plt1.forcolor, strokewidth = 0, markersize = marker_size)
+                        MK.scatter!(ax1, df_plt2[!, x_col], df_plt2[!, y_col]; color = df_plt2.forcolor, strokewidth = 0, markersize = marker_size)
                     else
                         MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.forcolor, strokewidth = 0, markersize = marker_size)
                     end
-                    MK.current_figure()
-                else
-                    fig = MK.Figure(resolution = (width * n_cols, height * n_rows))
-                    for (i, gene) in enumerate(gene_list)
-                        n_row = Int(ceil(i/3))
-                        if i < 4
-                            n_col = i
-                        else
-                            n_col = i-3*(n_rows-1)
-                        end
-                        df_plt = DataFrames.transform(coord_molecules, :gene => ByRow(name -> name == gene ? color_keys[3] : color_keys[1]) => :forcolor)
-                        df_plt1 = filter(:forcolor => x -> x == color_keys[1], df_plt)
-                        df_plt2 = filter(:forcolor => x -> x == color_keys[3], df_plt)
-                        ax1 = MK.Axis(fig[n_row,n_col]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
-                        xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
-                        xgridvisible = false, ygridvisible = false,yreversed=false, title = gene_list[i], 
-                        titlesize = titlesize, xlabel = "", ylabel = "", 
-                        xlabelsize = titlesize -4, ylabelsize = titlesize -4)
-                        if order
-                            MK.scatter!(ax1, df_plt1[!, x_col], df_plt1[!, y_col]; color = df_plt1.forcolor, strokewidth = 0, markersize = marker_size)
-                            MK.scatter!(ax1, df_plt2[!, x_col], df_plt2[!, y_col]; color = df_plt2.forcolor, strokewidth = 0, markersize = marker_size)
-                        else
-                            MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.forcolor, strokewidth = 0, markersize = marker_size)
-                        end
-                    end
-                    MK.current_figure()
                 end
-        else
-            error("Layer must be \"cells\" or \"transcripts\"")
-        end
+                MK.current_figure()
+            end
+    else
+        error("Layer must be \"cells\" or \"transcripts\"")
+    end
 end
 
 function plot_gene_polygons(sp::CartanaObject, gene::String;
@@ -339,7 +361,7 @@ function sp_dim_plot(sp::Union{CartanaObject, VisiumObject}, anno::Union{Symbol,
     anno_color::Union{Nothing, Dict} = nothing, x_col::String = "x", y_col::String = "y", cell_order::Union{Vector{String}, Nothing}=nothing,
     x_lims=nothing, y_lims=nothing,canvas_size=(5000,6000),stroke_width=0.5,stroke_color=:transparent, 
         marker_size=1, label_size=50, label_color="black", label_offset=(0,0), do_label=true, do_legend=true,
-        legend_size = 10, legend_fontsize = 16
+        legend_size = 10, legend_fontsize = 16,img_res::String = "low",  adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3
     )
     if isa(sp, VisiumObject)
         anno_df = deepcopy(sp.spmetaData)
@@ -347,6 +369,15 @@ function sp_dim_plot(sp::Union{CartanaObject, VisiumObject}, anno::Union{Symbol,
         x_col = Symbol(x_col)
         y_col = Symbol(y_col)
         rename!(anno_df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
+        if img_res == "high"
+            scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
+        elseif img_res == "low"
+            scale_factor = sp.imageData.jsonParameters["tissue_lowres_scalef"]
+        else
+            error("img_res can only be \"high\" or \"low\"!")
+        end
+        anno_df[!, x_col] =  anno_df[!, x_col] .* scale_factor
+        anno_df[!, y_col] =  anno_df[!, y_col] .* scale_factor
     else
         anno_df=deepcopy(sp.spmetaData.cell)
         anno_df[!, anno] = string.(anno_df[!, anno])
@@ -382,20 +413,39 @@ function sp_dim_plot(sp::Union{CartanaObject, VisiumObject}, anno::Union{Symbol,
     else
         cell_anno=cell_order
     end
+    if isa(sp, VisiumObject)
+        xmin = trunc(Int64, x_lims[1])
+        xmax = trunc(Int64, x_lims[2])
+        ymin = trunc(Int64, y_lims[1])
+        ymax = trunc(Int64, y_lims[2])
+        if img_res == "high"
+            img = deepcopy(sp.imageData.highresImage)
+        else
+            img = deepcopy(sp.imageData.lowresImage)
+        end
+        img2 = img[xmin:xmax,ymin:ymax]
+        img2 = augment(img2, ColorJitter(adjust_contrast, adjust_brightness))
+        anno_df[!, x_col] = anno_df[!, x_col] .- xmin
+        anno_df[!, y_col] = anno_df[!, y_col] .- ymin
+        MK.image!(ax1, img2)
+    end
     for i in cell_anno
-        MK.xlims!(MK.current_axis(), x_lims)
-        MK.ylims!(MK.current_axis(), y_lims)
         anno_df2=filter(anno => x-> x == i, anno_df)
         x_ax = anno_df2[!, x_col]
         y_ax = anno_df2[!, y_col]
         colors = unique(anno_df2.new_color)
         if do_legend
+            if isa(sp, VisiumObject)
+                MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
+                color=string.(colors[1]), strokewidth=0, markersize=marker_size, label=i)                
+            else
             MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
                 color=string.(colors[1]), strokewidth=0, markersize=legend_size, label=i)
             MK.scatter!(ax2, x_ax , y_ax; strokecolor=stroke_color, 
                 color=:white, strokewidth=0, markersize=2*legend_size, label=i)
             MK.scatter!(ax3, x_ax , y_ax; strokecolor=stroke_color, 
                 color=string.(colors[1]), strokewidth=0, markersize=marker_size, label=i)
+            end
             MK.Legend(fig[1, 2], ax1, framecolor=:white, labelsize=legend_fontsize)
         else
             MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
