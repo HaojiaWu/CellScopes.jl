@@ -80,6 +80,12 @@ git-tree-sha1 = "b25e88db7944f98789130d7b503276bc34bc098e"
 uuid = "bf4720bc-e11a-5d0c-854e-bdca1663c893"
 version = "0.1.0"
 
+[[deps.Augmentor]]
+deps = ["ComputationalResources", "CoordinateTransformations", "FileIO", "IdentityRanges", "ImageCore", "ImageFiltering", "ImageTransformations", "InteractiveUtils", "Interpolations", "LinearAlgebra", "MLDataPattern", "OffsetArrays", "Rotations", "StaticArrays", "Statistics"]
+git-tree-sha1 = "47cd3b6a76a132c899ed798bb72cc1f1fe60f8d5"
+uuid = "02898b10-1f73-11ea-317c-6393d7073e15"
+version = "0.6.6"
+
 [[deps.AxisAlgorithms]]
 deps = ["LinearAlgebra", "Random", "SparseArrays", "WoodburyMatrices"]
 git-tree-sha1 = "66771c8d21c8ff5e3a93379480a2307ac36863f7"
@@ -923,6 +929,11 @@ version = "0.15.1"
 deps = ["Artifacts", "Pkg"]
 uuid = "4af54fe1-eca0-43a8-85a7-787d91b784e3"
 
+[[deps.LearnBase]]
+git-tree-sha1 = "a0d90569edd490b82fdc4dc078ea54a5a800d30a"
+uuid = "7f8f8fb0-2700-5f03-b4bd-41f8cfc144b6"
+version = "0.4.1"
+
 [[deps.Leiden]]
 deps = ["LinearAlgebra", "Random", "SparseArrays", "StatsFuns"]
 git-tree-sha1 = "72bedc9f2b8f36cc85ac5c5dfe754cafd8d1ed01"
@@ -1034,6 +1045,18 @@ deps = ["Artifacts", "IntelOpenMP_jll", "JLLWrappers", "LazyArtifacts", "Libdl",
 git-tree-sha1 = "2ce8695e1e699b68702c03402672a69f54b8aca9"
 uuid = "856f044c-d86e-5d09-b602-aeab76dc8ba7"
 version = "2022.2.0+0"
+
+[[deps.MLDataPattern]]
+deps = ["LearnBase", "MLLabelUtils", "Random", "SparseArrays", "StatsBase"]
+git-tree-sha1 = "2741aabe5ec93c63cc0a5277bb1c2cb819b01bb1"
+uuid = "9920b226-0b2a-5f5f-9153-9aa70a013f8b"
+version = "0.5.5"
+
+[[deps.MLLabelUtils]]
+deps = ["LearnBase", "MappedArrays", "StatsBase"]
+git-tree-sha1 = "fd75d4b0c4016e047bbb6263eecf7ae3891af522"
+uuid = "66a33bbf-0c2b-5fc8-a008-9da813334f0a"
+version = "0.5.7"
 
 [[deps.MacroTools]]
 deps = ["Markdown", "Random"]

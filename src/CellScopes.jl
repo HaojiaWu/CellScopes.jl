@@ -44,6 +44,7 @@ using Polynomials
 using FileIO
 using CSVFiles
 using GZip
+using Augmentor
 
 include("scrna/objects.jl")
 include("spatial/sp_objects.jl")
