@@ -79,13 +79,16 @@ cs.sp_dim_plot(sham, "cluster"; do_label = false, do_legend = true, img_res = "l
 
 #### 3.2 Gene expression visiualization
 Plot genes on whole kidney:
+
 ```julia
 cs.sp_feature_plot(sham, ["Aqp2","Slc7a13", "Umod", "Slc12a1","Slc12a3","Slc34a1"]; 
     marker_size = 8, color_keys=["gray90", "lemonchiffon" ,"red"], 
     adjust_contrast=1, adjust_brightness = 0.3, alpha=1)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/sp_feature.png" width="600"> 
+
 Plot genes on the selected reagion:
+
 ```julia
 cs.sp_feature_plot(sham, ["Aqp2","Slc7a13", "Umod", "Slc12a1","Slc12a3","Slc34a1"]; 
     marker_size = 8, color_keys=["gray90", "lemonchiffon" ,"red"], 
