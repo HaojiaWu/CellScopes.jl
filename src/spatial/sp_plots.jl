@@ -174,8 +174,12 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject}, gene_list::Unio
                 y_lims=(minimum(coord_molecules[!, y_col])-0.05*maximum(coord_molecules[!, y_col]),1.05*maximum(coord_molecules[!, y_col]))
             end
             if combine
-                c_map=Colors.distinguishable_colors(length(gene_list), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
-                c_map = "#" .* hex.(c_map)
+                if isa(gene_colors, Nothing)
+                    c_map=Colors.distinguishable_colors(length(gene_list), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
+                    c_map = "#" .* hex.(c_map)
+                else
+                    c_map = gene_colors
+                end
                 gene_color=Dict(gene_list .=> c_map)
                 gene_color["others"] = color_keys[1]
                 from = collect(keys(gene_color))
