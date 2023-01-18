@@ -49,7 +49,7 @@ We provide a set of functions to help visualize the cell and gene expression on 
 cs.dim_plot(sham; dim_type ="umap", marker_size=8)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/umap_vsm.png" width="600"> 
-```
+
 ##### b. Visualize the cell type distribution on tissue
 ```julia
 cs.sp_dim_plot(sham, "cluster"; 
