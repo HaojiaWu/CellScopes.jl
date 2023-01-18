@@ -1,29 +1,16 @@
-# CellScopes.jl <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/logo.png" width="60" height="60"> <br>
-```CellScopes.jl``` is a Julia-based toolkit for analyzing single cell data. It performs data normalization, dimensional reduction, cell clustering, and visualization on various single cell data types. Currently, ```CellScopes.jl``` only supports scRNA-seq and spatial data, but support for scATAC-seq is planned for future releases. This is the overall design of the package in its current version.
+# Tutorial for scRNA-seq analysis with CellScopes.jl
 
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/CellScopes-version-1.png" width="600"> <br>
+The following tutorials guide you through using ```CellScopes.jl``` to analyze scRNA-seq data from a sample of 2,700 cells, and show you how to scale the analysis up to 400,000 cells. 
 
-## 1. Installation
-To install ```CellScopes.jl```, you will need to have Julia 1.6 or higher installed. It is recommended to use Julia 1.7.3 or higher to avoid issues with dependencies. To install all of the necessary dependencies, run the following command line in Julia. Note that this will not install the unregisterd package ```Leiden.jl```, which you may need to install manually from the GitHub repository first.
-
-```julia
-using Pkg;
-Pkg.add("https://github.com/bicycle1885/Leiden.jl") # Install the unregistered dependency Leiden.jl
-Pkg.add("https://github.com/HaojiaWu/CellScopes.jl") # Install CellScopes.jl
-```
-## 2. Tutorials
-
-The following tutorials guide you through using ```CellScopes.jl``` to analyze scRNA-seq data from a sample of 2,700 cells, and show you how to scale the analysis up to 400,000 cells. For spatial transcriptomics analysis, please refer to the tutorial here.
-
-### 2.1. Tutorial: PBMC 3K
+## 1 Tutorial: PBMC 3K
 This tutorial uses the pbmc3k dataset from 10x Genomics, which has been previously used by [Seurat](https://satijalab.org/seurat/articles/pbmc3k_tutorial.html) and [Scanpy](https://scanpy-tutorials.readthedocs.io/en/latest/pbmc3k.html) for demo purpose. This will read in the data and create a RawCountObject that can be used as input for ```CellScopes.jl```.
-#### 2.1.1 Download the pbmc3k data (in Terminal)
+### 1.1 Download the pbmc3k data (in Terminal)
 ```bash
 wget https://cf.10xgenomics.com/samples/cell/pbmc3k/pbmc3k_filtered_gene_bc_matrices.tar.gz
 tar xvf pbmc3k_filtered_gene_bc_matrices.tar.gz
 ```
 
-#### 2.1.2 Read the data (in Julia)
+### 1.2 Read the data (in Julia)
 The cells and genes can be filtered by setting the parameters ```min_gene``` and ```min_cell```, respectively.
 ```julia
 import CellScopes as cs
@@ -41,7 +28,7 @@ Available fields:
 - gene_name
 =#
 ```
-#### 2.1.3 Create a scRNAObject
+### 1.3 Create a scRNAObject
 We then create a ```scRNAObject``` using the count object above. The ```scRNAObject``` serves as a container to store all the data needed for and generated from the downstream analysis. The cells and genes can be further filtered by setting the parameters ```min_gene``` and ```min_cell```, respectively.
 ```julia
 pbmc = cs.scRNAObject(raw_counts)
@@ -52,7 +39,7 @@ Available data:
 - Raw count
 =#
 ```
-#### 2.1.4 Normalize the scRNAObject
+### 1.4 Normalize the scRNAObject
 We use a normalization method called global-scaling, which is similar to Seurat's "LogNormalize" method. This normalization method scales the feature expression measurements for each cell by the total expression, multiplies the result by a default scale factor of 10,000, and log-transforms the final value. The normalized values are stored as a ```NormCountObject```.
 ```julia
 pbmc = cs.normalize_object(pbmc; scale_factor = 10000)
@@ -78,7 +65,7 @@ Available data:
 =#
 ```
 
-#### 2.1.5 Find variable genes
+### 1.5 Find variable genes
 We use the ```vst``` approach implemented in the ```FindVariableFeatures``` function in Seurat or the ```pp.highly_variable_genes``` function in Scanpy to identify the variable genes. To standardize the counts, we use the following formula:
 ```math
 Z_{ij} = \frac{x_{ij} - \bar{x}_i}{σ_i}
@@ -98,7 +85,7 @@ Available data:
 =#
 ```
 
-#### 2.1.6 Run principal component analysis (PCA).
+### 1.6 Run principal component analysis (PCA).
 Next, we perform PCA on the scaled data using only the previously identified variable genes as input. This is completed by the [MultivariateStats.jl](https://github.com/JuliaStats/MultivariateStats.jl) package.
 ```julia
 pbmc = cs.run_pca(pbmc;  method=:svd, pratio = 1, maxoutdim = 10)
@@ -113,7 +100,7 @@ Available data:
 - PCA data
 =#
 ```
-#### 2.1.7 Cluster the cells.
+### 1.7 Cluster the cells.
 We use a graph-based approach to identify the clusters. We first construct a KNN graph based on the significant components using the [NearestNeighborDescent.jl](https://github.com/dillondaudert/NearestNeighborDescent.jl) package. We then extract the KNN matrix from the graph and convert it into an adjacency matrix. This adjacent matrix is used as input for the [Leiden.jl](https://github.com/bicycle1885/Leiden.jl) package, which performs community detection. The entire process is implemented in the RunClustering function.
 
 ```julia
@@ -130,7 +117,7 @@ Available data:
 - PCA data
 =#
 ```
-#### 2.1.8 Run UMAP or tSNE.
+### 1.8 Run UMAP or tSNE.
 ```CellScopes.jl``` provides various non-linear dimensionality reduction techniques, including tSNE and UMAP, to allow for visualization and exploration of datasets. In the current version, UMAP is much faster than tSNE for large datasets, so it is highly recommended to use UMAP. We use the [TSne.jl](https://github.com/lejon/TSne.jl) and [UMAP.jl](https://github.com/dillondaudert/UMAP.jl) packages for tSNE and UMAP analysis, respectively.
 ```julia
 pbmc = cs.run_tsne(pbmc; max_iter = 3000, perplexit = 50)
@@ -149,7 +136,7 @@ Available data:
 - UMAP data
 =#
 ```
-#### 2.1.9 Find markers.
+### 1.9 Find markers.
 ```CellScopes.jl``` can help you find markers that define clusters through differential expression. Same as Seurat and Scanpy, we perform wilcoxon rank sum test on each pair of cell types to identify the differential genes. This is implemented by the [HypothesisTests.jl](https://github.com/JuliaStats/HypothesisTests.jl) and [MultipleTesting.jl](https://github.com/juliangehring/MultipleTesting.jl)
 ```julia
 markers = cs.find_markers(pbmc; cluster_1 = "7", cluster_2 = "6")
@@ -161,9 +148,9 @@ Like in Seurat and Scanpy, we also provide a ```FindAllMarkers``` function to id
 all_markers = cs.find_all_markers(pbmc)
 ```
 
-### 2.2. Data visualization
+## 2 Data visualization
 Inspired by Seurat and Scanpy, we utilize various methods to visualize cell annotations and gene expression. 
-#### 2.2.1 Visualize cell annotaiton.
+### 2.1 Visualize cell annotaiton.
 a. Dim plot on PCA
 ```julia
 cs.dim_plot(pbmc; dim_type = "pca", marker_size = 4)
@@ -188,7 +175,7 @@ cs.highlight_cells(pbmc, "6")
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/highlight.png" width="500"> <br>
 
-#### 2.2.2 Visualize gene expression.
+### 2.2 Visualize gene expression.
 a. Feature plot
 ```julia
 cs.feature_plot(pbmc, ["CST3","IL32","CD79A"]; 
@@ -233,7 +220,7 @@ height = 500,alpha=0.5, col_use = :tab10)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/violin.png" width="600"> <br>
 
-### 2.3. Tutorial: MCA 400K cells
+## 3. Tutorial: MCA 400K cells
 ```CellScopes.jl``` can analyze atlas-scale single cell data as well. Below are some example codes to complete the analysis of the [MCA dataset](https://figshare.com/articles/MCA_DGE_Data/5435866) which contains ~400K cells. This takes about 50 minutes in a linux server with 256GB RAM and 16 cores.
 
 ```julia
