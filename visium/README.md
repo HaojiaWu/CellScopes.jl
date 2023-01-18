@@ -43,16 +43,35 @@ sham = cs.run_clustering(sham; res=0.01, n_neighbors=20)
 ### 3. Visiualization
 We provide a set of functions to help visualize the cell and gene expression on the dimension reduction space and the spatial space.
 
-#### 3.1 Cell type visiualization
+#### 3.1 Cell type visualization
 ##### a. Visualize the cell clustering on UMAP.
 ```julia
-cs.dim_plot(sham; dim_type ="umap", marker_size=4)
+cs.dim_plot(sham; dim_type ="umap", marker_size=8)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/umap_vsm.png" width="600"> 
+```
 ##### b. Visualize the cell type distribution on tissue
 ```julia
+cs.sp_dim_plot(sham, "cluster"; 
+    marker_size = 8, canvas_size = (600,500), 
+    do_label=false)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/sp_vsm.png" width="600"> 
+The transparency can be adjusted by setting the ```alpha``` parameter.
+```julia
+cs.sp_dim_plot(sham, "cluster"; 
+    marker_size = 8, canvas_size = (600,500), 
+    do_label=false, alpha=0.3)
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/sp_vsm_transparent.png" width="600"> 
+The image can be croped by setting the ```x_lims``` and ```y_lims``` parameters.
+```julia
+cs.sp_dim_plot(sham, "cluster"; do_label = false, do_legend = true, img_res = "low",
+    marker_size = 8, canvas_size=(600,500), adjust_contrast = 1, 
+    adjust_brightness= 0.1, alpha =0.4,  x_lims=(200, 440), 
+    y_lims=(200, 400))
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/sp_vsm_crop.png" width="600"> 
 
 ##### c. Highlight the cell type of interest
 
