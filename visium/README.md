@@ -64,7 +64,9 @@ cs.sp_dim_plot(sham, "cluster";
     do_label=false, alpha=0.3)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/sp_vsm_transparent.png" width="600"> 
+
 The image can be croped by setting the ```x_lims``` and ```y_lims``` parameters.
+
 ```julia
 cs.sp_dim_plot(sham, "cluster"; do_label = false, do_legend = true, img_res = "low",
     marker_size = 8, canvas_size=(600,500), adjust_contrast = 1, 
@@ -76,6 +78,22 @@ cs.sp_dim_plot(sham, "cluster"; do_label = false, do_legend = true, img_res = "l
 ##### c. Highlight the cell type of interest
 
 #### 3.2 Gene expression visiualization
+Plot genes on whole kidney:
+```julia
+cs.sp_feature_plot(sham, ["Aqp2","Slc7a13", "Umod", "Slc12a1","Slc12a3","Slc34a1"]; 
+    marker_size = 8, color_keys=["gray90", "lemonchiffon" ,"red"], 
+    adjust_contrast=1, adjust_brightness = 0.3, alpha=1)
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/sp_feature.png" width="600"> 
+Plot genes on the selected reagion:
+```julia
+cs.sp_feature_plot(sham, ["Aqp2","Slc7a13", "Umod", "Slc12a1","Slc12a3","Slc34a1"]; 
+    marker_size = 8, color_keys=["gray90", "lemonchiffon" ,"red"], 
+    adjust_contrast=1, adjust_brightness = 0.3, alpha=1,  x_lims=(200, 440), y_lims=(200, 400))
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/sp_feature_select.png" width="600"> 
+
+
 
 
 
