@@ -13,7 +13,7 @@ Pkg.add("https://github.com/HaojiaWu/CellScopes.jl") # Install CellScopes.jl
 ```
 ## 2. Tutorials
 
-In the current verison, ```CellScopes.jl``` can analyze dataset generated from scRNA-seq, 10X visium and 10x Cartana (Xenium). The following tutorial guide you through using ```CellScopes.jl``` to analyze the Cartana data. For scRNA-seq and Visium, please refer to the tutorials below:
-scRNA-seq (PBMC 3K and MCA 400K cells): 
+In the current verison, ```CellScopes.jl``` can analyze dataset generated from scRNA-seq, 10X Visium and 10x Cartana (Xenium). The following tutorial guide you through using ```CellScopes.jl``` to analyze the Cartana data. For scRNA-seq and Visium, please refer to the tutorials below:
+scRNA-seq (PBMC 3K and MCA 400K cells): https://github.com/HaojiaWu/CellScopes.jl/tree/main/visium
 10x Visium: 
 
