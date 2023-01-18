@@ -65,6 +65,7 @@ cs.sp_dim_plot(sham, "cluster";
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/sp_vsm_transparent.png" width="600"> 
 The image can be croped by setting the ```x_lims``` and ```y_lims``` parameters.
+
 ```julia
 cs.sp_dim_plot(sham, "cluster"; do_label = false, do_legend = true, img_res = "low",
     marker_size = 8, canvas_size=(600,500), adjust_contrast = 1, 
