@@ -69,10 +69,13 @@ function sp_dot_plot(sp::Union{CartanaObject, VisiumObject}, genes::Union{Vector
     return p
 end
 
-function sp_feature_plot(sp::Union{CartanaObject, VisiumObject}, gene_list::Union{Vector{String}, Tuple{String}}; layer::String = "cells", x_col::Union{String, Symbol}="x",
+function sp_feature_plot(sp::Union{CartanaObject, VisiumObject}, gene_list::Union{String, Vector{String}, Tuple{String}}; layer::String = "cells", x_col::Union{String, Symbol}="x",
     y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order::Bool=true, scale::Bool = false,titlesize::Int64=24, 
     height::Real = 500, width::Real = 500, combine = true, img_res::String = "low",  adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3,
     color_keys=["gray94","orange","red3"], gene_colors = nothing, alpha::Real = 1, legend_fontsize = 10, do_legend=false, legend_size = 10)
+    if isa(gene_list, String)
+        gene_list = [gene_list]
+    end
     n_rows = Int(ceil(length(gene_list) / 3))
     if length(gene_list) < 4
         n_cols = length(gene_list)
@@ -263,10 +266,20 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject}, gene_list::Unio
     end
 end
 
-function plot_gene_polygons(sp::CartanaObject, gene::String;
+function plot_gene_polygons(sp::CartanaObject, gene_list::Union{String, Vector{String}, Tuple{String}};
     color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray94","orange","red3"],
-    x_lims=nothing, y_lims=nothing,canvas_size=(900,1000),stroke_width=0,stroke_color="black"
+    x_lims=nothing, y_lims=nothing,width=900,height=1000,stroke_width=0,stroke_color="black",
+    titlesize::Int64=24, scale::Bool = false
     )
+    if isa(gene_list, String)
+        gene_list = [gene_list]
+    end
+    n_rows = Int(ceil(length(gene_list) / 3))
+    if length(gene_list) < 4
+        n_cols = length(gene_list)
+    else
+        n_cols = 3
+    end
     norm_count=sp.polynormCount
     polygons=sp.polygonData
     if isa(x_lims, Nothing)
@@ -275,23 +288,46 @@ function plot_gene_polygons(sp::CartanaObject, gene::String;
     if isa(y_lims, Nothing)
         y_lims=(minimum(sp.spmetaData.cell.y)-0.05*maximum(sp.spmetaData.cell.y),1.05*maximum(sp.spmetaData.cell.y))
     end
+    select_fov = filter([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], sp.spmetaData.cell)
+    subset_poly = filter(:mapped_cell => x -> x ∈ select_fov.cell, sp.spmetaData.polygon)
+    polygon_num = subset_poly.polygon_number
+    polygons = polygons[polygon_num]
     c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
-    gene_expr = subset_count(norm_count; genes = [gene])
-    gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
-    colors = get(c_map, gene_expr, :extrema)
-    plt_color="#" .* hex.(colors)
-    fig = MK.Figure(resolution=canvas_size)
-    fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
-        xgridvisible = false,ygridvisible = false)
-    MK.poly!([MK.Point2.(eachrow(p)) for p in polygons]; strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width,label="")
-    MK.xlims!(MK.current_axis(), x_lims)
-    MK.ylims!(MK.current_axis(), y_lims)
-    MK.current_figure()
+    fig = MK.Figure(resolution = (width * n_cols, height * n_rows))
+    for (i, gene) in enumerate(gene_list)
+        gene_expr = subset_count(norm_count; genes = [gene])
+        gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
+        if scale
+            gene_expr = unit_range_scale(gene_expr)
+        end
+        colors = get(c_map, gene_expr, :extrema)
+        plt_color="#" .* hex.(colors)
+        plt_color = plt_color[polygon_num]
+        n_row = Int(ceil(i/3))
+        if i < 4
+            n_col1 = 2i-1
+            n_col2 = 2i
+        else
+            n_col1 = 2*(i-3*(n_rows-1))-1
+            n_col2 = 2*(i-3*(n_rows-1))
+        end
+        ax1 = MK.Axis(fig[n_row,n_col1]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
+        xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
+        xgridvisible = false, ygridvisible = false,yreversed=false, title = gene_list[i], 
+        titlesize = titlesize, xlabel = "", ylabel = "", 
+        xlabelsize = titlesize -4, ylabelsize = titlesize -4)
+        MK.poly!(ax1, [MK.Point2.(eachrow(p)) for p in polygons]; strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width,label="")
+        MK.xlims!(MK.current_axis(), x_lims)
+        MK.ylims!(MK.current_axis(), y_lims)
+        MK.Colorbar(fig[n_row,n_col2], label = "", colormap = c_map, width=10, limits = (0, maximum(gene_expr)))
+    end
+        MK.current_figure()
 end
 
 function plot_cell_polygons(sp::CartanaObject, anno;
-    anno_color::Union{Nothing, Dict} = nothing,
-    x_lims=nothing, y_lims=nothing,canvas_size=(900,1000),stroke_width=0,stroke_color="black"
+    cell_types::Union{String, Int64, Vector, Tuple, Nothing}=nothing, cell_colors::Union{Nothing, String, Vector, Tuple} = nothing,
+    bg_color = "gray90", x_lims=nothing, y_lims=nothing,width = 500, height = 500,stroke_width=0, stroke_color="black",
+    legend_fontsize = 10, do_legend=false, legend_size = 10 
     )
     if isa(x_lims, Nothing)
         x_lims=(minimum(sp.spmetaData.cell.x)-0.05*maximum(sp.spmetaData.cell.x),1.05*maximum(sp.spmetaData.cell.x))
@@ -299,24 +335,58 @@ function plot_cell_polygons(sp::CartanaObject, anno;
     if isa(y_lims, Nothing)
         y_lims=(minimum(sp.spmetaData.cell.y)-0.05*maximum(sp.spmetaData.cell.y),1.05*maximum(sp.spmetaData.cell.y))
     end
-    anno_df=sp.spmetaData.polygon
-    polygons=sp.polygonData
+    if isa(cell_types, String)
+        cell_types = [cell_types]
+    end
+    if isa(cell_colors, String)
+        cell_colors = [cell_colors]
+    end
+    anno_df=deepcopy(sp.spmetaData.polygon)
+    polygons=deepcopy(sp.polygonData)
     if isa(anno, String)
         anno=Symbol(anno)
     end
-    if isa(anno_color, Nothing)
-        cell_anno=unique(anno_df[!,anno])
-        c_map= Colors.distinguishable_colors(length(cell_anno), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
+    all_celltypes = unique(anno_df[!,anno])
+    if isa(cell_types, Nothing)
+        cell_types = all_celltypes
+    end
+    other_cells = setdiff(all_celltypes, cell_types)
+    other_color = Dict(other_cells .=> repeat([bg_color], length(other_cells)))
+    if isa(cell_colors, Nothing)
+        c_map= Colors.distinguishable_colors(length(cell_types), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
         c_map = "#" .* hex.(c_map)
-        anno_color=Dict(cell_anno .=> c_map)
+        cell_color=Dict(cell_types .=> c_map)
+        anno_color = merge(cell_color, other_color)
+    else
+        if length(cell_types) !== length(cell_colors)
+            error("The number of colors must equal to the number of cell types!")
+        end
+        cell_color=Dict(cell_types .=> cell_colors)
+        anno_color = merge(cell_color, other_color)
     end
     anno_df = DataFrames.transform(anno_df, anno => ByRow(x -> anno_color[x]) => :new_color)
-    fig = MK.Figure(resolution=canvas_size)
-    fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
-                xgridvisible = false,ygridvisible = false);
-    MK.poly!([MK.Point2.(eachrow(p)) for p in polygons]; strokecolor=stroke_color, color=anno_df.new_color, strokewidth=stroke_width,label="")
-    MK.xlims!(MK.current_axis(), x_lims)
-    MK.ylims!(MK.current_axis(), y_lims)
+    plt_color = anno_df.new_color
+    select_fov = filter([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], sp.spmetaData.cell)
+    subset_poly = filter(:mapped_cell => x -> x ∈ select_fov.cell, sp.spmetaData.polygon)
+    polygon_num = subset_poly.polygon_number
+    polygons = polygons[polygon_num]
+    plt_color = plt_color[polygon_num]
+    fig = MK.Figure(resolution=(width, height))
+    ax1 = MK.Axis(fig[1,1]; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+        xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
+        xgridvisible = false,ygridvisible = false)
+        if do_legend
+            cells = string.(collect(keys(cell_color)))
+            colors = collect(values(cell_color))
+            for (cell1, color1) in zip(cells, colors)
+                select_fov1 = filter(anno => x -> x == cell1, select_fov)
+                MK.scatter!(ax1, select_fov1.x , select_fov1.y; color = color1, strokewidth = 0.5,strokecolor=stroke_color, markersize = legend_size, label = cell1)
+            end
+            MK.Legend(fig[1, 2], ax1, framecolor=:white, labelsize=legend_fontsize)
+        end
+        MK.poly!(ax1, [MK.Point2.(eachrow(p)) for p in polygons]; strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width)
+        MK.xlims!(ax1, x_lims)
+        MK.ylims!(ax1, y_lims)
     return MK.current_figure()
 end
 
