@@ -66,7 +66,7 @@ i. **SpaGCN**: Please refer to the original tutorial to select the paramenters. 
 CSV.write("count_data.csv",cs.count)
 kidney = cs.run_SpaGCN(kidney, "count_data.csv", "/home/users/haojiawu/anaconda3/bin/python")
 ```
-ii. Here is how to run **Scanpy** in SpaData:
+ii. Here is how to run **Scanpy** in CellScopes:
 ```julia
 adata = cs.run_scanpy(kidney.count)
 ```
@@ -76,7 +76,7 @@ seu_obj = cs.run_seurat(kidney.count)
 ```
 
 #### b. Cell polygons and mapping
-We used Baysor to create a polygon object and store it in SpaData for cell drawing. Baysor is required to install before running this step. Please refer to the original repo here: https://github.com/kharchenkolab/Baysor
+We used Baysor to create a polygon object and store it in CellScopes for cell drawing. Baysor is required to install before running this step. Please refer to the original repo here: https://github.com/kharchenkolab/Baysor
 ```julia
 import Baysor as B
 scale=25;
@@ -107,7 +107,7 @@ cell_dist = cs.compare_cell_distances(kidney, :celltype, "Podo", "gEC", "vEC", 5
 cell_dist = cs.run_cell_pairing(kidney.cells, :cell2, :celltype, 50)
 ```
 #### d. Convert the xy coordinates to kidney coordinates
-In ```SpaData.jl```, we created a new coordinate system, namely **kidney coordinate system**, to precisely depict the position of every single cell in the kidney. In this system, the position of a cell is defined by the kidney depth, and the kidney angle. To transform the xy coordinate system to kidney coordinate system, we first define the origin of the coordinate by finding the center point in the papilla. For each cell, we compute the kidney depth by calculating the distance of the cell to the kidney boundary, and divided by the distance of the kidney boundary to the origin of the coordinate. We can define the kidney angle of the cells by measuring the angle of the slope and the new x coordinate (in tangent value). The schematic below explains the coordinate transformation.
+In ```CellScopes.jl```, we created a new coordinate system, namely **kidney coordinate system**, to precisely depict the position of every single cell in the kidney. In this system, the position of a cell is defined by the kidney depth, and the kidney angle. To transform the xy coordinate system to kidney coordinate system, we first define the origin of the coordinate by finding the center point in the papilla. For each cell, we compute the kidney depth by calculating the distance of the cell to the kidney boundary, and divided by the distance of the kidney boundary to the origin of the coordinate. We can define the kidney angle of the cells by measuring the angle of the slope and the new x coordinate (in tangent value). The schematic below explains the coordinate transformation.
 
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/cartana_tutorial/img/kidney_coordinate.png" width="300"> <br>
 
@@ -120,9 +120,9 @@ center=[mean(cell_sub.x),mean(cell_sub.y)]; ### find the center point as origin
 kidney = cs.compute_kidney_coordinates(kidney, center);
 ```
 #### e. scRNA-seq integration
-```SpaData.jl``` uses [Tangram](https://github.com/broadinstitute/Tangram) to integrate the scRNA-seq data. Please refer to the tangram [tutorial](https://tangram-sc.readthedocs.io/en/latest/) for more detail. We wrapped the python codes into a julia function as below. ```SpaData.jl``` also provides function to plot the results (See the Visualization session).
+```CellScopes.jl``` uses [Tangram](https://github.com/broadinstitute/Tangram) to integrate the scRNA-seq data. Please refer to the tangram [tutorial](https://tangram-sc.readthedocs.io/en/latest/) for more detail. We wrapped the python codes into a julia function as below. ```CellScopes.jl``` also provides function to plot the results (See the Visualization session).
 ```julia
-using SpaData, CSV, DataFrames, JLD2, PyCall,Pkg
+using CSV, DataFrames, JLD2, PyCall,Pkg
 ENV["PYTHON"]="/home/users/haojiawu/anaconda3/envs/tangram-env/bin/python"
 Pkg.build("PyCall")
 kidney=cs.run_tangram(kidney, "/home/users/haojiawu/anaconda3/envs/tangram-env/bin/python",
@@ -252,7 +252,7 @@ p=all_time |> @vlplot()+@vlplot(mark={:area, opacity=0.6}, x={"index", axis={gri
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/cartana_tutorial/img/cellfrac.png" width="400"> <br>
 
 #### e. Select and plot field of view (fov).
-```SpaData.jl``` allows you to select the field of view for further analysis. First, we provided a function to draw grid on the spatial graph. Then the fov of interest can be selected using the ```subset_fov``` function.
+```CellScopes.jl``` allows you to select the field of view for further analysis. First, we provided a function to draw grid on the spatial graph. Then the fov of interest can be selected using the ```subset_fov``` function.
 ```julia
 cs.plot_fov(kidney, 10,10; group_label="celltype", cell_highlight="CD-PC", shield=true)
 cell_sub=cs.subset_fov(kidney, [47,48,57,58], 10,10);
