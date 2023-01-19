@@ -1,5 +1,5 @@
 # CellScopes.jl <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/logo.png" width="60" height="60"> <br>
-```CellScopes.jl``` is a Julia-based toolkit for analyzing single cell data. It performs data normalization, dimensional reduction, cell clustering, and visualization on various single cell data types. Currently, ```CellScopes.jl``` supports scRNA-seq and spatial data, but support for scATAC-seq is planned for future releases. This is the overall design of the package in its current version.
+```CellScopes.jl``` is a Julia-based toolkit for analyzing single cell and spatial transcriptomic data. It performs data normalization, dimensional reduction, cell clustering, and visualization on various data types. Here is the structural design of ```CellScopes.jl``` in its current version.
 
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/CellScopes-version-1.png" width="600"> <br>
 
@@ -13,7 +13,7 @@ Pkg.add("https://github.com/HaojiaWu/CellScopes.jl") # Install CellScopes.jl
 ```
 ## 2. Tutorials
 
-In the current verison, ```CellScopes.jl``` can analyze dataset generated from scRNA-seq, 10X Visium and 10x Cartana (Xenium). The following tutorial guide you through using ```CellScopes.jl``` to analyze the Cartana data. For scRNA-seq and Visium, please refer to the tutorials below: <br>
+In this markdown page, We will show you how we use ```CellScopes.jl``` to analyze a dataset generated 10x Cartana (Xenium). CellScopes also supports analysis for scRNA-seq and Visium datasets. Please refer to the tutorials below: <br>
 a. 10x Cartana: https://github.com/HaojiaWu/CellScopes.jl/tree/main/cartana_tutorial
 <br>
 b. scRNA-seq (PBMC 3K and MCA 400K cells): https://github.com/HaojiaWu/CellScopes.jl/tree/main/scRNA_tutorial
