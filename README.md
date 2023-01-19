@@ -22,7 +22,7 @@ b. 10x Visium: https://github.com/HaojiaWu/CellScopes.jl/tree/main/visium_tutori
 ## 3. Analysis of imaging-based spatial transcriptomic data (Cartana)
 The tutorial below used the spatial data from CARTANA for demo but basically it can process any FISH-based methods (such as MERFISH) after slight data formatting. If you find ```CellScopes.jl``` useful to your research, please cite our paper or this github page. <br>
 
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/cartana_tutorial/img/SpaData.png" width="600"> <br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/cartana_tutorial/img/CellScopes_struct.png" width="600"> <br>
 
 
 ### 3.1. Example data for a test?
