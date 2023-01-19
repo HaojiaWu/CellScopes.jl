@@ -20,13 +20,13 @@ b. 10x Visium: https://github.com/HaojiaWu/CellScopes.jl/tree/main/visium_tutori
 <br>
 
 ## 3. Analysis of imaging-based spatial transcriptomic data (Cartana)
-The tutorial below used the spatial data from CARTANA for demo but basically it can process any FISH-based methods (such as MERFISH) after slight data formatting. If you find ```SpaData.jl``` useful to your research, please cite our paper or this github page. <br>
+The tutorial below used the spatial data from CARTANA for demo but basically it can process any FISH-based methods (such as MERFISH) after slight data formatting. If you find ```CellScopes.jl``` useful to your research, please cite our paper or this github page. <br>
 
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/cartana_tutorial/img/SpaData.png" width="600"> <br>
 
 
 ### 3.1. Example data for a test?
-If you don't have sample data at hands, you can download our data from GEO (GSE XXXX) to test the functionality of SpaData.jl. If you use your own data, please change the column names for the transcript and cell coordinates to "x" and "y". Please also make sure your cell and molecule files contain a column to annotate the genes (gene ID) and cells (cell ID).
+If you don't have sample data at hands, you can download our data from GEO (GSE XXXX) to test the functionality of CellScopes.jl. If you use your own data, please change the column names for the transcript and cell coordinates to "x" and "y". Please also make sure your cell and molecule files contain a column to annotate the genes (gene ID) and cells (cell ID).
 
 ### 3.2. What is SpaObj object?
 SpaObj is a new Julia object/data type we constructed to store the original and processed data including the 2D spatial coordinates, gene and cell annotations, raw/normalized count matrices and all results from analysis. We defined a broad range of computational methods to process this SpaObj object, resulting in a wide range of high quality plots for data visualization.
