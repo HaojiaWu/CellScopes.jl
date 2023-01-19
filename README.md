@@ -41,7 +41,7 @@ cells =  DataFrame(CSV.File("/mnt/sdc/cartana_weekend/Day2_Jia/segmentation_cell
 ```
 **b. Construct a SpaObj object** using the count data and the cell and molecules coordinates data. You can normalize the data in this step or do it later. If you want to normalize the data in this step, set ```normalize=true```. <br>
 ```julia
-kidney = spd.SpaObj(count_molecules,count_cells,count_df; cell_prefix="Day2", normalize=true);
+kidney = cs.SpaObj(count_molecules,count_cells,count_df; cell_prefix="Day2", normalize=true);
 ```
 **c. (Optional). Normalize the raw count data** if ```normalize=false``` in 3b. <br>
 ```julia
@@ -63,7 +63,7 @@ We wrapped the codes from the popular sc tools to cluster the cells based on the
 
 i. **SpaGCN**: Please refer to the original tutorial to select the paramenters. Below are some example codes (Clustering results will be stored in the cell metadata of the SpaObj):
 ```julia
-CSV.write("count_data.csv",spd.count)
+CSV.write("count_data.csv",cs.count)
 kidney = cs.run_SpaGCN(kidney, "count_data.csv", "/home/users/haojiawu/anaconda3/bin/python")
 ```
 ii. Here is how to run **Scanpy** in SpaData:
