@@ -19,7 +19,7 @@ a. scRNA-seq (PBMC 3K and MCA 400K cells): https://github.com/HaojiaWu/CellScope
 b. 10x Visium: https://github.com/HaojiaWu/CellScopes.jl/tree/main/visium_tutorial
 <br>
 
-## 3. Ananlyzing imaging-based spatial transcriptomic data (Cartana)
+## 3. Analysis of imaging-based spatial transcriptomic data (Cartana)
 The tutorial below used the spatial data from CARTANA for demo but basically it can process any FISH-based methods (such as MERFISH) after slight data formatting. If you find ```SpaData.jl``` useful to your research, please cite our paper or this github page. <br>
 
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/cartana_tutorial/img/SpaData.png" width="600"> <br>
