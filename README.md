@@ -59,7 +59,7 @@ kidney = load(filename="kidney_SpaObj.jld2")
 
 ### 3.5. Data processing and analysis
 #### a. Cell clustering
-We provide code to run cell clustering using pure Julia language (https://github.com/HaojiaWu/CellScopes.jl/tree/main/scRNA_tutorial). Additionally, we also offer the option to run clustering using popular sc tools (such as [SpaGCN](https://github.com/jianhuupenn/SpaGCN), [Seurat](https://github.com/satijalab/seurat), and [Scanpy](https://github.com/scverse/scanpy)) via the [RCall.jl](https://github.com/JuliaInterop/RCall.jl) and [PyCall.jl](https://github.com/JuliaPy/PyCall.jl) packages, which bridge R and Python with Julia, by using the transcript count matrix from cell segmentation. If your data has already been completed cell clustering using other tools (such as Baysor), this step can be skipped.
+We provide code to run cell clustering using pure Julia language (https://github.com/HaojiaWu/CellScopes.jl/tree/main/scRNA_tutorial). Additionally, we also offer the option to run clustering using popular sc tools (such as [SpaGCN](https://github.com/jianhuupenn/SpaGCN), [Seurat](https://github.com/satijalab/seurat), and [Scanpy](https://github.com/scverse/scanpy)) via the [RCall.jl](https://github.com/JuliaInterop/RCall.jl) and [PyCall.jl](https://github.com/JuliaPy/PyCall.jl) packages, which seamlessly bridge R and Python with Julia. If your data has already been completed cell clustering using other tools (such as Baysor), this step can be skipped.
 <br/>
 
 i. **SpaGCN**: Please refer to the original tutorial to select the paramenters. Below are some example codes (Clustering results will be stored in the cell metadata of the SpaObj):
