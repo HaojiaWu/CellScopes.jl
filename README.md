@@ -48,7 +48,7 @@ kidney = cs.CartanaObject(count_molecules,count_cells,count_df; cell_prefix="Day
 kidney = cs.normalize_data(kidney);
 ```
 
-### 3.4. SpaObj file I/O
+### 3.4. CellScopes file I/O
 We used the [JLD2.jl](https://github.com/JuliaIO/JLD2.jl) package to save and load the ```CellScopes``` objects. Please read the original tutorial to learn the methods from JLD2 for file input/output. Here are some example lines:
 ```julia
 ### save CartanaObject to disk.
@@ -62,7 +62,7 @@ kidney = load(filename="kidney_SpaObj.jld2")
 We provide code to run cell clustering using pure Julia language (https://github.com/HaojiaWu/CellScopes.jl/tree/main/scRNA_tutorial). Additionally, we also offer the option to run clustering using popular sc tools (such as [SpaGCN](https://github.com/jianhuupenn/SpaGCN), [Seurat](https://github.com/satijalab/seurat), and [Scanpy](https://github.com/scverse/scanpy)) via the [RCall.jl](https://github.com/JuliaInterop/RCall.jl) and [PyCall.jl](https://github.com/JuliaPy/PyCall.jl) packages, which seamlessly bridge R and Python with Julia. If your data has already been completed cell clustering using other tools (such as Baysor), this step can be skipped.
 <br/>
 
-i. **SpaGCN**: Please refer to the original tutorial to select the paramenters. Below are some example codes (Clustering results will be stored in the cell metadata of the SpaObj):
+i. **SpaGCN**: Please refer to the original tutorial to select the paramenters. Below are some example codes (Clustering results will be stored in the cell metadata of the SpatialObject):
 ```julia
 CSV.write("count_data.csv",cs.count)
 kidney = cs.run_SpaGCN(kidney, "count_data.csv", "/home/users/haojiawu/anaconda3/bin/python")
