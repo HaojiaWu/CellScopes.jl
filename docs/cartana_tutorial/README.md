@@ -2,7 +2,7 @@
 ## A Julia package to process the imaging-based spatial transcriptomics data
 Computational tools are lacking for processing the spatial transcriptomics data leading to high quality data intepretation. The ```SpaData.jl``` package is designed for processing, analyzing, and visualizing the FISH-based spatial data. The tutorial below used the spatial data from CARTANA for demo but basically it can process any FISH-based methods (such as MERFISH) after slight data formatting. If you find ```SpaData.jl``` useful to your research, please cite our paper or this github page. <br>
 
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/cartana_tutorial/img/SpaData.png" width="600"> <br>
+<img src="https://github.com/HaojiaWu/SpaData.jl/blob/main/img/SpaData.png" width="600"> <br>
 
 ### 1. How to install SpaData.jl in Julia 1.7.3?
 ```julia
@@ -97,7 +97,7 @@ cell_dist = spd.run_cell_pairing(kidney.cells, :cell2, :celltype, 50)
 #### 6d. Convert the xy coordinates to kidney coordinates
 In ```SpaData.jl```, we created a new coordinate system, namely **kidney coordinate system**, to precisely depict the position of every single cell in the kidney. In this system, the position of a cell is defined by the kidney depth, and the kidney angle. To transform the xy coordinate system to kidney coordinate system, we first define the origin of the coordinate by finding the center point in the papilla. For each cell, we compute the kidney depth by calculating the distance of the cell to the kidney boundary, and divided by the distance of the kidney boundary to the origin of the coordinate. We can define the kidney angle of the cells by measuring the angle of the slope and the new x coordinate (in tangent value). The schematic below explains the coordinate transformation.
 
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/cartana_tutorial/img/kidney_coordinate.png" width="300"> <br>
+<img src="https://github.com/HaojiaWu/SpaData.jl/blob/main/img/kidney_coordinate.png" width="300"> <br>
 
 This kidney coordinate system can help define the kidney compartment where the cell resides, how the cell type and transcript distribution changes from outer cortex to papilla, and how the gene expression changes in different condiitons. Here are some steps to complete the transformation.
 ```julia
@@ -135,7 +135,7 @@ p3=spd.plot_cell_polygons(kidney, "celltype";
     y_lims=(0,40000),canvas_size=(5000,6000),
     stroke_color="gray80")
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/cartana_tutorial/img/whole.jpg" width="300"> <br>
+<img src="https://github.com/HaojiaWu/SpaData.jl/blob/main/img/whole.jpg" width="300"> <br>
 
 Usually it's hard to see the delicate tructure when ploting gene on the whole kidney. Therefore, we provided three ways to plot gene expression in a selected field of view. <br/>
 
@@ -160,9 +160,9 @@ anno2 = Dict("Podo" => ("fuchsia",alpha_trans), "HealthyPT"=>("green",alpha_tran
 )
 ```
 <p float="left">
-  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/cartana_tutorial/img/datapoints.png" width=32% height=250>
-  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/cartana_tutorial/img/polygons.png" width=32% height=250> 
-  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/cartana_tutorial/img/glom.png" width=32% height=250>
+  <img src="https://github.com/HaojiaWu/SpaData.jl/blob/main/img/datapoints.png" width=32% height=250>
+  <img src="https://github.com/HaojiaWu/SpaData.jl/blob/main/img/polygons.png" width=32% height=250> 
+  <img src="https://github.com/HaojiaWu/SpaData.jl/blob/main/img/glom.png" width=32% height=250>
 </p>
 
 #### 7b. Plot cell annotation
@@ -190,9 +190,9 @@ spd.plot_cell_polygons(kidney, "celltype";
     canvas_size=(450,400),stroke_color="gray80")
 ```
 <p float="left">
-  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/cartana_tutorial/img/tubule.png" height=400>
-  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/cartana_tutorial/img/artery.png" height=400> 
-  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/cartana_tutorial/img/cortex.png" height=400> 
+  <img src="https://github.com/HaojiaWu/SpaData.jl/blob/main/img/tubule.png" height=400>
+  <img src="https://github.com/HaojiaWu/SpaData.jl/blob/main/img/artery.png" height=400> 
+  <img src="https://github.com/HaojiaWu/SpaData.jl/blob/main/img/cortex.png" height=400> 
 </p>
 
 #### 7c. Plot gene expression across clusters.
@@ -202,7 +202,7 @@ We provided a gene rank function to identify the marker genes for each cluster. 
 ```julia
 spd.plot_marker_rank(kidney, "celltype","vEC"; num_gene=20)
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/cartana_tutorial/img/gene_rank.png" height="200"> <br>
+<img src="https://github.com/HaojiaWu/SpaData.jl/blob/main/img/gene_rank.png" height="200"> <br>
 
 **ii.** Plot gene expression in dotplot format
 ```julia
@@ -210,7 +210,7 @@ cell_order=["Podo", "HealthyPT", "InjPT","TAL","DCT","CD-PC","CD-IC","Uro","gEC"
 genes=["Podxl","Slc26a4","Havcr1","Slc5a2","Krt19","Aqp2","Slc12a3","Eln","Ehd3","Acta2","Col1a1"]
 spd.dotPlot(kidney, genes, :celltype; cell_order=cell_order, expr_cutoff=0.1,fontsize=16,fig_height=500, fig_width=300)
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/cartana_tutorial/img/dotplot2.png" width="400"> <br>
+<img src="https://github.com/HaojiaWu/SpaData.jl/blob/main/img/dotplot2.png" width="400"> <br>
 
 #### 7d. Plot cell fraction.
 We also provided a way to plot cell fraction across multiple conditions.
@@ -237,7 +237,7 @@ p=all_time |> @vlplot()+@vlplot(mark={:area, opacity=0.6}, x={"index", axis={gri
         }},
     width=200,height=200)
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/cartana_tutorial/img/cellfrac.png" width="400"> <br>
+<img src="https://github.com/HaojiaWu/SpaData.jl/blob/main/img/cellfrac.png" width="400"> <br>
 
 #### 7e. Select and plot field of view (fov).
 ```SpaData.jl``` allows you to select the field of view for further analysis. First, we provided a function to draw grid on the spatial graph. Then the fov of interest can be selected using the ```subset_fov``` function.
@@ -245,7 +245,7 @@ p=all_time |> @vlplot()+@vlplot(mark={:area, opacity=0.6}, x={"index", axis={gri
 spd.plot_fov(kidney, 10,10; group_label="celltype", cell_highlight="CD-PC", shield=true)
 cell_sub=spd.subset_fov(kidney, [47,48,57,58], 10,10);
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/cartana_tutorial/img/grid.jpg" width="400"> <br>
+<img src="https://github.com/HaojiaWu/SpaData.jl/blob/main/img/grid.jpg" width="400"> <br>
 
 #### 7f. Plot cell type/transcript distribution from cortex to papilla.
 After we transform the xy coordinates to the kidney coordinates (See the **Data processing and analysis** section), we can plot the cell type and transcript distribution from outer cortex to papilla.
@@ -258,11 +258,11 @@ celltypes=["HealthyPT","DCT","Podo","CD-IC","gEC","InjPT","Immune","gEC","Fib",
 celltypes=reverse(celltypes);
 spd.plot_depth(kidney, celltypes=celltypes, markers=markers)
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/cartana_tutorial/img/kidney_depth.png" height="300"> <br>
+<img src="https://github.com/HaojiaWu/SpaData.jl/blob/main/img/kidney_depth.png" height="300"> <br>
 We can make this into animation too.
 ```julia
 spd.plot_depth_animation(kidney, celltypes=celltypes, markers=markers)
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/cartana_tutorial/img/animations.gif" height="300"> <br>
+<img src="https://github.com/HaojiaWu/SpaData.jl/blob/main/img/animations.gif" height="300"> <br>
 
 
