@@ -1,5 +1,5 @@
 # CellScopes.jl <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/logo.png" width="60" height="60"> <br>
-```CellScopes.jl``` is a Julia-based toolkit for analyzing single cell and spatial transcriptomic data. It performs data normalization, dimensional reduction, cell clustering, and visualization on various data types. Here is the structural design of ```CellScopes.jl``` in its current version.
+```CellScopes.jl``` is a toolkit built using the Julia programming language, designed for the analysis of single cell and spatial transcriptomic data. It offers a range of capabilities including data normalization, dimensional reduction, cell clustering and visualization, all tailored to various types of data, to enable researchers to gain valuable insights into the complexity of cellular systems. The current version of ```CellScopes.jl``` is structured as follows:
 
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/CellScopes-version-1.png" width="600"> <br>
 
