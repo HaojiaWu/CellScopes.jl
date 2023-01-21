@@ -51,7 +51,7 @@ function run_SpaGCN(sp::AbstractSpaObj, count_path::String, python_path::String;
             return sp
 end
 
-function run_tangram(sp::AbstractSpaObj, data_path::String)
+function run_tangram(sp::CartanaObject, data_path::String)
     py"""
     import os
     import numpy as np
@@ -123,106 +123,15 @@ function run_tangram(sp::AbstractSpaObj, data_path::String)
     DataFrames.rename!(new_df, "x1" => "cell")
     new_df = permutedims(new_df, :cell)
     rename!(new_df, :cell => :gene)
-    try
-        sp.imputeData
-    catch test_impdata
-        if isa(test_impdata, UndefRefError)
-            sp.imputeData = SpaImputeObj("tangram"; imp_data = new_df)
-        else
-            sp.imputeData = add_impdata(sp.imputeData, "tangram", new_df)
-        end
+    if isdefined(sp, :imputeData)
+        sp.imputeData = add_impdata(sp.imputeData, "tangram", new_df)
+    else
+        sp.imputeData = SpaImputeObj("tangram"; imp_data = new_df)
     end
     return sp
 end
 
-function run_tangram2(sp::AbstractSpaObj,
-    scMat_path::String, scGenes_path::String, 
-    scBarcodes_path::String, scMeta_path::String, 
-    marker_path::String, cl_col::String; device1 = "cuda:0")
-        sc = pyimport("scanpy")
-        tg=pyimport("tangram")
-        np=pyimport("numpy")
-        pd=pyimport("pandas")
-        sc_data=MatrixMarket.mmread(scMat_path);
-        sc_data=Matrix(sc_data);
-        sc_data=DataFrame(sc_data,:auto);
-        sc_genes=CSV.File(scGenes_path, header=false) |> DataFrame
-        sc_cells=CSV.File(scBarcodes_path, header=false) |> DataFrame
-        rename!(sc_data,string.(sc_cells.Column1))
-        sc_data.gene=string.(sc_genes.Column1)
-        for celln in DataFrames.names(sc_data)[1:end-1]
-            if celln !==String
-                celln = string(celln)
-            end
-            sc_data[!, celln] = sc_data[!, celln] ./ sum(sc_data[!, celln])
-        end
-        new_df=Matrix(sc_data[!,1:end-1])
-        dt = StatsBase.fit(UnitRangeTransform, new_df, dims=2)
-        new_df=StatsBase.transform(dt, new_df)
-        new_df=DataFrame(new_df,:auto)
-        DataFrames.rename!(new_df, DataFrames.names(sc_data)[1:end-1])
-        new_df[!,:gene]=sc_data[!,:gene]
-        sp.sc_data=new_df
-        sc_meta=CSV.File(scMeta_path, header=true) |> DataFrame
-        sp.sc_meta=sc_meta
-        println("scRNA-seq data was added to your SpaObj!")
-        cm=sp.counts
-        cm=permutedims(cm, 1)
-        adata = sc.AnnData(Matrix(cm[!,2:end]))
-        adata.var_names = names(cm[!,2:end])
-        adata.obs_names=cm.gene
-        sc.pp.filter_genes(adata, min_cells=1)
-        sc.pp.normalize_total(adata)
-        metadata = sp.spmetaData.cell
-        adata.obs["x"] = metadata[!,:x]
-        adata.obs["y"] = metadata[!,:y]
-        sp_ad=adata
-        adata=sc.read_mtx(scMat_path)
-        adata=adata.transpose()
-        gene1 = CSV.File(scGenes_path, header=false) |> DataFrame
-        gene1=string.(gene1[!,:Column1])
-        cell1 = CSV.File(scBarcodes_path, header=false) |> DataFrame
-        cell1=string.(cell1[!,:Column1])
-        adata.var_names=gene1
-        adata.obs_names=cell1
-        metadata = pd.read_csv(scMeta_path, index_col=0)
-        metadata.dropna(inplace = true)
-        adata.obs = metadata
-        sc.pp.filter_genes(adata, min_cells=1)
-        sc.pp.normalize_total(adata)
-        sc_ad=adata
-        df_genes = pd.read_csv(marker_path, index_col=0)
-        markers = np.reshape(df_genes.values, (-1, ))
-        tg.pp_adatas(sc_ad, sp_ad, genes=markers)
-        println("Running Tangram...")
-        ad_map = tg.map_cells_to_space(
-                    adata_sc=sc_ad,
-                    adata_sp=sp_ad,
-                    device=device1
-                    )
-        println("Tangram done!")
-        ad_ge = tg.project_genes(adata_map=ad_map, adata_sc=sc_ad)
-        tg_count=ad_ge.X
-        tg_count=DataFrame(tg_count,:auto)
-        gene_names=uppercasefirst.(string.(ad_ge.var_names))
-        rename!(tg_count, gene_names)
-        tg_count.cell=string.(ad_ge.obs_names)
-        tg_count = permutedims(tg_count, :cell)
-        rename!(tg_count, :cell => :gene)
-        tg.project_cell_annotations(ad_map, sp_ad, annotation=cl_col)
-        tg_meta = sp_ad.obsm["tangram_ct_pred"]
-        tg_meta = DataFrame(tg_meta,:auto)
-        sp.imp_meta = tg_meta
-        if isa(sp.imputeData, Nothing)
-            sp.imputeData = SpaImputeObj("tangram"; imp_data = tg_count)
-        else
-            sp.imputeData = add_impdata(sp.imputeData, "tangram", tg_count)
-        end
-        println("Tangram data was added to your SpaObj!")
-        return sp
-end
-
-function run_spaGE(sp::AbstractSpaObj, data_path::String, spaGE_path::String; npv::Int64=30)
+function run_spaGE(sp::CartanaObject, data_path::String, spaGE_path::String; npv::Int64=30)
     pushfirst!(PyVector(pyimport("sys")."path"), spaGE_path)
     py"""
     import os
@@ -303,7 +212,7 @@ function run_spaGE(sp::AbstractSpaObj, data_path::String, spaGE_path::String; np
     return sp
 end
 
-function run_gimVI(sp::AbstractSpaObj, data_path::String)
+function run_gimVI(sp::CartanaObject, data_path::String)
     py"""
     import os
     import numpy as np
