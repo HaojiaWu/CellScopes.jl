@@ -200,14 +200,10 @@ function run_spaGE(sp::CartanaObject, data_path::String, spaGE_path::String; npv
     DataFrames.rename!(new_df, "x1" => "cell")
     new_df = permutedims(new_df, :cell)
     rename!(new_df, :cell => :gene)
-    try
-        sp.imputeData
-    catch test_impdata
-        if isa(test_impdata, UndefRefError)
-            sp.imputeData = SpaImputeObj("SpaGE"; imp_data = new_df)
-        else
-            sp.imputeData = add_impdata(sp.imputeData, "SpaGE", new_df)
-        end
+    if isdefined(sp, :imputeData)
+        sp.imputeData = add_impdata(sp.imputeData, "SpaGE", new_df)
+    else
+        sp.imputeData = SpaImputeObj("SpaGE"; imp_data = new_df)
     end
     return sp
 end
@@ -284,14 +280,10 @@ function run_gimVI(sp::CartanaObject, data_path::String)
     DataFrames.rename!(new_df, "x1" => "cell")
     new_df = permutedims(new_df, :cell)
     rename!(new_df, :cell => :gene)
-    try
-        sp.imputeData
-    catch test_impdata
-        if isa(test_impdata, UndefRefError)
-            sp.imputeData = SpaImputeObj("gimVI"; imp_data = new_df)
-        else
-            sp.imputeData = add_impdata(sp.imputeData, "gimVI", new_df)
-        end
+    if isdefined(sp, :imputeData)
+        sp.imputeData = add_impdata(sp.imputeData, "gimVI", new_df)
+    else
+        sp.imputeData = SpaImputeObj("gimVI"; imp_data = new_df)
     end
     return sp
 end
