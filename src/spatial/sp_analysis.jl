@@ -117,16 +117,15 @@ function run_tangram(sp::CartanaObject, data_path::String)
     """
     imp_count = py"Imp_Genes"
     new_df = pd_to_df(imp_count)
+    gene_list = names(new_df)
+    new_df = convert(SparseMatrixCSC{Float64, Int64},Matrix(new_df))
     cell_list = py"cell_id2"
     cell_list = string.(cell_list)
-    new_df = [cell_list new_df]
-    DataFrames.rename!(new_df, "x1" => "cell")
-    new_df = permutedims(new_df, :cell)
-    rename!(new_df, :cell => :gene)
+    new_counts = SpaCountObj(new_df, cell_list, gene_list)
     if isdefined(sp, :imputeData)
-        sp.imputeData = add_impdata(sp.imputeData, "tangram", new_df)
+        sp.imputeData = add_impdata(sp.imputeData, "tangram", new_counts)
     else
-        sp.imputeData = SpaImputeObj("tangram"; imp_data = new_df)
+        sp.imputeData = SpaImputeObj("tangram"; imp_data = new_counts)
     end
     return sp
 end
@@ -194,16 +193,15 @@ function run_spaGE(sp::CartanaObject, data_path::String, spaGE_path::String; npv
     """
     imp_count = py"Imp_Genes"
     new_df = pd_to_df(imp_count)
+    gene_list = names(new_df)
+    new_df = convert(SparseMatrixCSC{Float64, Int64},Matrix(new_df))
     cell_list = py"cell_id2"
     cell_list = string.(cell_list)
-    new_df = [cell_list new_df]
-    DataFrames.rename!(new_df, "x1" => "cell")
-    new_df = permutedims(new_df, :cell)
-    rename!(new_df, :cell => :gene)
+    new_counts = SpaCountObj(new_df, cell_list, gene_list)
     if isdefined(sp, :imputeData)
-        sp.imputeData = add_impdata(sp.imputeData, "SpaGE", new_df)
+        sp.imputeData = add_impdata(sp.imputeData, "SpaGE", new_counts)
     else
-        sp.imputeData = SpaImputeObj("SpaGE"; imp_data = new_df)
+        sp.imputeData = SpaImputeObj("SpaGE"; imp_data = new_counts)
     end
     return sp
 end
@@ -274,16 +272,15 @@ function run_gimVI(sp::CartanaObject, data_path::String)
     """
     imp_count = py"Imp_Genes"
     new_df = pd_to_df(imp_count)
+    gene_list = names(new_df)
+    new_df = convert(SparseMatrixCSC{Float64, Int64},Matrix(new_df))
     cell_list = py"cell_id2"
     cell_list = string.(cell_list)
-    new_df = [cell_list new_df]
-    DataFrames.rename!(new_df, "x1" => "cell")
-    new_df = permutedims(new_df, :cell)
-    rename!(new_df, :cell => :gene)
+    new_counts = SpaCountObj(new_df, cell_list, gene_list)
     if isdefined(sp, :imputeData)
-        sp.imputeData = add_impdata(sp.imputeData, "gimVI", new_df)
+        sp.imputeData = add_impdata(sp.imputeData, "gimVI", new_counts)
     else
-        sp.imputeData = SpaImputeObj("gimVI"; imp_data = new_df)
+        sp.imputeData = SpaImputeObj("gimVI"; imp_data = new_counts)
     end
     return sp
 end
