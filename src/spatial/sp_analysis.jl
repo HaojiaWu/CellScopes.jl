@@ -58,6 +58,7 @@ function run_tangram(sp::CartanaObject, data_path::String)
     import pandas as pd
     import tangram as tg
     import anndata
+    import scipy
     from anndata import AnnData
     import warnings
     warnings.filterwarnings('ignore')
@@ -111,6 +112,7 @@ function run_tangram(sp::CartanaObject, data_path::String)
     tg.pp_adatas(rna_adata, spatial_adata, genes=overlap_genes)
     ad_map = tg.map_cells_to_space(rna_adata, spatial_adata, density_prior='uniform',num_epochs=500,device="cpu")
     ad_ge = tg.project_genes(adata_map=ad_map, adata_sc=rna_adata)
+    ad_ge.X = scipy.sparse.csc_matrix(ad_ge.X)
     Imp_Genes = pd.DataFrame.sparse.from_spmatrix(ad_ge.X)
     Imp_Genes.columns = rna_adata.var_names.to_list()
     print("done!")
