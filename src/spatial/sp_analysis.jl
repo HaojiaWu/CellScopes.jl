@@ -275,7 +275,7 @@ function run_gimVI(sp::CartanaObject, data_path::String)
     imp_count = py"Imp_Genes"
     new_df = pd_to_df(imp_count)
     gene_list = names(new_df)
-    new_df = convert(SparseMatrixCSC{Float64, Int64},Matrix(new_df))
+    new_df = convert(SparseMatrixCSC{Float64, Int64},Matrix(new_df)')
     cell_list = py"cell_id2"
     cell_list = string.(cell_list)
     new_counts = SpaCountObj(new_df, cell_list, gene_list)
