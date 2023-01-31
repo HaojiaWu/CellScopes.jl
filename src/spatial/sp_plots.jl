@@ -618,11 +618,11 @@ function sp_impute_gene_plot(sp::CartanaObject, gene::String; data_type="predict
     y_lims=nothing, canvas_size=(1000,1200), marker_size=2, order=true)
     if data_type === "predicted"
         if imp_type === "tangram"
-            gene_count = sp.imputeData.tg_data
+            gene_count = sp.imputeData.tgCount
         elseif imp_type === "SpaGE"
-            gene_count = sp.imputeData.spage_data
+            gene_count = sp.imputeData.spageCount
         elseif imp_type === "gimVI"
-            gene_count = sp.imputeData.gimvi_data
+            gene_count = sp.imputeData.gimviCount
         else
             error("imp_type can only be \"tangram\", \"SpaGE\" and \"gimVI\"")
         end
@@ -679,11 +679,11 @@ function sp_impute_gene_plot(impute_list::Vector{CartanaObject}, gene_list::Vect
         for i in 1:length(impute_list)
             if data_type === "predicted"
                 if imp_type === "tangram"
-                    impute_data = impute_list[i].imputeData.tg_data
+                    impute_data = impute_list[i].imputeData.tgCount
                 elseif imp_type === "SpaGE"
-                    impute_data = impute_list[i].imputeData.spage_data
+                    impute_data = impute_list[i].imputeData.spageCount
                 elseif imp_type === "gimVI"
-                    impute_data = impute_list[i].imputeData.gimvi_data
+                    impute_data = impute_list[i].imputeData.gimviCount
                 else
                     error("imp_type can only be \"tangram\", \"SpaGE\" and \"gimVI\"")
                 end
@@ -1016,14 +1016,14 @@ function compare_gene_imputation(sp1::CartanaObject,sp2::CartanaObject, gene_lis
         ct_mtx2 = deepcopy(sp2.normCount)
     elseif assay_use === "predicted"
             if imp_type === "tangram"
-                ct_mtx1 = sp1.imputeData.tg_data
-                ct_mtx2 = sp2.imputeData.tg_data
+                ct_mtx1 = sp1.imputeData.tgCount
+                ct_mtx2 = sp2.imputeData.tgCount
             elseif imp_type === "SpaGE"
-                ct_mtx1 = sp1.imputeData.spage_data
-                ct_mtx2 = sp2.imputeData.spage_data
+                ct_mtx1 = sp1.imputeData.spageCount
+                ct_mtx2 = sp2.imputeData.spageCount
             elseif imp_type === "gimVI"
-                ct_mtx1 = sp1.imputeData.gimvi_data
-                ct_mtx2 = sp2.imputeData.gimvi_data
+                ct_mtx1 = sp1.imputeData.gimviCount
+                ct_mtx2 = sp2.imputeData.gimviCount
             else
                 error("imp_type can only be \"tangram\", \"SpaGE\" and \"gimVI\"")
             end
@@ -1081,11 +1081,11 @@ function plot_heatmap(sp::CartanaObject, gene_list::Union{Vector, String},
         ct_mtx = deepcopy(sp.normCount)
     elseif assay_use === "predicted"
         if imp_type === "tangram"
-            ct_mtx = sp.imputeData.tg_data
+            ct_mtx = sp.imputeData.tgCount
         elseif imp_type === "SpaGE"
-            ct_mtx = sp.imputeData.spage_data
+            ct_mtx = sp.imputeData.spageCount
         elseif imp_type === "gimVI"
-            ct_mtx = sp.imputeData.gimvi_data
+            ct_mtx = sp.imputeData.gimviCount
         else
             error("imp_type can only be \"tangram\", \"SpaGE\" and \"gimVI\"")
         end
