@@ -71,7 +71,7 @@ end
 
 function sp_feature_plot(sp::Union{CartanaObject, VisiumObject}, gene_list::Union{String, Vector{String}, Tuple{String}}; layer::String = "cells", x_col::Union{String, Symbol}="x",
     y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order::Bool=true, scale::Bool = false,titlesize::Int64=24, 
-    height::Real = 500, width::Real = 500, combine = true, img_res::String = "low",  adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3,
+    height::Real = 500, width::Real = 500, combine = true, img_res::String = "low",  adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3, use_imputed=false, imp_type::Union{String, Nothing} = nothing,
     color_keys=["gray94","orange","red3"], gene_colors = nothing, alpha::Real = 1, legend_fontsize = 10, do_legend=false, legend_size = 10)
     if isa(gene_list, String)
         gene_list = [gene_list]
@@ -100,10 +100,28 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject}, gene_list::Unio
         else
             coord_cell=deepcopy(sp.spmetaData.cell)
         end
-        if isdefined(sp, :normCount)
-            norm_counts=sp.normCount
+        if use_imputed
+            if !isdefined(sp, :imputeData)
+                error("Please impute the data first!")
+            end
+            if isa(imp_type, Nothing)
+                imp_type = "SpaGE"
+            end
+            if imp_type === "tangram"
+                gene_count = sp.imputeData.tgCount
+            elseif imp_type === "SpaGE"
+                gene_count = sp.imputeData.spageCount
+            elseif imp_type === "gimVI"
+                gene_count = sp.imputeData.gimviCount
+            else
+                error("imp_type can only be \"tangram\", \"SpaGE\" and \"gimVI\"")
+            end
         else
-            error("Please normalize the data first!")
+            if isdefined(sp, :normCount)
+                norm_counts=sp.normCount
+            else
+                error("Please normalize the data first!")
+            end
         end
         if isa(x_lims, Nothing)
             x_lims=(minimum(coord_cell[!, x_col])-0.05*maximum(coord_cell[!, x_col]),1.05*maximum(coord_cell[!, x_col]))
