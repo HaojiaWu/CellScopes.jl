@@ -108,11 +108,11 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject}, gene_list::Unio
                 imp_type = "SpaGE"
             end
             if imp_type === "tangram"
-                gene_count = sp.imputeData.tgCount
+                norm_counts = sp.imputeData.tgCount
             elseif imp_type === "SpaGE"
-                gene_count = sp.imputeData.spageCount
+                norm_counts = sp.imputeData.spageCount
             elseif imp_type === "gimVI"
-                gene_count = sp.imputeData.gimviCount
+                norm_counts = sp.imputeData.gimviCount
             else
                 error("imp_type can only be \"tangram\", \"SpaGE\" and \"gimVI\"")
             end
