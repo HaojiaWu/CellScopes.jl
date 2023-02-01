@@ -475,8 +475,8 @@ end
 
 function sp_dim_plot(sp::Union{CartanaObject, VisiumObject}, anno::Union{Symbol, String}; 
     anno_color::Union{Nothing, Dict} = nothing, x_col::String = "x", y_col::String = "y", cell_order::Union{Vector{String}, Nothing}=nothing,
-    x_lims=nothing, y_lims=nothing,canvas_size=(5000,6000),stroke_width=0.5,stroke_color=:transparent,  bg_color=:white,
-        marker_size=1, label_size=50, label_color="black", label_offset=(0,0), do_label=true, do_legend=true, alpha::Real = 1,
+    x_lims=nothing, y_lims=nothing,canvas_size=(900,1000),stroke_width=0.5,stroke_color=:transparent,  bg_color=:white,
+        marker_size=2, label_size=50, label_color="black", label_offset=(0,0), do_label=true, do_legend=true, alpha::Real = 1,
         legend_size = 10, legend_fontsize = 16,img_res::String = "low",  adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3
     )
     if isa(sp, VisiumObject)
@@ -617,7 +617,7 @@ function sp_gene_rank(sp::CartanaObject, celltype::String, cluster::String; num_
         df = DataFrame()
         df.gene=gene_expr
         df.celltype=string.(sp.spmetaData.cell[!, cluster])
-        avg_expr=combine(groupby(df, :celltype), :gene => mean => :avg_exp);
+        avg_expr=DataFrames.combine(groupby(df, :celltype), :gene => mean => :avg_exp);
         avg_expr.gene .= gene
         all_df=[all_df; avg_expr]
     end
@@ -793,7 +793,7 @@ function plot_depth(sp::Union{CartanaObject, VisiumObject}; celltype::Union{Stri
         cells=sp.spmetaData.cell
         celltypes=cell_select
         if isa(celltypes, Nothing)
-            cell_order=combine(groupby(cells, celltype),:depth=>mean=>:mean)
+            cell_order= DataFrames.combine(groupby(cells, celltype),:depth=>mean=>:mean)
             sort!(cell_order, :mean)
             celltypes=cell_order[!, celltype]
             celltypes=reverse(celltypes)
@@ -1029,20 +1029,20 @@ function compare_gene_imputation(sp1::CartanaObject,sp2::CartanaObject, gene_lis
             df = DataFrame()
             df.gene=gene_expr
             df.celltype=string.(sp1.spmetaData.cell[!, cluster])
-            avg_expr1=combine(groupby(df, :celltype), :gene => mean => :avg_exp)
+            avg_expr1=DataFrames.combine(groupby(df, :celltype), :gene => mean => :avg_exp)
             avg_expr1.group .= sp1_name
             gene_expr= subset_count(ct_mtx2; genes = [gene])
             gene_expr = (vec ∘ collect)(Float64.(gene_expr.count_mtx))
             df = DataFrame()
             df.gene=gene_expr
             df.celltype=string.(sp2.spmetaData.cell[!, cluster])
-            avg_expr2=combine(groupby(df, :celltype), :gene => mean => :avg_exp)
+            avg_expr2=DataFrames.combine(groupby(df, :celltype), :gene => mean => :avg_exp)
             avg_expr2.group .= sp2_name
             avg_expr = [avg_expr1; avg_expr2]
             if scale
                 avg_expr.avg_exp= unit_range_scale(avg_expr.avg_exp)
             end
-            perc_expr=combine(groupby(df, :celltype), :gene => function(x) countmap(x.>expr_cutoff)[:1]*100/length(x) end => :perc_exp)
+            perc_expr=DataFrames.combine(groupby(df, :celltype), :gene => function(x) countmap(x.>expr_cutoff)[:1]*100/length(x) end => :perc_exp)
             df_plt=innerjoin(avg_expr, perc_expr, on = :celltype)
             df_plt.gene.=gene
             all_df=[all_df; df_plt]
@@ -1092,11 +1092,11 @@ function plot_heatmap(sp::CartanaObject, gene_list::Union{Vector, String},
             df = DataFrame()
             df.gene=gene_expr
             df.celltype=string.(sp.spmetaData.cell[!, cluster])
-            avg_expr=combine(groupby(df, :celltype), :gene => mean => :avg_exp)
+            avg_expr=DataFrames.combine(groupby(df, :celltype), :gene => mean => :avg_exp)
             if scale
                 avg_expr.avg_exp= unit_range_scale(avg_expr.avg_exp)
             end
-            perc_expr=combine(groupby(df, :celltype), :gene => function(x) countmap(x.>expr_cutoff)[:1]*100/length(x) end => :perc_exp)
+            perc_expr=DataFrames.combine(groupby(df, :celltype), :gene => function(x) countmap(x.>expr_cutoff)[:1]*100/length(x) end => :perc_exp)
             df_plt=innerjoin(avg_expr, perc_expr, on = :celltype)
             df_plt.gene.=gene
             all_df=[all_df; df_plt]
@@ -1125,8 +1125,8 @@ function plot_heatmap(sp::CartanaObject, gene_list::Union{Vector, String},
             df.gene = gene_expr
             df.celltype=string.(sp.spmetaData.cell[!, cluster])
             df.split_by = string.(sp.spmetaData.cell[!, split_by])
-            avg_expr=combine(groupby(df, [:celltype, :split_by]), :gene => mean => :avg_exp)
-            perc_expr=combine(groupby(df, [:celltype,:split_by]), :gene => function(x) countmap(x.>expr_cutoff)[:1]*100/length(x) end => :perc_exp)
+            avg_expr=DataFrames.combine(groupby(df, [:celltype, :split_by]), :gene => mean => :avg_exp)
+            perc_expr=DataFrames.combine(groupby(df, [:celltype,:split_by]), :gene => function(x) countmap(x.>expr_cutoff)[:1]*100/length(x) end => :perc_exp)
             df_plt=innerjoin(avg_expr, perc_expr, on = [:celltype,:split_by])
             df_plt.gene.=gene
             all_df=[all_df; df_plt]
