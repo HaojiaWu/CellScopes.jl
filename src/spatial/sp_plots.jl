@@ -72,7 +72,7 @@ end
 function sp_feature_plot(sp::Union{CartanaObject, VisiumObject}, gene_list::Union{String, Vector{String}, Tuple{String}}; layer::String = "cells", x_col::Union{String, Symbol}="x",
     y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order::Bool=true, scale::Bool = false,titlesize::Int64=24, 
     height::Real = 500, width::Real = 500, combine = true, img_res::String = "low",  adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3, use_imputed=false, imp_type::Union{String, Nothing} = nothing,
-    color_keys=["gray94","orange","red3"], gene_colors = nothing, alpha::Real = 1, legend_fontsize = 10, do_legend=false, legend_size = 10)
+    color_keys=["gray94","orange","red3"], gene_colors = nothing, alpha::Real = 1, legend_fontsize = 10, do_legend=false, legend_size = 10, bg_color = "white")
     if isa(gene_list, String)
         gene_list = [gene_list]
     end
@@ -163,7 +163,7 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject}, gene_list::Unio
                 n_col1 = 2*(i-3*(n_rows-1))-1
                 n_col2 = 2*(i-3*(n_rows-1))
             end
-            ax1 = MK.Axis(fig[n_row,n_col1]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
+            ax1 = MK.Axis(fig[n_row,n_col1]; backgroundcolor = bg_color, xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
             xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
             xgridvisible = false, ygridvisible = false,yreversed=false, title = gene_list[i], 
             titlesize = titlesize, xlabel = "", ylabel = "", 
@@ -212,17 +212,17 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject}, gene_list::Unio
                 df_plt1 = filter(:gene => x -> x ∈ gene_list, df_plt)
                 df_plt2 = filter(:gene => x -> x ∉ gene_list, df_plt)
                 fig = MK.Figure(resolution = (width, height))
-                ax1 = MK.Axis(fig[1,1]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
+                ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
                     xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
                     xgridvisible = false, ygridvisible = false,yreversed=false, 
                     titlesize = titlesize, xlabel = "", ylabel = "", 
                     xlabelsize = titlesize -4, ylabelsize = titlesize -4)
-                ax2 = MK.Axis(fig[1,1]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
+                ax2 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
                     xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
                     xgridvisible = false, ygridvisible = false,yreversed=false, 
                     titlesize = titlesize, xlabel = "", ylabel = "", 
                     xlabelsize = titlesize -4, ylabelsize = titlesize -4)
-                ax3 = MK.Axis(fig[1,1]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
+                ax3 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
                     xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
                     xgridvisible = false, ygridvisible = false,yreversed=false,  
                     titlesize = titlesize, xlabel = "", ylabel = "", 
@@ -263,7 +263,7 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject}, gene_list::Unio
                     df_plt.forcolor = [(i, alpha) for i in df_plt.forcolor]
                     df_plt1.forcolor = [(i, alpha) for i in df_plt1.forcolor]
                     df_plt2.forcolor = [(i, alpha) for i in df_plt2.forcolor]
-                    ax1 = MK.Axis(fig[n_row,n_col]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
+                    ax1 = MK.Axis(fig[n_row,n_col]; backgroundcolor = bg_color, xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
                     xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
                     xgridvisible = false, ygridvisible = false,yreversed=false, title = gene_list[i], 
                     titlesize = titlesize, xlabel = "", ylabel = "", 
@@ -287,7 +287,7 @@ end
 function plot_gene_polygons(sp::CartanaObject, gene_list::Union{String, Vector{String}, Tuple{String}};
     color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray94","orange","red3"],
     x_lims=nothing, y_lims=nothing,width=900,height=1000,stroke_width=0,stroke_color="black",
-    titlesize::Int64=24, scale::Bool = false
+    titlesize::Int64=24, scale::Bool = false, bg_color = "white"
     )
     if isa(gene_list, String)
         gene_list = [gene_list]
@@ -329,7 +329,7 @@ function plot_gene_polygons(sp::CartanaObject, gene_list::Union{String, Vector{S
             n_col1 = 2*(i-3*(n_rows-1))-1
             n_col2 = 2*(i-3*(n_rows-1))
         end
-        ax1 = MK.Axis(fig[n_row,n_col1]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
+        ax1 = MK.Axis(fig[n_row,n_col1]; backgroundcolor = bg_color, xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
         xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
         xgridvisible = false, ygridvisible = false,yreversed=false, title = gene_list[i], 
         titlesize = titlesize, xlabel = "", ylabel = "", 
@@ -344,8 +344,8 @@ end
 
 function plot_cell_polygons(sp::CartanaObject, anno;
     cell_types::Union{String, Int64, Vector, Tuple, Nothing}=nothing, cell_colors::Union{Nothing, String, Vector, Tuple} = nothing,
-    bg_color = "gray90", x_lims=nothing, y_lims=nothing,width = 500, height = 500,stroke_width=0, stroke_color="black",
-    legend_fontsize = 10, do_legend=false, legend_size = 10 
+    pt_bg_color = "gray90", x_lims=nothing, y_lims=nothing,width = 500, height = 500,stroke_width=0, stroke_color="black",
+    legend_fontsize = 10, do_legend=false, legend_size = 10 , bg_color = "white"
     )
     if isa(x_lims, Nothing)
         x_lims=(minimum(sp.spmetaData.cell.x)-0.05*maximum(sp.spmetaData.cell.x),1.05*maximum(sp.spmetaData.cell.x))
@@ -369,7 +369,7 @@ function plot_cell_polygons(sp::CartanaObject, anno;
         cell_types = all_celltypes
     end
     other_cells = setdiff(all_celltypes, cell_types)
-    other_color = Dict(other_cells .=> repeat([bg_color], length(other_cells)))
+    other_color = Dict(other_cells .=> repeat([pt_bg_color], length(other_cells)))
     if isa(cell_colors, Nothing)
         c_map= Colors.distinguishable_colors(length(cell_types), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
         c_map = "#" .* hex.(c_map)
@@ -390,7 +390,7 @@ function plot_cell_polygons(sp::CartanaObject, anno;
     polygons = polygons[polygon_num]
     plt_color = plt_color[polygon_num]
     fig = MK.Figure(resolution=(width, height))
-    ax1 = MK.Axis(fig[1,1]; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+    ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
         xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
         xgridvisible = false,ygridvisible = false)
         if do_legend
@@ -411,9 +411,9 @@ end
 function plot_transcript_polygons(sp::CartanaObject; 
     gene_list::Union{Vector, Symbol, String, Nothing}=nothing, 
     gene_colors::Union{Vector, Symbol, String, Nothing}=nothing, 
-    bg_color::Union{Vector, Symbol, String}="gray95",
+    pt_bg_color::Union{Vector, Symbol, String}="gray95",
     stroke_color::Union{Vector, Symbol, String}="black",
-    marker_size = 2, stroke_width=0.1,
+    marker_size = 2, stroke_width=0.1, bg_color="white",
     canvas_size=(900,1000),x_lims=nothing, y_lims=nothing, 
     anno::Union{Symbol, String, Nothing}=nothing,
     ann_colors::Union{Nothing, Dict}=nothing
@@ -428,7 +428,7 @@ function plot_transcript_polygons(sp::CartanaObject;
     polygons=sp.polygonData
     df_spatial[!, anno] = string.(df_spatial[!, anno])
     other_genes=unique(df_spatial.gene[Not(in.(df_spatial.gene, [Set(gene_list)]))])
-    other_colors=repeat([(bg_color,0.1)],length(other_genes))
+    other_colors=repeat([(pt_bg_color,0.1)],length(other_genes))
     all_genes=[gene_list; other_genes]
     all_colors=[gene_colors; other_colors]
     map_color=Dict(all_genes .=> all_colors)
@@ -459,7 +459,7 @@ function plot_transcript_polygons(sp::CartanaObject;
     df_spatial2=filter(:gene => x -> x in gene_list, df_spatial)
     colors2 = df_spatial2[!,:new_color]
     fig = MK.Figure(resolution=canvas_size)
-    fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, 
+    fig[1, 1] = MK.Axis(fig; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, 
         xticksvisible=false, xticklabelsvisible=false, yticksvisible=false, 
         yticklabelsvisible=false, xgridvisible = false, ygridvisible = false)
     MK.poly!([MK.Point2.(eachrow(p)) for p in polygons]; 
@@ -475,7 +475,7 @@ end
 
 function sp_dim_plot(sp::Union{CartanaObject, VisiumObject}, anno::Union{Symbol, String}; 
     anno_color::Union{Nothing, Dict} = nothing, x_col::String = "x", y_col::String = "y", cell_order::Union{Vector{String}, Nothing}=nothing,
-    x_lims=nothing, y_lims=nothing,canvas_size=(5000,6000),stroke_width=0.5,stroke_color=:transparent, 
+    x_lims=nothing, y_lims=nothing,canvas_size=(5000,6000),stroke_width=0.5,stroke_color=:transparent,  bg_color=:white,
         marker_size=1, label_size=50, label_color="black", label_offset=(0,0), do_label=true, do_legend=true, alpha::Real = 1,
         legend_size = 10, legend_fontsize = 16,img_res::String = "low",  adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3
     )
@@ -516,13 +516,13 @@ function sp_dim_plot(sp::Union{CartanaObject, VisiumObject}, anno::Union{Symbol,
     anno_df=DataFrames.transform(anno_df, anno => ByRow(x -> anno_color[x]) => :new_color)
     anno_df.new_color = [(i, alpha) for i in anno_df.new_color]
     fig = MK.Figure(resolution=canvas_size)
-    ax1 = MK.Axis(fig[1,1]; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+    ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
         xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
         xgridvisible = false,ygridvisible = false);
-    ax2 = MK.Axis(fig[1,1]; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+    ax2 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
         xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
         xgridvisible = false,ygridvisible = false);
-    ax3 = MK.Axis(fig[1,1]; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+    ax3 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
         xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
         xgridvisible = false,ygridvisible = false, framecolor=:white)
     if isa(cell_order, Nothing)
@@ -585,7 +585,7 @@ end
 
 function sp_highlight_cells(sp::Union{CartanaObject, VisiumObject}, cell_hightlight::String, anno::Union{String,Symbol};
     canvas_size=(900,1000),stroke_width::Float64=0.1, stroke_color="black", cell_color::String="red",
-    marker_size=2,x_lims=nothing, y_lims=nothing)
+    marker_size=2,x_lims=nothing, y_lims=nothing, bg_color = "white")
     coord_cells=deepcopy(sp.spmetaData.cell)
     if isa(x_lims, Nothing)
         x_lims=(minimum(sp.spmetaData.cell.x)-0.05*maximum(sp.spmetaData.cell.x),1.05*maximum(sp.spmetaData.cell.x))
@@ -597,7 +597,7 @@ function sp_highlight_cells(sp::Union{CartanaObject, VisiumObject}, cell_hightli
     coord_cells=DataFrames.transform(coord_cells, anno => ByRow(name -> name == cell_hightlight ? name : "others") => :newcell)
     coord_cells=DataFrames.transform(coord_cells, :newcell => ByRow(name -> name =="others" ? "gray90" : cell_color) => :newcolor)
     fig = MK.Figure(resolution=canvas_size)
-    fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, 
+    fig[1, 1] = MK.Axis(fig; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, 
                 xticksvisible=false, xticklabelsvisible=false, 
                 yticksvisible=false, yticklabelsvisible=false,
                 xgridvisible = false,ygridvisible = false)
@@ -632,118 +632,92 @@ function sp_gene_rank(sp::CartanaObject, celltype::String, cluster::String; num_
         y={:rank,axis={title="Ranking", grid=false}})
 end
 
-function sp_impute_gene_plot(sp::CartanaObject, gene::String; data_type="predicted", imp_type::String="SpaGE", c_map=nothing, x_lims=nothing,
-    y_lims=nothing, canvas_size=(1000,1200), marker_size=2, order=true)
-    if data_type === "predicted"
-        if imp_type === "tangram"
-            gene_count = sp.imputeData.tgCount
-        elseif imp_type === "SpaGE"
-            gene_count = sp.imputeData.spageCount
-        elseif imp_type === "gimVI"
-            gene_count = sp.imputeData.gimviCount
-        else
-            error("imp_type can only be \"tangram\", \"SpaGE\" and \"gimVI\"")
+function sp_feature_plot_group(sp_list::Vector{CartanaObject}, genes::Vector{String};
+    c_map=nothing, marker_size = 2, order=false, use_imputed = true,  imp_type::Union{String, Nothing}=nothing,
+    height::Real = 500, width::Real = 500, titlesize::Int64 = 24, labels=nothing,
+    color_keys=["gray94","orange","red3"],alpha::Real=1, bg_color=:white)
+    c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
+    if isa(labels, Nothing)
+        labels = "Group" .* string.(collect(1:length(sp_list)))
+    else
+        if length(labels) !== length(sp_list)
+            error("Labels must have same length as length(sp_list)")
         end
-    elseif data_type === "measured"
-        gene_count=sp.normCount
-    else
-        error("data argument can only be \"predicted\" or \"measured\"")
     end
-    df3=deepcopy(sp.spmetaData.cell)
-    all_genes = gene_count.gene_name
-    if !(gene in all_genes)
-        gene_expr=zeros(ncol(gene_count.count_mtx))
-    else
-        gene_expr = subset_count(gene_count; genes = [gene])
-        gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
-        gene_expr=scale_data(gene_expr)
-    end
-    df3.gene = gene_expr
-    if isa(x_lims, Nothing)
-        x_lims=(minimum(sp.spmetaData.cell.x)-0.05*maximum(sp.spmetaData.cell.x),1.05*maximum(sp.spmetaData.cell.x))
-    end
-    if isa(y_lims, Nothing)
-        y_lims=(minimum(sp.spmetaData.cell.y)-0.05*maximum(sp.spmetaData.cell.y),1.05*maximum(sp.spmetaData.cell.y))
-    end
-    if isa(c_map, Nothing)
-        c_map = ColorSchemes.ColorScheme([colorant"gray94", colorant"pink",colorant"red", colorant"red3"])
-    end
-    if sum(gene_expr) !==0.0
-        colors = get.(Ref(c_map), (gene_expr .- minimum(gene_expr)) ./ maximum(gene_expr))
-        plt_color="#" .* hex.(colors)
-        df3.color = plt_color
-    else
-        df3.color .= "gray94"
-    end
-    if order
-        sort!(df3, :gene)
-    end
-    fig = MK.Figure(resolution=canvas_size)
-    fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
-        xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
-        xgridvisible = false,ygridvisible = false);
-    MK.scatter!(df3.x, df3.y; strokecolor=:transparent, color=df3.color, strokewidth=0,label="", markersize=marker_size)
-    MK.xlims!(MK.current_axis(), x_lims)
-    MK.ylims!(MK.current_axis(), y_lims)
-    MK.current_figure()
-end
-
-function sp_impute_gene_plot(impute_list::Vector{CartanaObject}, gene_list::Vector{String}; data_type="predicted", imp_type::String="SpaGE",
-    c_map=nothing, marker_size = 2, order=false, canvas_size=(500, 550))
-    fig = MK.Figure(resolution=(canvas_size[1] * length(gene_list) ,canvas_size[2] * length(impute_list)))
-    for j in 1:length(gene_list)
-        gene=gene_list[j]
+    fig = MK.Figure(resolution=(width * length(genes), height * length(sp_list)))
+    for m in 1:length(genes)
+        gene=genes[m]
         all_expr=[]
-        for i in 1:length(impute_list)
-            if data_type === "predicted"
+        for i in 1:length(sp_list)
+            if use_imputed
+                if !isdefined(sp_list[i], :imputeData)
+                    error("Please impute the data first!")
+                end
+                if isa(imp_type, Nothing)
+                    imp_type = "SpaGE"
+                end
                 if imp_type === "tangram"
-                    impute_data = impute_list[i].imputeData.tgCount
+                    impute_data = sp_list[i].imputeData.tgCount
                 elseif imp_type === "SpaGE"
-                    impute_data = impute_list[i].imputeData.spageCount
+                    impute_data = sp_list[i].imputeData.spageCount
                 elseif imp_type === "gimVI"
-                    impute_data = impute_list[i].imputeData.gimviCount
+                    impute_data = sp_list[i].imputeData.gimviCount
                 else
                     error("imp_type can only be \"tangram\", \"SpaGE\" and \"gimVI\"")
                 end
                 gene_expr= subset_count(impute_data; genes = [gene])
                 gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
-            elseif data_type === "measured"
-                gene_expr=subset_count(impute_list[i].normCount; genes = [gene])
-                gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
             else
-                error("data_type can only be \"predicted\" or \"measured\"")
+                if isdefined(sp_list[i], :normCount)
+                    gene_expr=subset_count(sp_list[i].normCount; genes = [gene])
+                    gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
+                else
+                    error("Please normalize the data first!")
+                end
             end
             all_expr=[all_expr;gene_expr]
         end
         all_expr=Float64.(all_expr)
-        all_expr=scale_data(all_expr;  perc=0.0)
-        if c_map===nothing
-            c_map = ColorSchemes.ColorScheme([colorant"gray94",colorant"pink", colorant"red", colorant"red3"])
-        end
-        colors = get.(Ref(c_map), (all_expr .- minimum(all_expr)) ./ maximum(all_expr))
-        plt_color="#" .* hex.(colors)
-        segments=[ncol(impute_list[i].normCount.count_mtx)-1 for i in 1:length(impute_list)]
+        colors = get(c_map, all_expr, :extrema)
+        plt_color = "#" .* hex.(colors)
+        plt_color = [(k, alpha) for k in plt_color]
+        segments=[size(sp_list[i].normCount.count_mtx)[2] for i in 1:length(sp_list)]
         segments=cumsum(segments)
         seg_all=[]
         for i in 1:length(segments)
             if i == 1
-            seg_all=[seg_all; [1:segments[i]]]
+             seg_all=[seg_all; [1:segments[i]]]
             else
-            seg_all=[seg_all; [(segments[i-1]+1):(segments[i])]]
+             seg_all=[seg_all; [(segments[i-1]+1):(segments[i])]]
             end
         end
-        for i in 1:length(impute_list)
-            data_plt = deepcopy(impute_list[i].spmetaData.cell)
+        for i in 1:length(sp_list)
+            data_plt = deepcopy(sp_list[i].spmetaData.cell)
             data_plt.color = plt_color[seg_all[i]]
             data_plt.gene_expr = all_expr[seg_all[i]]
             if order
                 sort!(data_plt, :gene_expr)
             end
-            ax = MK.Axis(fig[i, j]; xticklabelsize=12, yticklabelsize=12, xticksvisible=false,
-                xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
-                xgridvisible = false,ygridvisible = false)
+            if i == 1
+                y_label = gene
+            else
+                y_label = ""
+            end
+            if m == 1
+                title_name = labels[i]
+            else
+                title_name = ""
+            end
+            ax = MK.Axis(fig[m, i]; backgroundcolor = bg_color, xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
+                            xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
+                            xgridvisible = false, ygridvisible = false,yreversed=false, title = title_name, 
+                            titlesize = titlesize , xlabel = "", ylabel = y_label, ylabelsize = titlesize)
             MK.scatter!(ax, data_plt.x, data_plt.y; 
                 color=data_plt.color, strokewidth=0,markersize=marker_size)
+            if i == length(sp_list)
+                MK.Colorbar(fig[m,length(sp_list)+1], label = "", 
+                    colormap = c_map, width=10, limits = (0, maximum(data_plt.gene_expr)))
+            end
         end
     end
     MK.current_figure()
