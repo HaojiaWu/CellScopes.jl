@@ -66,8 +66,10 @@ function subset_count(ct_obj::T;
         new_obj = RawCountObject(new_count, cell_name, gene_name)
     elseif isa(ct_obj, NormCountObject)
         new_obj = NormCountObject(new_count, cell_name, gene_name,  ct_obj.scale_factor, ct_obj.norm_method, ct_obj.pseudocount)
-    else
+    elseif isa(ct_obj, ScaleCountObject)
         new_obj = ScaleCountObject(new_count, cell_name, gene_name,  ct_obj.do_scale, ct_obj.do_center, ct_obj.scale_max)
+    else
+        new_obj = SpaCountObj(new_count, cell_name, gene_name)
     end
     return new_obj
 end
