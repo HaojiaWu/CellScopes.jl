@@ -79,7 +79,7 @@ function extract_cluster_count(sc_obj::Union{scRNAObject, VisiumObject, CartanaO
     if isa(anno, String)
         anno = Symbol(anno)
     end
-    cl_data = filter(anno => x -> x == cl, df)
+    cl_data = filter(anno => ==(cl), df)
     cl_cell = cl_data.cell_id
     if count_type === "raw"
         ct_obj = sc_obj.rawCount
@@ -154,7 +154,7 @@ function update_object(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject})
     sp_obj = update_count(sp_obj, :scaleCount)
     cell_set = Set(cells)
     gene_set = Set(genes)
-    sp_obj.metaData = filter(:Cell_id => in(cell_set), sp_obj.metaData)
+    sp_obj.metaData = filter(:Cell_id => ∈(cell_set), sp_obj.metaData)
     if isdefined(sp_obj, :dimReduction)
         println("Updating dimension reduction...")
         if isdefined(sp_obj.dimReduction, :pca)
@@ -173,16 +173,16 @@ function update_object(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject})
             end
         end
         if isdefined(sp_obj,:clusterData)
-            sp_obj.clustData.clustering = filter(:cell_id => in(cell_set), sp_obj.clustData.clustering)
+            sp_obj.clustData.clustering = filter(:cell_id => ∈(cell_set), sp_obj.clustData.clustering)
             sp_obj.clustData.adj_mat = sp_obj.clustData.adj_mat[check_cell, check_cell]
         end
     end
     if isa(sp_obj, CartanaObject)
         println("Updating spatial data...")
-        sp_obj.spmetaData.cell = filter(:cell => in(cell_set), sp_obj.spmetaData.cell)
-        sp_obj.spmetaData.molecule = filter(:cell => in(cell_set), sp_obj.spmetaData.molecule)
+        sp_obj.spmetaData.cell = filter(:cell => ∈(cell_set), sp_obj.spmetaData.cell)
+        sp_obj.spmetaData.molecule = filter(:cell => ∈(cell_set), sp_obj.spmetaData.molecule)
         sp_obj.spmetaData.molecule.gene = string.(sp_obj.spmetaData.molecule.gene)
-        sp_obj.spmetaData.molecule = filter(:gene => in(gene_set), sp_obj.spmetaData.molecule)
+        sp_obj.spmetaData.molecule = filter(:gene => ∈(gene_set), sp_obj.spmetaData.molecule)
         println("Updating polygons data...")
         prefix = split(sp_obj.spmetaData.cell.cell[1],"_")
         if length(prefix) > 1
@@ -190,7 +190,7 @@ function update_object(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject})
         else
             poly_all_cell = string.(sp_obj.spmetaData.polygon.polygon_number)
         end
-        sp_obj.spmetaData.polygon = filter(:mapped_cell => in(cell_set), sp_obj.spmetaData.polygon)
+        sp_obj.spmetaData.polygon = filter(:mapped_cell => ∈(cell_set), sp_obj.spmetaData.polygon)
         if length(prefix) > 1
             poly_cell = prefix[1] .* "_" .* string.(sp_obj.spmetaData.polygon.polygon_number)
         else
@@ -228,7 +228,7 @@ function update_object(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject})
     if isa(sp_obj, VisiumObject)
         println("Updating spatial data...")
         sp_obj.spmetaData.barcode = string.(sp_obj.spmetaData.barcode)
-        sp_obj.spmetaData = filter(:barcode => in(cell_set), sp_obj.spmetaData)
+        sp_obj.spmetaData = filter(:barcode => ∈(cell_set), sp_obj.spmetaData)
     end
     return sp_obj
 end
@@ -248,18 +248,18 @@ function check_dim(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject}, fiel
     return check_length
    end
    
-   function update_count(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject}, ct_name::Union{Symbol, String})
-       cell_id = colnames(sp_obj)
-       gene_id = rownames(sp_obj)
-       if isa(ct_name, String)
-           ct_name = Symbol(ct_name)
-       end
-       if isdefined(sp_obj, ct_name)
-           if check_dim(sp_obj, ct_name)
-               ct_obj1 = getfield(sp_obj, ct_name)
-               ct_obj2 = subset_count(ct_obj1; genes= gene_id, cells = cell_id)
-               replacefield!(sp_obj, ct_name, ct_obj1, ct_obj2)
-           end
-       end
-       return sp_obj
-   end
+function update_count(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject}, ct_name::Union{Symbol, String})
+    cell_id = colnames(sp_obj)
+    gene_id = rownames(sp_obj)
+    if isa(ct_name, String)
+        ct_name = Symbol(ct_name)
+    end
+    if isdefined(sp_obj, ct_name)
+        if check_dim(sp_obj, ct_name)
+            ct_obj1 = getfield(sp_obj, ct_name)
+            ct_obj2 = subset_count(ct_obj1; genes= gene_id, cells = cell_id)
+            replacefield!(sp_obj, ct_name, ct_obj1, ct_obj2)
+        end
+    end
+    return sp_obj
+end

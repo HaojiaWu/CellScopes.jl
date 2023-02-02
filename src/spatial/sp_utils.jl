@@ -50,13 +50,13 @@ function compute_pearson_cor(sp::CartanaObject, cluster1::Union{Symbol, String},
     for i in celltypes1
         cols=DataFrame([[] [] []],:auto)
         for j in celltypes2
-            x=filter(cluster1 => x-> x == i,df)
+            x=filter(cluster1 => ==(i),df)
             cell1 = subset_count(norm_cells; cell_name=x.cell)
             cell1 = cell1.count_mtx
             dg = deepcopy(cell1)
             dg.rowmean .= mean(Array(dg), dims=2)
             x=dg.rowmean
-            y=filter(cluster2 => y-> y == j,df)
+            y=filter(cluster2 => ==(j),df)
             cell1 = subset_count(norm_cells; cell_name=y.cell)
             cell1 = cell1.count_mtx
             dg = deepcopy(cell1)
@@ -84,13 +84,13 @@ function compare_cell_distances(sp::CartanaObject,col::Union{String, Symbol}, ta
     if isa(col, String)
         col=Symbol(col)
     end
-    target=filter(col => x -> x ==target_cell, coord_cells)
+    target=filter(col => ==(target_cell), coord_cells)
     target_cells=target.cell
     df = Array{Int64}(undef, 0, 2)
     n= length(target_cells)
     p = Progress(n, dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, color=:blue)
     Threads.@threads for i in target_cells
-        ref_coord = filter(:cell => x-> x== i, coord_cells)
+        ref_coord = filter(:cell => ==(i), coord_cells)
         center_x = ref_coord.x[1]
         center_y = ref_coord.y[1]
         within_range=filter([:x, :y]=>(a,b)->scan_cells(a, b, center_x, center_y, radius),coord_cells)
@@ -262,8 +262,8 @@ function compute_new_coord(df, pt, center; span=150)
         x_new = append!(x_new, pt3[1])
         y_new = append!(y_new, pt3[2])
     end
-    new_coord=DataFrame(x_new=x_new, y_new=y_new);
-    new_coord2=filter(:y_new => y-> (-span) < y < span, new_coord)
+    new_coord=DataFrame(x_new=x_new, y_new=y_new)
+    new_coord2 = new_coord[findall((-span) .< new_coord.y_new .< span),:]
     if pt_new[1]<0
        length_x=minimum(new_coord2.x_new)
     else 
@@ -292,7 +292,7 @@ function compute_kidney_coordinates(sp::CartanaObject, center)
     sp.spmetaData.cell=df
     molecules=sp.spmetaData.molecule
     cells2=df.cell
-    molecules=filter(:cell=> x-> x in cells2, molecules)
+    molecules=filter(:cell=> ∈(Set(cells2)), molecules)
     from=df.cell
     to=df.depth
     molecules_df=map_values(molecules, :cell, :depth,from, to)
@@ -408,7 +408,7 @@ function visium_deconvolution(vs::VisiumObject,sp::CartanaObject, spot_r::Union{
     celltypes = string.(keys(countmap(sp_cells[!, spcluster_col])))
     df1 = DataFrame()
     for i in target_cells
-        ref_coord = filter(vscell_col => x-> x == i, vs_cells)
+        ref_coord = filter(vscell_col => ==(i), vs_cells)
         center_x = ref_coord[!, vs_x][1]
         center_y = ref_coord[!, vs_y][1]
         within_range=filter([sp_x, sp_y] => (a,b) -> scan_cells(a, b, center_x, center_y, spot_r), sp_cells)
@@ -448,14 +448,14 @@ end
 function bin_gene_spatial(sp::CartanaObject, n_bin::Int64; celltype::Union{String, Int64, Nothing}=nothing)
     cells=deepcopy(sp.spmetaData.cell)
     if celltype !== nothing
-        cells = filter(:celltype => x -> x == celltype, cells)
+        cells = filter(:celltype => ==(celltype), cells)
     end
     all_segs = split_spatial(n_bin)
     n_seg = 1.0/n_bin
     new_df = DataFrame()
     for i in 1:length(all_segs)
         seg = all_segs[i]
-        cell1 = filter(:depth => x -> seg[1]< x <= seg[2], cells)
+        cell1 = cells[findall(seg[1] .< cells.depth .< seg[2]),:]
         cell1.bin .= n_seg * i
         new_df = [new_df; cell1]
     end

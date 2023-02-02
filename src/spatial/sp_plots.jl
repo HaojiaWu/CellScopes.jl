@@ -209,8 +209,8 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject}, gene_list::Unio
                 df_plt = map_values(df_plt, :new_gene, :forcolor, from, to)
                 df_plt.new_gene = string.(df_plt.new_gene)
                 df_plt.forcolor = [(i, alpha) for i in df_plt.forcolor]
-                df_plt1 = filter(:gene => x -> x ∈ gene_list, df_plt)
-                df_plt2 = filter(:gene => x -> x ∉ gene_list, df_plt)
+                df_plt1 = filter(:gene => ∈(Set(gene_list)), df_plt)
+                df_plt2 = filter(:gene => ∉(Set(gene_list)), df_plt)
                 fig = MK.Figure(resolution = (width, height))
                 ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
                     xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
@@ -258,8 +258,8 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject}, gene_list::Unio
                         n_col = i-3*(n_rows-1)
                     end
                     df_plt = DataFrames.transform(coord_molecules, :gene => ByRow(name -> name == gene ? color_keys[3] : color_keys[1]) => :forcolor)
-                    df_plt1 = filter(:forcolor => x -> x == color_keys[1], df_plt)
-                    df_plt2 = filter(:forcolor => x -> x == color_keys[3], df_plt)
+                    df_plt1 = filter(:forcolor => ==(color_keys[1]), df_plt)
+                    df_plt2 = filter(:forcolor => ==(color_keys[3]), df_plt)
                     df_plt.forcolor = [(i, alpha) for i in df_plt.forcolor]
                     df_plt1.forcolor = [(i, alpha) for i in df_plt1.forcolor]
                     df_plt2.forcolor = [(i, alpha) for i in df_plt2.forcolor]
@@ -307,7 +307,8 @@ function plot_gene_polygons(sp::CartanaObject, gene_list::Union{String, Vector{S
         y_lims=(minimum(sp.spmetaData.cell.y)-0.05*maximum(sp.spmetaData.cell.y),1.05*maximum(sp.spmetaData.cell.y))
     end
     select_fov = filter([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], sp.spmetaData.cell)
-    subset_poly = filter(:mapped_cell => x -> x ∈ select_fov.cell, sp.spmetaData.polygon)
+    cell_set = Set(select_fov.cell)
+    subset_poly = filter(:mapped_cell => ∈(cell_set), sp.spmetaData.polygon)
     polygon_num = subset_poly.polygon_number
     polygons = polygons[polygon_num]
     c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
@@ -385,7 +386,7 @@ function plot_cell_polygons(sp::CartanaObject, anno;
     anno_df = DataFrames.transform(anno_df, anno => ByRow(x -> anno_color[x]) => :new_color)
     plt_color = anno_df.new_color
     select_fov = filter([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], sp.spmetaData.cell)
-    subset_poly = filter(:mapped_cell => x -> x ∈ select_fov.cell, sp.spmetaData.polygon)
+    subset_poly = filter(:mapped_cell => ∈(Set(select_fov.cell)), sp.spmetaData.polygon)
     polygon_num = subset_poly.polygon_number
     polygons = polygons[polygon_num]
     plt_color = plt_color[polygon_num]
@@ -397,7 +398,7 @@ function plot_cell_polygons(sp::CartanaObject, anno;
             cells = string.(collect(keys(cell_color)))
             colors = collect(values(cell_color))
             for (cell1, color1) in zip(cells, colors)
-                select_fov1 = filter(anno => x -> x == cell1, select_fov)
+                select_fov1 = filter(anno => ==(cell1), select_fov)
                 MK.scatter!(ax1, select_fov1.x , select_fov1.y; color = color1, strokewidth = 0.5,strokecolor=stroke_color, markersize = legend_size, label = cell1)
             end
             MK.Legend(fig[1, 2], ax1, framecolor=:white, labelsize=legend_fontsize)
@@ -454,9 +455,9 @@ function plot_transcript_polygons(sp::CartanaObject;
     end
     anno_df[!, anno] = string.(anno_df[!, anno])
     anno_df=DataFrames.transform(anno_df, anno => ByRow(x -> ann_colors[x]) => :new_color)
-    df_spatial1=filter(:gene => x -> x in other_genes, df_spatial)
+    df_spatial1=filter(:gene => ∈(Set(other_genes)), df_spatial)
     colors1 = df_spatial1[!,:new_color]
-    df_spatial2=filter(:gene => x -> x in gene_list, df_spatial)
+    df_spatial2=filter(:gene => ∈(Set(gene_list)), df_spatial)
     colors2 = df_spatial2[!,:new_color]
     fig = MK.Figure(resolution=canvas_size)
     fig[1, 1] = MK.Axis(fig; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, 
@@ -540,7 +541,7 @@ function sp_dim_plot(sp::Union{CartanaObject, VisiumObject}, anno::Union{Symbol,
         MK.image!(ax1, img2)
     end
     for i in cell_anno
-        anno_df2=filter(anno => x-> x == i, anno_df)
+        anno_df2=filter(anno => ==(i), anno_df)
         x_ax = anno_df2[!, x_col]
         y_ax = anno_df2[!, y_col]
         colors = unique(anno_df2.new_color)
@@ -566,7 +567,7 @@ function sp_dim_plot(sp::Union{CartanaObject, VisiumObject}, anno::Union{Symbol,
     if do_label
         for i in cell_anno
             anno_df = filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], anno_df)
-            anno_df2 = filter(anno => x-> x == i, anno_df)
+            anno_df2 = filter(anno => ==(i), anno_df)
             x_ax = anno_df2[!, x_col]
             y_ax = anno_df2[!, y_col]
             MK.text!(i, position = (mean(x_ax) - label_offset[1], mean(y_ax) - label_offset[2]),align = (:center, :center),font = "Noto Sans Regular",textsize = label_size,color = label_color)
@@ -623,7 +624,7 @@ function sp_gene_rank(sp::CartanaObject, celltype::String, cluster::String; num_
     end
     gene_mean=DataFrame(gene=sp.rawCount.gene_name,all_mean=vec(mean(sp.rawCount.count_mtx, dims=2)))
     df_plot=innerjoin(all_df, gene_mean, on = :gene)
-    clustern=filter(:celltype => x-> x == celltype, df_plot)
+    clustern=filter(:celltype => ==(celltype), df_plot)
     clustern.rank=clustern.avg_exp .^ 2 ./ clustern.all_mean
     clustern=sort(clustern, :rank, rev=true)
     clustern=clustern[1:num_gene,:]
@@ -808,7 +809,7 @@ function plot_depth(sp::Union{CartanaObject, VisiumObject}; celltype::Union{Stri
         ax2=MK.Axis(fig[1,2]; xticklabelsize=(fontsize-4) ,yticklabelsize=fontsize, xticksvisible=true, xticklabelsvisible=true, yticksvisible=true, yticklabelsvisible=true,xgridvisible = false,ygridvisible = false, title = "Cell distribution from cortex to papilla",titlesize = fontsize,yticks = ((1:length(celltypes)) ./ scale,  celltypes))
         MK.scatter!(ax1, cells.x, cells.y; color = cell_colors, markersize = 2)
         for i in length(celltypes):-1:1
-            cell_density=filter(:celltype => x -> x == celltypes[i], cells)
+            cell_density=filter(:celltype => ==(celltypes[i]), cells)
             cell_density=float.(cell_density.depth)
             d = MK.density!(ax2, cell_density,npoints=200, offset = i / scale,
                 color = :x, colormap = cell_colors, colorrange = (0, 1),
@@ -818,7 +819,7 @@ function plot_depth(sp::Union{CartanaObject, VisiumObject}; celltype::Union{Stri
         if markers !== nothing
         molecules=sp.spmetaData.molecule
         cell2=sp.spmetaData.cell.cell
-        molecules=filter(:cell=> x-> x in cell2, molecules)
+        molecules=filter(:cell=> ∈(Set(cell2)), molecules)
         from=cell2
         to=cells.depth
         molecules2=map_values(molecules, :cell, :depth, from, to)
@@ -829,7 +830,7 @@ function plot_depth(sp::Union{CartanaObject, VisiumObject}; celltype::Union{Stri
             title = "Transcript distribution from cortex to papilla",
             titlesize = fontsize,yticks = ((1:length(markers)) ./ scale,  markers))
             for j in length(markers):-1:1
-                cell_density2=filter(:gene => x -> x == markers[j], molecules2)
+                cell_density2=filter(:gene => ==(markers[j]), molecules2)
                 cell_density2=float.(cell_density2.depth)
                 f = MK.density!(ax3, cell_density2,npoints=200, offset = j / scale,
                         color = :x, colormap = cell_colors, colorrange = (0, 1),
@@ -844,9 +845,9 @@ function plot_depth_animation(sp::Union{CartanaObject, VisiumObject}, celltypes:
     group_label="celltype",gene_label="gene", cmap=nothing, bg_color="gray94",fontsize=16, scale=0.8, canvas_size=(1800,600), file_name="animation.gif", framerate=30,
     titles=["Cells colored by kidney depth","Cell distribution from cortex to papilla","Transcript distribution from cortex to papilla"])
     cells=sp.spmetaData.cell
-    cells=filter(group_label => x-> x in celltypes, cells)
+    cells=filter(group_label => ∈(Set(celltypes)), cells)
     molecules=sp.spmetaData.molecule
-    molecules=filter(gene_label => x-> x in markers, cells)
+    molecules=filter(gene_label => ∈(Set(markers)), cells)
     fig = MK.Figure(resolution=canvas_size)
     ax1=MK.Axis(fig[1, 1]; xticklabelsize=(fontsize-4), yticklabelsize=fontsize, xticksvisible=false, xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,xgridvisible = false,ygridvisible = false,title = titles[1],titlesize = fontsize)
     ax2=MK.Axis(fig[1, 3]; xticklabelsize=(fontsize-4) ,yticklabelsize=fontsize, xticksvisible=true, xticklabelsvisible=true, yticksvisible=true, yticklabelsvisible=true,xgridvisible = false,ygridvisible = false, title = titles[2],titlesize = fontsize,yticks = ((1:length(celltypes)) ./ scale,  celltypes))
@@ -855,7 +856,7 @@ function plot_depth_animation(sp::Union{CartanaObject, VisiumObject}, celltypes:
     celltypes=reverse(celltypes)
     for i in length(celltypes):-1:1
         celltype=celltypes[i]
-        cell_density0=filter(:celltype => x -> x == celltype, cells)
+        cell_density0=filter(:celltype => ==(celltype), cells)
         cell_density0=float.(cell_density0.depth)
         d0 = MK.density!(ax2, cell_density0,npoints=200, offset = i / scale, 
             color = bg_color, strokewidth = 1, strokecolor = :black)
@@ -863,7 +864,7 @@ function plot_depth_animation(sp::Union{CartanaObject, VisiumObject}, celltypes:
     end
     markers = reverse(markers)
     for j in length(markers):-1:1
-        mol_density0=filter(gene_label => x -> x == markers[j], molecules)
+        mol_density0=filter(gene_label => ==(markers[j]), molecules)
         mol_density0=float.(mol_density0.depth)
         f0 = MK.density!(ax3, mol_density0,npoints=200, offset = j / scale,
                 color = bg_color, strokewidth = 1, strokecolor = :black)
@@ -871,7 +872,7 @@ function plot_depth_animation(sp::Union{CartanaObject, VisiumObject}, celltypes:
     end
     timestamps = range(0.01, 1, length=framerate)
     MK.record(fig, file_name, timestamps; framerate = framerate) do t
-            cells_t=filter(:depth => x -> x < t, cells)
+            cells_t=filter(:depth => <(t), cells)
             cell_stats_t=countmap(cells_t.celltype)
             depth_val = cells_t.depth
             depth_val=float.(depth_val)
@@ -880,7 +881,7 @@ function plot_depth_animation(sp::Union{CartanaObject, VisiumObject}, celltypes:
             cell_colors="#" .* hex.(colors)
             MK.scatter!(ax1, cells_t.x, cells_t.y; color = cell_colors, markersize = 2)
             for i in 13:-1:1
-                cell_density=filter(:celltype => x -> x == celltypes[i], cells)
+                cell_density=filter(:celltype => ==(celltypes[i]), cells)
                 cell_density=float.(cell_density.depth)
                 cs = ColorSchemes.ColorScheme([colorant"#0d2232",colorant"#1b326e",colorant"#473899",colorant"#6e4b8e",colorant"#935c87",colorant"#a6606c",colorant"#dc7f60",colorant"#eea152",colorant"#f2cd5d", colorant"#ecf975", "colorant" * "\"" * bg_color * "\""])
                 sort!(depth_val)
@@ -891,9 +892,9 @@ function plot_depth_animation(sp::Union{CartanaObject, VisiumObject}, celltypes:
                     strokewidth = 1, strokecolor = :black)
                 MK.translate!(d, 0, 0, -0.05i)
             end
-            molecule_t=filter(:depth=> x-> x < t, molecules2)
+            molecule_t=filter(:depth=> <(t), molecules2)
             for j in 13:-1:1
-                mol_density=filter(gene_label => x -> x == markers[j], molecules)
+                mol_density=filter(gene_label => ==(markers[j]), molecules)
                 mol_density=float.(mol_density.depth)
                 cs = ColorSchemes.ColorScheme([colorant"#0d2232",colorant"#1b326e",colorant"#473899",colorant"#6e4b8e",colorant"#935c87",colorant"#a6606c",colorant"#dc7f60",colorant"#eea152",colorant"#f2cd5d", colorant"#ecf975", "colorant" * "\"" * bg_color * "\""])
                 depth_val=molecule_t.depth
@@ -935,7 +936,7 @@ function plot_gene_depth(sp::Union{CartanaObject, VisiumObject}, gene::String;
                 yticksvisible=false, yticklabelsvisible=false,
                 xgridvisible = false,ygridvisible = false, 
                 ylabel = "Expression", xlabel = "Kidney depth")
-    df_plt=filter(:gene_expr=>x-> x > expr_cutoff, df_plt)
+    df_plt=filter(:gene_expr => >(expr_cutoff), df_plt)
     x_hist = fit(Histogram, tuple(df_plt.depth, df_plt.gene_expr), nbins=n_bins) 
     MK.contour!(x_hist,levels = 3,fillrange = true, colormap=c_map)
     MK.ylims!(MK.current_axis(), (0.25, 0.75))
@@ -966,11 +967,11 @@ function plot_transcript_dapi(sp::CartanaObject, fov::Int64, n_fields_x::Int64,
     df_spatial = sp.spmetaData.molecule
     img = sp.imageData
     df_spatial = filter([:x, :y]=> (x,y) -> xmin < x < xmax && ymin < y < ymax, df_spatial);
-    df_spatial = filter(:is_noise=> x -> x ==0, df_spatial)
+    df_spatial = filter(:is_noise=> ==(0), df_spatial)
     poly = sp.imageData.polygon
     cells = df_spatial.cell
     poly.mapped_cell = Int.(poly.mapped_cell)
-    poly = filter(:mapped_cell=> x-> x in cells, poly)
+    poly = filter(:mapped_cell=> ∈(Set(cells)), poly)
     polygons = polygons[poly.polygon_number]
     img2 = img[ymin:ymax,xmin:xmax]'
     plt_x = df_spatial.x .- xmin
@@ -1243,7 +1244,7 @@ function plot_gene_group_spatial(sp_list::Vector{CartanaObject}, n_bin, gene_lis
     all_genes = DataFrame()
     for i in 1:n_obj
         bin_data = bin_gene_spatial(sp_list[i], n_bin)
-        plt_df = filter(:gene => x -> x in gene_list, bin_data)
+        plt_df = filter(:gene => ∈(Set(gene_list)), bin_data)
         if isa(group_names, Nothing)
             plt_df.group .= "group" * string(i)
         else
@@ -1253,7 +1254,7 @@ function plot_gene_group_spatial(sp_list::Vector{CartanaObject}, n_bin, gene_lis
     end
     plt_df = DataFrame()
     for i in 1:length(gene_list)
-        gene1 = filter(:gene => x -> x == gene_list[i], all_genes)
+        gene1 = filter(:gene => ==(gene_list[i]), all_genes)
         gene1.avg_exp = unit_range_scale(gene1.avg_exp)
         plt_df = [plt_df; gene1]
     end

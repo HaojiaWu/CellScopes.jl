@@ -296,13 +296,13 @@ function run_cell_pairing(df::DataFrame, cell_col::Union{Symbol, String}, cellty
     n=length(cells)-1
     p = Progress(n, dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=40, color=:black)
     Threads.@threads for i in 1:(length(cells)-1)
-      x1=filter(:cell2 => x-> x == cells[i], df).x[1]
-      y1=filter(:cell2 => x-> x == cells[i], df).y[1]
-      cell1=filter(:cell2 => x-> x == cells[i], df).cell_index[1]
+      x1=filter(:cell2 => ==(cells[i]), df).x[1]
+      y1=filter(:cell2 => ==(cells[i]), df).y[1]
+      cell1=filter(:cell2 => ==(cells[i]), df).cell_index[1]
         for j in (i+1):length(cells)
-          x2=filter(:cell2 => x-> x == cells[j], df).x[1]
-          y2=filter(:cell2 => x-> x == cells[j], df).y[1]
-          cell2=filter(:cell2 => x-> x == cells[j], df).cell_index[1]
+          x2=filter(:cell2 => ==(cells[j]), df).x[1]
+          y2=filter(:cell2 => ==(cells[j]), df).y[1]
+          cell2=filter(:cell2 => == (cells[j]), df).cell_index[1]
           if radius !== nothing
                 dist_ab=sqrt((x1-x2)^2+(y1-y2)^2)
                 if dist_ab < radius

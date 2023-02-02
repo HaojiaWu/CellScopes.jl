@@ -51,7 +51,7 @@ function find_variable_genes(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, sp
     vst_data = [mean_val var_val zeros(length(mean_val)) zeros(length(mean_val))]
     vst_data = DataFrame(vst_data, :auto)
     rename!(vst_data, ["mean", "variance", "variance_expected","variance_standardized"])
-    vst_data = filter(:variance => x -> x > 0.0, vst_data)
+    vst_data = filter(:variance => >(0.0), vst_data)
     fit_data = loess(log10.(vst_data.mean), log10.(vst_data.variance), span=span)
     vst_data.variance_expected = 10 .^ Loess.predict(fit_data, log10.(vst_data.mean))
     mean1 = sparsevec(vst_data.mean)
@@ -234,7 +234,7 @@ function find_markers(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; c
     test_result.p_val_adj = MultipleTesting.adjust(test_result.p_val, Bonferroni())
     filter!([:pct_1, :p_val] => (y, z) -> y > min_pct && z < p_cutoff, test_result)
     if only_pos
-        filter!(:avg_logFC => x -> x > 0.0, test_result)
+        filter!(:avg_logFC => >(0.0), test_result)
     end
     sort!(test_result, :avg_logFC, rev=true)
     return test_result

@@ -41,7 +41,7 @@ function dim_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; anno:
         for i in cell_anno
             MK.xlims!(MK.current_axis(), x_lims)
             MK.ylims!(MK.current_axis(), y_lims)
-            anno_df2=filter(anno => x-> x == i, dim_data)
+            anno_df2=filter(anno => ==(i), dim_data)
             x_ax = anno_df2[!, x_col]
             y_ax = anno_df2[!, y_col]
             colors = unique(anno_df2.new_color)
@@ -60,7 +60,7 @@ function dim_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; anno:
         end
         if do_label
             for i in cell_anno
-                anno_df2=filter(anno => x-> x == i, dim_data)
+                anno_df2=filter(anno => ==(i), dim_data)
                 x_ax = anno_df2[!, x_col]
                 y_ax = anno_df2[!, y_col]
                 MK.text!(i, position = (mean(x_ax) - label_offset[1], mean(y_ax) - label_offset[2]),align = (:center, :center),font = "Noto Sans Regular",textsize = label_size,color = label_color)
@@ -188,7 +188,7 @@ function feature_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}, g
                         @inbounds plt_color = repeat([color_keys[1]], length(gene_expr))
                         df_plt.plt_color = plt_color
                     end
-                    df_plt = filter(split_by => x -> x === group, df_plt)
+                    df_plt = filter(split_by => ==(group), df_plt)
                     if i == 1
                         y_label = gene
                     else
