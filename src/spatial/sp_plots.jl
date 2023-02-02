@@ -967,11 +967,11 @@ function plot_transcript_dapi(sp::CartanaObject, fov::Int64, n_fields_x::Int64,
     df_spatial = sp.spmetaData.molecule
     img = sp.imageData
     df_spatial = filter([:x, :y]=> (x,y) -> xmin < x < xmax && ymin < y < ymax, df_spatial);
-    df_spatial = filter(:is_noise=> ==(0), df_spatial)
+    df_spatial = filter(:is_noise => ==(0), df_spatial)
     poly = sp.imageData.polygon
     cells = df_spatial.cell
     poly.mapped_cell = Int.(poly.mapped_cell)
-    poly = filter(:mapped_cell=> ∈(Set(cells)), poly)
+    poly = filter(:mapped_cell => ∈(Set(cells)), poly)
     polygons = polygons[poly.polygon_number]
     img2 = img[ymin:ymax,xmin:xmax]'
     plt_x = df_spatial.x .- xmin

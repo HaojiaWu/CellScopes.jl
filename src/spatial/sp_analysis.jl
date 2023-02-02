@@ -302,7 +302,7 @@ function run_cell_pairing(df::DataFrame, cell_col::Union{Symbol, String}, cellty
         for j in (i+1):length(cells)
           x2=filter(:cell2 => ==(cells[j]), df).x[1]
           y2=filter(:cell2 => ==(cells[j]), df).y[1]
-          cell2=filter(:cell2 => == (cells[j]), df).cell_index[1]
+          cell2=filter(:cell2 => ==(cells[j]), df).cell_index[1]
           if radius !== nothing
                 dist_ab=sqrt((x1-x2)^2+(y1-y2)^2)
                 if dist_ab < radius
