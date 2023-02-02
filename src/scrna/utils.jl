@@ -143,3 +143,123 @@ function variable_genes(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject})
     return vargenes
 end
 
+function update_object(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject})
+    cells = colnames(sp_obj)
+    genes = rownames(sp_obj)
+    all_cells = sp_obj.metaData.Cell_id
+    cells_set = Set(cells)
+    check_cell = [i in cells_set for i in all_cells]
+    println("Updating RNA counts...")
+    sp_obj = update_count(sp_obj, :normCount) 
+    sp_obj = update_count(sp_obj, :scaleCount)
+    cell_set = Set(cells)
+    gene_set = Set(genes)
+    sp_obj.metaData = filter(:Cell_id => in(cell_set), sp_obj.metaData)
+    if isdefined(sp_obj, :dimReduction)
+        println("Updating dimension reduction...")
+        if isdefined(sp_obj.dimReduction, :pca)
+            if getfield(sp_obj.dimReduction, :pca) !== nothing
+                 sp_obj.dimReduction.pca.cell_embedding = sp_obj.dimReduction.pca.cell_embedding[check_cell, :]
+            end
+        end
+        if isdefined(sp_obj.dimReduction, :tsne)
+            if getfield(sp_obj.dimReduction, :tsne) !== nothing
+                 sp_obj.dimReduction.tsne.cell_embedding = sp_obj.dimReduction.tsne.cell_embedding[check_cell, :]
+            end
+        end
+        if isdefined(sp_obj.dimReduction, :umap)
+            if getfield(sp_obj.dimReduction, :umap) !== nothing
+                 sp_obj.dimReduction.umap.cell_embedding = sp_obj.dimReduction.umap.cell_embedding[check_cell, :]
+            end
+        end
+        if isdefined(sp_obj,:clusterData)
+            sp_obj.clustData.clustering = filter(:cell_id => in(cell_set), sp_obj.clustData.clustering)
+            sp_obj.clustData.adj_mat = sp_obj.clustData.adj_mat[check_cell, check_cell]
+        end
+    end
+    if isa(sp_obj, CartanaObject)
+        println("Updating spatial data...")
+        sp_obj.spmetaData.cell = filter(:cell => in(cell_set), sp_obj.spmetaData.cell)
+        sp_obj.spmetaData.molecule = filter(:cell => in(cell_set), sp_obj.spmetaData.molecule)
+        sp_obj.spmetaData.molecule.gene = string.(sp_obj.spmetaData.molecule.gene)
+        sp_obj.spmetaData.molecule = filter(:gene => in(gene_set), sp_obj.spmetaData.molecule)
+        println("Updating polygons data...")
+        prefix = split(sp_obj.spmetaData.cell.cell[1],"_")
+        if length(prefix) > 1
+            poly_all_cell = prefix[1] .* "_" .* string.(sp_obj.spmetaData.polygon.polygon_number)
+        else
+            poly_all_cell = string.(sp_obj.spmetaData.polygon.polygon_number)
+        end
+        sp_obj.spmetaData.polygon = filter(:mapped_cell => in(cell_set), sp_obj.spmetaData.polygon)
+        if length(prefix) > 1
+            poly_cell = prefix[1] .* "_" .* string.(sp_obj.spmetaData.polygon.polygon_number)
+        else
+            poly_cell = string.(sp_obj.spmetaData.polygon.polygon_number)
+        end
+        poly_set = Set(poly_cell)
+        check_poly_cell = [i in poly_set for i in poly_all_cell]
+        if isdefined(sp_obj, :polyCount)
+            sp_obj.polyCount = subset_count(sp_obj.polyCount; genes = genes, cells = poly_cell)
+        end
+        if isdefined(sp_obj, :polynormCount)
+            sp_obj.polynormCount = subset_count(sp_obj.polynormCount; genes = genes, cells = poly_cell)
+        end
+        if isdefined(sp_obj, :polygonData)
+            sp_obj.polygonData = sp_obj.polygonData[check_poly_cell]
+        end
+        if isdefined(sp_obj, :imputeData)
+            if isdefined(sp_obj.imputeData, :tgCount)
+                if getfield(sp_obj.imputeData, :tgCount) !== nothing
+                  sp_obj.imputeData.tgCount = subset_count(sp_obj.imputeData.tgCount; cells = cells)
+                end
+            end
+            if isdefined(sp_obj.imputeData, :spageCount)
+                if getfield(sp_obj.imputeData, :spageCount) !== nothing
+                  sp_obj.imputeData.spageCount = subset_count(sp_obj.imputeData.spageCount; cells = cells)
+                end
+            end
+            if isdefined(sp_obj.imputeData, :gimviCount)
+                if getfield(sp_obj.imputeData, :gimviCount) !== nothing
+                    sp_obj.imputeData.gimviCount = subset_count(sp_obj.imputeData.gimviCount; cells = cells)
+                end
+            end
+        end
+    end
+    if isa(sp_obj, VisiumObject)
+        println("Updating spatial data...")
+        sp_obj.spmetaData.barcode = string.(sp_obj.spmetaData.barcode)
+        sp_obj.spmetaData = filter(:barcode => in(cell_set), sp_obj.spmetaData)
+    end
+    return sp_obj
+end
+
+function subset_object(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject}; cells = nothing, genes = nothing)
+    sp_obj.rawCount = subset_count(sp_obj.rawCount; genes = genes, cells = cells)
+    sp_obj = update_object(sp_obj)
+    return sp_obj
+end
+
+function check_dim(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject}, field_name::Union{Symbol, String})
+    if isa(field_name, String)
+       field_name = Symbol(field_name)
+    end
+    count_x = getfield(sp_obj, field_name)
+    check_length = length(count_x.gene_name) !== length(sp_obj.rawCount.gene_name) || length(count_x.cell_name) !== length(sp_obj.rawCount.cell_name)
+    return check_length
+   end
+   
+   function update_count(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject}, ct_name::Union{Symbol, String})
+       cell_id = colnames(sp_obj)
+       gene_id = rownames(sp_obj)
+       if isa(ct_name, String)
+           ct_name = Symbol(ct_name)
+       end
+       if isdefined(sp_obj, ct_name)
+           if check_dim(sp_obj, ct_name)
+               ct_obj1 = getfield(sp_obj, ct_name)
+               ct_obj2 = subset_count(ct_obj1; genes= gene_id, cells = cell_id)
+               replacefield!(sp_obj, ct_name, ct_obj1, ct_obj2)
+           end
+       end
+       return sp_obj
+   end
