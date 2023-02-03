@@ -190,7 +190,12 @@ function update_object(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject})
         else
             poly_all_cell = string.(sp_obj.spmetaData.polygon.polygon_number)
         end
-        sp_obj.spmetaData.polygon = filter(:mapped_cell => ∈(cell_set), sp_obj.spmetaData.polygon)
+        if isdefined(sp_obj.spmetaData, :polygon)
+            if sp_obj.spmetaData.polygon !== nothing
+                sp_obj.spmetaData.polygon = filter(:mapped_cell => ∈(cell_set), sp_obj.spmetaData.polygon)
+                sp_obj.spmetaData.polygon.polygon_number = collect(1:length(sp_obj.spmetaData.polygon.polygon_number))
+            end
+        end
         if length(prefix) > 1
             poly_cell = prefix[1] .* "_" .* string.(sp_obj.spmetaData.polygon.polygon_number)
         else
