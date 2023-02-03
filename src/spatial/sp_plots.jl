@@ -477,7 +477,7 @@ end
 function sp_dim_plot(sp::Union{CartanaObject, VisiumObject}, anno::Union{Symbol, String}; 
     anno_color::Union{Nothing, Dict} = nothing, x_col::String = "x", y_col::String = "y", cell_order::Union{Vector{String}, Nothing}=nothing,
     x_lims=nothing, y_lims=nothing,canvas_size=(900,1000),stroke_width=0.5,stroke_color=:transparent,  bg_color=:white,
-        marker_size=2, label_size=50, label_color="black", label_offset=(0,0), do_label=true, do_legend=true, alpha::Real = 1,
+        marker_size=2, label_size=50, label_color="black", label_offset=(0,0), do_label=false, do_legend=true, alpha::Real = 1,
         legend_size = 10, legend_fontsize = 16,img_res::String = "low",  adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3
     )
     if isa(sp, VisiumObject)
