@@ -824,7 +824,7 @@ function plot_depth(sp::Union{CartanaObject, VisiumObject}; celltype::Union{Stri
         from=cell2
         to=cells.depth
         molecules2=map_values(molecules, :cell, :depth, from, to)
-        markers=reverse(markers)
+        markers=markers
         ax3=MK.Axis(fig[1, 3]; xticklabelsize=(fontsize-4) ,yticklabelsize=fontsize, 
             xticksvisible=true, xticklabelsvisible=true, yticksvisible=true, 
             yticklabelsvisible=true,xgridvisible = false,ygridvisible = false, 
@@ -843,12 +843,12 @@ function plot_depth(sp::Union{CartanaObject, VisiumObject}; celltype::Union{Stri
 end
 
 function plot_depth_animation(sp::Union{CartanaObject, VisiumObject}, celltypes::Vector{String}, markers::Vector{String}; 
-    group_label="celltype",gene_label="gene", cmap=nothing, bg_color="gray94",fontsize=16, scale=0.8, canvas_size=(1800,600), file_name="animation.gif", framerate=30,
+    group_label="celltype",gene_label="gene", c_map=nothing, bg_color="gray94",fontsize=16, scale=0.8, canvas_size=(1800,600), file_name="animation.gif", framerate=30,
     titles=["Cells colored by kidney depth","Cell distribution from cortex to papilla","Transcript distribution from cortex to papilla"])
     cells=sp.spmetaData.cell
     cells=filter(group_label => ∈(Set(celltypes)), cells)
     molecules=sp.spmetaData.molecule
-    molecules=filter(gene_label => ∈(Set(markers)), cells)
+    molecules=filter(gene_label => ∈(Set(markers)), molecules)
     fig = MK.Figure(resolution=canvas_size)
     ax1=MK.Axis(fig[1, 1]; xticklabelsize=(fontsize-4), yticklabelsize=fontsize, xticksvisible=false, xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,xgridvisible = false,ygridvisible = false,title = titles[1],titlesize = fontsize)
     ax2=MK.Axis(fig[1, 3]; xticklabelsize=(fontsize-4) ,yticklabelsize=fontsize, xticksvisible=true, xticklabelsvisible=true, yticksvisible=true, yticklabelsvisible=true,xgridvisible = false,ygridvisible = false, title = titles[2],titlesize = fontsize,yticks = ((1:length(celltypes)) ./ scale,  celltypes))
