@@ -1065,7 +1065,7 @@ end
 
 function plot_heatmap(sp::CartanaObject, gene_list::Union{Vector, String},
     cluster::Union{Symbol, String};assay_use::String="measured",expr_cutoff::Union{Float64, Int64}=0, split_by::Union{String, Nothing}=nothing,
-    x_title="Gene",y_title="Cell type", cell_order::Union{Vector, String, Nothing}=nothing,
+    x_title="Gene",y_title="Cell type", cell_order::Union{Vector, String, Nothing}=nothing,imp_type="SpaGE",
     fontsize::Int64=12, color_scheme::String="yelloworangered",reverse_color::Bool=false,scale::Bool=false,
     fig_height::Union{String, Int64}=400, fig_width::Union{String, Int64}=400)
     all_df=DataFrame()
