@@ -726,7 +726,7 @@ end
 
 function plot_fov(sp::CartanaObject, n_fields_x::Int64, n_fields_y::Int64; 
     x_col::Union{String, Symbol}="x", y_col::Union{String, Symbol}="y", group_label::Union{Nothing, String}=nothing, 
-    canvas_size=(4000,4000), cell_highlight::Union{Nothing, String, Number}=nothing, shield::Bool= false, marker_size::Union{Int64, Float64}=2)
+    width=4000, height=4000, cell_highlight::Union{Nothing, String, Number}=nothing, shield::Bool= false, marker_size::Union{Int64, Float64}=10)
     df = sp.spmetaData.cell
     pts, centroids=split_field(df, n_fields_x, n_fields_y)
     centroids=convert.(Tuple{Float64, Float64},centroids)
@@ -738,7 +738,7 @@ function plot_fov(sp::CartanaObject, n_fields_x::Int64, n_fields_y::Int64;
     elseif label_size > 1600
         label_size = 1600
     end
-    fig = MK.Figure(resolution=canvas_size)
+    fig = MK.Figure(resolution=(width, height))
     fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
                 xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
                 xgridvisible = false,ygridvisible = false);
@@ -799,6 +799,7 @@ function plot_depth(sp::Union{CartanaObject, VisiumObject}; celltype::Union{Stri
             celltypes=cell_order[!, celltype]
             celltypes=reverse(celltypes)
         end
+        sort!(cells, :depth)
         if isa(cmap, Nothing)
             cell_colors = [cgrad(:thermal, [0.0, 1.0])[z] for z in cells.depth]
         else
