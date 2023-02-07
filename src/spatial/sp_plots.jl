@@ -1238,11 +1238,12 @@ function overlay_visium_cartana_gene(vs::VisiumObject, sp::CartanaObject, gene; 
 end
 
 function plot_gene_group_spatial(sp_list::Vector{CartanaObject}, n_bin, gene_list; group_names::Union{Vector, String, Nothing}=nothing,
-    color_range::Vector=["white", "ivory","gold","orange","tomato","red"],legend_min::Union{Float64, Int64}=0, legend_max::Union{Float64, Int64}=1)
+    color_range::Vector=["white", "ivory","gold","orange","tomato","red"],legend_min::Union{Float64, Int64}=0, 
+    legend_max::Union{Float64, Int64}=1, assay_use = "measured", imp_type = "SpaGE")
     n_obj = length(sp_list)
     all_genes = DataFrame()
     for i in 1:n_obj
-        bin_data = bin_gene_spatial(sp_list[i], n_bin)
+        bin_data = bin_gene_spatial(sp_list[i], n_bin; assay_use=assay_use, imp_type = imp_type)
         plt_df = filter(:gene => ∈(Set(gene_list)), bin_data)
         if isa(group_names, Nothing)
             plt_df.group .= "group" * string(i)

@@ -323,7 +323,6 @@ function compute_kidney_coordinates(df::DataFrame, x_col, y_col, center)
     return df
 end
 
-
 function point_dist(pt1::Union{Tuple, Vector}, pt2::Union{Tuple, Vector})
     pt_dist = sqrt((pt1[1]-pt2[1])^2 + (pt1[2]-pt2[2])^2)
     return pt_dist
@@ -445,7 +444,8 @@ function split_spatial(n_bin::Int64)
     return all_segs
 end
 
-function bin_gene_spatial(sp::CartanaObject, n_bin::Int64; celltype::Union{String, Int64, Nothing}=nothing)
+function bin_gene_spatial(sp::CartanaObject, n_bin::Int64; 
+    celltype::Union{String, Int64, Nothing}=nothing,assay_use = "measured", imp_type = "SpaGE")
     cells=deepcopy(sp.spmetaData.cell)
     if celltype !== nothing
         cells = filter(:celltype => ==(celltype), cells)
@@ -459,7 +459,21 @@ function bin_gene_spatial(sp::CartanaObject, n_bin::Int64; celltype::Union{Strin
         cell1.bin .= n_seg * i
         new_df = [new_df; cell1]
     end
-    gene_expr = deepcopy(sp.normCount)
+    if assay_use === "measured"
+        gene_expr = deepcopy(sp.normCount)
+    elseif assay_use === "predicted"
+        if imp_type === "tangram"
+            gene_expr = sp.imputeData.tgCount
+        elseif imp_type === "SpaGE"
+            gene_expr = sp.imputeData.spageCount
+        elseif imp_type === "gimVI"
+            gene_expr = sp.imputeData.gimviCount
+        else
+            error("imp_type can only be \"tangram\", \"SpaGE\" and \"gimVI\"")
+        end
+    else
+        error("assay_use can only be \"measured\" or \"predicted\"")
+    end
     all_genes = gene_expr.gene_name
     gene_expr = ctobj_to_df(gene_expr)
     df_proc = innerjoin(gene_expr, new_df, on = :cell)
