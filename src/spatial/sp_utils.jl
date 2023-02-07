@@ -469,7 +469,7 @@ function bin_gene_spatial(sp::CartanaObject, n_bin::Int64; celltype::Union{Strin
     df_proc = innerjoin(gene_expr, new_df, on = :cell)
     new_df2 = DataFrame()
     for gene in all_genes
-        avg_expr=combine(groupby(df_proc, :bin), gene => mean => :avg_exp)
+        avg_expr=DataFrames.combine(groupby(df_proc, :bin), gene => mean => :avg_exp)
         avg_expr.gene .= gene
         new_df2 = [new_df2; avg_expr]
     end

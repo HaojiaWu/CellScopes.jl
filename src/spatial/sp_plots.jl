@@ -1066,8 +1066,8 @@ end
 function plot_heatmap(sp::CartanaObject, gene_list::Union{Vector, String},
     cluster::Union{Symbol, String};assay_use::String="measured",expr_cutoff::Union{Float64, Int64}=0, split_by::Union{String, Nothing}=nothing,
     x_title="Gene",y_title="Cell type", cell_order::Union{Vector, String, Nothing}=nothing,imp_type="SpaGE",
-    fontsize::Int64=12, color_scheme::String="yelloworangered",reverse_color::Bool=false,scale::Bool=false,
-    fig_height::Union{String, Int64}=400, fig_width::Union{String, Int64}=400)
+    fontsize::Int64=12, color_keys=["white", "ivory","gold","orange","tomato","red"],reverse_color::Bool=false,scale::Bool=false,
+    height::Union{String, Int64}=400, width::Union{String, Int64}=400)
     all_df=DataFrame()
     if assay_use === "measured"
         ct_mtx = deepcopy(sp.normCount)
@@ -1110,8 +1110,8 @@ function plot_heatmap(sp::CartanaObject, gene_list::Union{Vector, String},
                     domain=cell_order
                 }, axis={labelFontSize=fontsize,titleFontSize=fontsize}},
             color={"avg_exp:q",
-            scale={domainMin = 0, domainMax = maximum(all_df.avg_exp), range=["white", "ivory","gold","orange","tomato","red"]}},
-            height= fig_height, width=fig_width
+            scale={domainMin = 0, domainMax = maximum(all_df.avg_exp), range=color_keys}},
+            height= height, width=width
             )
     else
         all_df=DataFrame()
@@ -1140,9 +1140,9 @@ function plot_heatmap(sp::CartanaObject, gene_list::Union{Vector, String},
                     domain=cell_order
                 }, axis={labelFontSize=fontsize,titleFontSize=fontsize}},
             color={"avg_exp:q",
-            scale={domainMin = 0, domainMax = maximum(all_df.avg_exp), range=["white", "ivory","gold","orange","tomato","red"]}},
+            scale={domainMin = 0, domainMax = maximum(all_df.avg_exp), range=color_keys}},
             column={:split_by, header={labelFontSize=16, title=nothing}},
-            height= fig_height, width=fig_width
+            height= height, width=width
             )        
     end
         return p
