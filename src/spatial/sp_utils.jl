@@ -460,6 +460,7 @@ function bin_gene_spatial(sp::CartanaObject, n_bin::Int64; celltype::Union{Strin
         new_df = [new_df; cell1]
     end
     gene_expr = deepcopy(sp.normCount)
+    all_genes = gene_expr.gene_name
     gene_expr = ctobj_to_df(gene_expr)
     df_proc = innerjoin(gene_expr, new_df, on = :cell)
     new_df2 = DataFrame()
