@@ -1110,7 +1110,7 @@ function plot_heatmap(sp::CartanaObject, gene_list::Union{Vector, String},
                     domain=cell_order
                 }, axis={labelFontSize=fontsize,titleFontSize=fontsize}},
             color={"avg_exp:q",
-            scale={domainMin=0, domainMax=maximum(gene_expr), range=["white", "ivory","gold","orange","tomato","red"]}},
+            scale={domainMin=0, domainMax=maximum(avg_exp), range=["white", "ivory","gold","orange","tomato","red"]}},
             height= fig_height, width=fig_width
             )
     else
@@ -1140,7 +1140,7 @@ function plot_heatmap(sp::CartanaObject, gene_list::Union{Vector, String},
                     domain=cell_order
                 }, axis={labelFontSize=fontsize,titleFontSize=fontsize}},
             color={"avg_exp:q",
-            scale={domainMin=0, domainMax=maximum(gene_expr), range=["white", "ivory","gold","orange","tomato","red"]}},
+            scale={domainMin=0, domainMax=maximum(avg_exp), range=["white", "ivory","gold","orange","tomato","red"]}},
             column={:split_by, header={labelFontSize=16, title=nothing}},
             height= fig_height, width=fig_width
             )        
