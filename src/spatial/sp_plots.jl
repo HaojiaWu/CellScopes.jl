@@ -1243,7 +1243,7 @@ function plot_gene_group_spatial(sp_list::Vector{CartanaObject}, n_bin, gene_lis
     n_obj = length(sp_list)
     all_genes = DataFrame()
     for i in 1:n_obj
-        bin_data = bin_gene_spatial(sp_list[i], n_bin; assay_use=assay_use, imp_type = imp_type)
+        bin_data = bin_gene_spatial(sp_list[i], n_bin; assay_use=assay_use, imp_type = imp_type, genes = gene_list)
         plt_df = filter(:gene => ∈(Set(gene_list)), bin_data)
         if isa(group_names, Nothing)
             plt_df.group .= "group" * string(i)

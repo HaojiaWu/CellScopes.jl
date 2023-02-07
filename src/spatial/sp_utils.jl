@@ -445,7 +445,8 @@ function split_spatial(n_bin::Int64)
 end
 
 function bin_gene_spatial(sp::CartanaObject, n_bin::Int64; 
-    celltype::Union{String, Int64, Nothing}=nothing,assay_use = "measured", imp_type = "SpaGE")
+    celltype::Union{String, Int64, Nothing}=nothing,
+    assay_use = "measured", imp_type = "SpaGE", genes = nothing)
     cells=deepcopy(sp.spmetaData.cell)
     if celltype !== nothing
         cells = filter(:celltype => ==(celltype), cells)
@@ -474,7 +475,11 @@ function bin_gene_spatial(sp::CartanaObject, n_bin::Int64;
     else
         error("assay_use can only be \"measured\" or \"predicted\"")
     end
-    all_genes = gene_expr.gene_name
+    if isa(genes, Nothing)
+        all_genes = gene_expr.gene_name
+    else
+        all_genes = genes
+    end
     gene_expr = ctobj_to_df(gene_expr)
     df_proc = innerjoin(gene_expr, new_df, on = :cell)
     new_df2 = DataFrame()
