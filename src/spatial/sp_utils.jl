@@ -461,8 +461,10 @@ function bin_gene_spatial(sp::CartanaObject, n_bin::Int64; celltype::Union{Strin
     end
     gene_expr = deepcopy(sp.normCount)
     all_genes = gene_expr.gene_name
+    all_cells = gene_expr.cell_name
     gene_expr = gene_expr.count_mtx
     gene_expr = DataFrame(Matrix(gene_expr),:auto)
+    rename!(gene_expr, all_cells)
     gene_expr.gene = all_genes
     gene_expr = permutedims(gene_expr, ncol(gene_expr))
     rename!(gene_expr, :gene => :cell)
