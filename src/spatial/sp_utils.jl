@@ -480,6 +480,7 @@ function bin_gene_spatial(sp::CartanaObject, n_bin::Int64;
     else
         all_genes = genes
     end
+    gene_expr = subset_count(gene_expr; genes = all_genes)
     gene_expr = ctobj_to_df(gene_expr)
     df_proc = innerjoin(gene_expr, new_df, on = :cell)
     new_df2 = DataFrame()
