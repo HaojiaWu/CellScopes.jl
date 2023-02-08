@@ -176,13 +176,13 @@ mutable struct VisiumObject <: AbstractSequencingObj
     end
 end
 
-function add_impdata(impute_obj::SpaImputeObj, imp_type::String, imp_data::DataFrame)
+function add_impdata(impute_obj::SpaImputeObj, imp_type::String, imp_data::SpaCountObj)
         if imp_type === "tangram"
-            impute_obj.tg_data = imp_data
+            impute_obj.tgCount = imp_data
         elseif imp_type === "SpaGE"
-            impute_obj.spage_data = imp_data
+            impute_obj.spageCount = imp_data
         elseif imp_type === "gimVI"
-            impute_obj.gimvi_data = imp_data
+            impute_obj.gimviCount = imp_data
         else
             error("imp_type can only be \"tangram\", \"SpaGE\" and \"gimVI\"")
         end
