@@ -1,13 +1,31 @@
 
 function sp_dot_plot(sp::Union{CartanaObject, VisiumObject}, genes::Union{Vector, String},
     cluster::Union{Symbol, String};expr_cutoff::Union{Float64, Int64}=0, split_by::Union{String, Nothing}=nothing,
-    x_title="Gene",y_title="Cell type", cell_order::Union{Vector, String, Nothing}=nothing,
+    x_title="Gene",y_title="Cell type", use_imputed= false, imp_type = "SpaGE", cell_order::Union{Vector, String, Nothing}=nothing,
     fontsize::Int64=12, color_scheme::String="yelloworangered",reverse_color::Bool=false,
-    fig_height::Union{String, Int64}=400, fig_width::Union{String, Int64}=400)
-    if isdefined(sp, :normCount)
-        norm_counts=sp.normCount
+    height::Union{String, Int64}=400, width::Union{String, Int64}=400)
+    if use_imputed
+        if !isdefined(sp, :imputeData)
+            error("Please impute the data first!")
+        end
+        if isa(imp_type, Nothing)
+            imp_type = "SpaGE"
+        end
+        if imp_type === "tangram"
+            norm_counts = sp.imputeData.tgCount
+        elseif imp_type === "SpaGE"
+            norm_counts = sp.imputeData.spageCount
+        elseif imp_type === "gimVI"
+            norm_counts = sp.imputeData.gimviCount
+        else
+            error("imp_type can only be \"tangram\", \"SpaGE\" and \"gimVI\"")
+        end
     else
-        error("Please normalize the data first!")
+        if isdefined(sp, :normCount)
+            norm_counts=sp.normCount
+        else
+            error("Please normalize the data first!")
+        end
     end
     if isa(split_by, Nothing)
         all_df=DataFrame()
@@ -34,7 +52,7 @@ function sp_dot_plot(sp::Union{CartanaObject, VisiumObject}, genes::Union{Vector
             color={"avg_exp:q",
                     scale={scheme=color_scheme,reverse=reverse_color}},
             size={"perc_exp:q", legend={symbolFillColor="transparent"}},
-            height= fig_height, width=fig_width
+            height= height, width=width
             )
     else
         all_df=DataFrame()
@@ -63,7 +81,7 @@ function sp_dot_plot(sp::Union{CartanaObject, VisiumObject}, genes::Union{Vector
                     scale={scheme=color_scheme,reverse=reverse_color}},
             size={"perc_exp:q", legend={symbolFillColor="transparent"}},
             column={:split_by, header={labelFontSize=16, title=nothing}},
-            height= fig_height, width=fig_width
+            height= height, width=width
             )        
     end
     return p
