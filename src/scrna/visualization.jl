@@ -12,7 +12,7 @@ function dim_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}; anno:
             y_lims=(minimum(dim_data[!,y_col])-0.05*maximum(dim_data[!,y_col]),1.05*maximum(dim_data[!,y_col]))
         end
         if anno in names(meta_data)
-            dim_data.cluster = meta_data[!, anno]
+            dim_data[!, anno] = meta_data[!, anno]
             if isa(anno_color, Nothing)
                 cell_anno=unique(dim_data[!,anno])
                 c_map=Colors.distinguishable_colors(length(cell_anno), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
