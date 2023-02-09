@@ -335,5 +335,5 @@ function violin_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject}, ge
         end
         p = push!(p, p1)
     end
-    display(plot(p..., layout=l))
+    return plot(p..., layout=l)
 end
