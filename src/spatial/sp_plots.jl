@@ -303,7 +303,7 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject}, gene_list::Unio
 end
 
 function plot_gene_polygons(sp::CartanaObject, gene_list::Union{String, Vector{String}, Tuple{String}};
-    color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray94","orange","red3"],
+    color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray94","lemonchiffon","orange","red3"],
     x_lims=nothing, y_lims=nothing,width=900,height=1000,stroke_width=0,stroke_color="black",
     titlesize::Int64=24, scale::Bool = false, bg_color = "white"
     )
@@ -329,7 +329,7 @@ function plot_gene_polygons(sp::CartanaObject, gene_list::Union{String, Vector{S
     subset_poly = filter(:mapped_cell => ∈(cell_set), sp.spmetaData.polygon)
     polygon_num = subset_poly.polygon_number
     polygons = polygons[polygon_num]
-    c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
+    c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3]),parse(Colorant, color_keys[4])])
     fig = MK.Figure(resolution = (width * n_cols, height * n_rows))
     for (i, gene) in enumerate(gene_list)
         gene_expr = subset_count(norm_count; genes = [gene])

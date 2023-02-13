@@ -87,3 +87,40 @@ function read_visium(visium_dir::String;
     vsm_obj.spmetaData = vsm_obj.spmetaData[indexin(vsm_obj.metaData.Cell_id, vsm_obj.spmetaData.barcode),:]
     return vsm_obj
 end
+
+function read_xenium(xenium_dir::String; prefix = "xenium", min_gene =0.0, min_cell = 0.0)
+    gene_file = xenium_dir * "/cell_feature_matrix/features.tsv.gz"
+    cell_file = xenium_dir * "/cell_feature_matrix/barcodes.tsv.gz"
+    count_file = xenium_dir * "/cell_feature_matrix/matrix.mtx.gz"
+    cell_meta = xenium_dir * "/cells.csv.gz"
+    transcript_meta = xenium_dir * "/transcripts.csv.gz"
+    cluster_file = xenium_dir * "/analysis/clustering/gene_expression_graphclust/clusters.csv"
+    clustering =  DataFrame(CSV.File(cluster_file))
+    genes = DataFrame(CSVFiles.load(CSVFiles.File(format"TSV", gene_file); header_exists=false))
+    genes = string.(genes.Column2)
+    cells = DataFrame(CSVFiles.load(CSVFiles.File(format"TSV", cell_file); header_exists=false))
+    cells = string.(cells.Column1)
+    counts = MatrixMarket.mmread(gunzip(count_file))
+    gene_kept = (vec ∘ collect)(rowSum(counts).> min_cell)
+    genes = genes[gene_kept]
+    cell_kept = (vec ∘ collect)(colSum(counts) .> min_gene)
+    cells = cells[cell_kept]
+    counts = counts[gene_kept, cell_kept]
+    count_molecules =  DataFrame(CSV.File(transcript_meta))
+    count_cells =  DataFrame(CSV.File(cell_meta))
+    rename!(count_molecules, :cell_id => :cell, :feature_name => :gene, :x_location => :x, :y_location => :y, :z_location => :z)
+    rename!(count_cells, :cell_id => :cell, :x_centroid => :x, :y_centroid => :y)
+    count_molecules.cell[count_molecules.cell.==-1] .= 0
+    raw_count = RawCountObject(counts, cells, genes)
+    count_molecules.cell = string.(count_molecules.cell)
+    count_cells.cell = string.(count_cells.cell)
+    spObj = CartanaObject(count_molecules, count_cells, raw_count;
+            prefix = prefix, min_gene = min_gene, min_cell = min_gene)
+    clustering.cell = prefix .*  "_" .* string.(clustering.Barcode)
+    all_cells = spObj.rawCount.cell_name
+    clustering = filter(:cell=> ∈(Set(all_cells)), clustering)
+    spObj.spmetaData.cell.cluster = clustering.Cluster
+    spObj.metaData.cluster = clustering.Cluster
+    spObj.spmetaData.molecule = map_values(spObj.spmetaData.molecule, :cell, :cluster, clustering.cell, clustering.Cluster)
+    return spObj
+end
