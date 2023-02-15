@@ -403,11 +403,11 @@ function plot_cell_polygons(sp::CartanaObject, anno;
     end
     anno_df = DataFrames.transform(anno_df, anno => ByRow(x -> anno_color[x]) => :new_color)
     plt_color = anno_df.new_color
-    select_fov = filter([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], sp.spmetaData.cell)
-    subset_poly = filter(:mapped_cell => ∈(Set(select_fov.cell)), sp.spmetaData.polygon)
-    polygon_num = subset_poly.polygon_number
-    polygons = polygons[polygon_num]
-    plt_color = plt_color[polygon_num]
+    #select_fov = filter([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], sp.spmetaData.cell)
+    #subset_poly = filter(:mapped_cell => ∈(Set(select_fov.cell)), sp.spmetaData.polygon)
+    #polygon_num = subset_poly.polygon_number
+    #polygons = polygons[polygon_num]
+    #plt_color = plt_color[polygon_num]
     fig = MK.Figure(resolution=(width, height))
     ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
         xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
