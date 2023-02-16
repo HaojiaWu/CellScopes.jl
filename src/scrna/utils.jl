@@ -193,7 +193,7 @@ function update_object(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject})
         if isdefined(sp_obj.spmetaData, :polygon)
             if sp_obj.spmetaData.polygon !== nothing
                 sp_obj.spmetaData.polygon = filter(:mapped_cell => ∈(cell_set), sp_obj.spmetaData.polygon)
-#                sp_obj.spmetaData.polygon.polygon_number = collect(1:length(sp_obj.spmetaData.polygon.polygon_number))
+                sp_obj.spmetaData.polygon.polygon_number = collect(1:length(sp_obj.spmetaData.polygon.polygon_number))
             end
         end
         if length(prefix) > 1
