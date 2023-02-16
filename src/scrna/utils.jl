@@ -193,7 +193,6 @@ function update_object(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject})
         if isdefined(sp_obj.spmetaData, :polygon)
             if sp_obj.spmetaData.polygon !== nothing
                 sp_obj.spmetaData.polygon = filter(:mapped_cell => ∈(cell_set), sp_obj.spmetaData.polygon)
-                sp_obj.spmetaData.polygon.polygon_number = collect(1:length(sp_obj.spmetaData.polygon.polygon_number))
             end
         end
         if length(prefix) > 1
@@ -209,9 +208,10 @@ function update_object(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject})
         if isdefined(sp_obj, :polynormCount)
             sp_obj.polynormCount = subset_count(sp_obj.polynormCount; genes = genes, cells = poly_cell)
         end
-        #if isdefined(sp_obj, :polygonData)
-            #sp_obj.polygonData = sp_obj.polygonData[sp_obj.spmetaData.polygon.polygon_number]
-        #end
+        if isdefined(sp_obj, :polygonData)
+            sp_obj.polygonData = sp_obj.polygonData[sp_obj.spmetaData.polygon.polygon_number]
+            sp_obj.spmetaData.polygon.polygon_number = collect(1:length(sp_obj.spmetaData.polygon.polygon_number))
+        end
         if isdefined(sp_obj, :imputeData)
             if isdefined(sp_obj.imputeData, :tgCount)
                 if getfield(sp_obj.imputeData, :tgCount) !== nothing
