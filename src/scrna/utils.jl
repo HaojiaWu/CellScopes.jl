@@ -210,7 +210,7 @@ function update_object(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject})
             sp_obj.polynormCount = subset_count(sp_obj.polynormCount; genes = genes, cells = poly_cell)
         end
         if isdefined(sp_obj, :polygonData)
-            sp_obj.polygonData = sp_obj.polygonData[check_poly_cell]
+            sp_obj.polygonData = sp_obj.polygonData[sp_obj.spmetaData.polygon.polygon_number]
         end
         if isdefined(sp_obj, :imputeData)
             if isdefined(sp_obj.imputeData, :tgCount)
