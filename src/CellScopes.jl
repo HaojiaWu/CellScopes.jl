@@ -45,6 +45,7 @@ using FileIO
 using CSVFiles
 using GZip
 using Augmentor
+using Grep
 
 include("scrna/objects.jl")
 include("spatial/sp_objects.jl")

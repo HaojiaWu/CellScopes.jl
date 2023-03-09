@@ -88,7 +88,7 @@ function read_visium(visium_dir::String;
     return vsm_obj
 end
 
-function read_xenium(xenium_dir::String; prefix = "xenium", min_gene = 0, min_cell = 0)
+function read_xenium(xenium_dir::String; prefix = "xenium", min_gene::Int64 = 0, min_cell::Int64 = 0)
     gene_file = xenium_dir * "/cell_feature_matrix/features.tsv.gz"
     cell_file = xenium_dir * "/cell_feature_matrix/barcodes.tsv.gz"
     count_file = xenium_dir * "/cell_feature_matrix/matrix.mtx.gz"
@@ -98,14 +98,13 @@ function read_xenium(xenium_dir::String; prefix = "xenium", min_gene = 0, min_ce
     clustering =  DataFrame(CSV.File(cluster_file))
     genes = DataFrame(CSVFiles.load(CSVFiles.File(format"TSV", gene_file); header_exists=false))
     genes = string.(genes.Column2)
+    blank_gene = Grep.grep("BLANK", genes)
+    neg_gene = Grep.grep("NegControl", genes)
+    gene_rm = [blank_gene; neg_gene]
+    genes = setdiff(genes, gene_rm);
     cells = DataFrame(CSVFiles.load(CSVFiles.File(format"TSV", cell_file); header_exists=false))
     cells = string.(cells.Column1)
     counts = MatrixMarket.mmread(gunzip(count_file))
-    #gene_kept = (vec ∘ collect)(rowSum(counts).> min_cell)
-    #genes = genes[gene_kept]
-    #cell_kept = (vec ∘ collect)(colSum(counts) .> min_gene)
-    #cells = cells[cell_kept]
-    #counts = counts[gene_kept, cell_kept]
     count_molecules =  DataFrame(CSV.File(transcript_meta))
     count_cells =  DataFrame(CSV.File(cell_meta))
     rename!(count_molecules, :cell_id => :cell, :feature_name => :gene, :x_location => :x, :y_location => :y, :z_location => :z)
@@ -113,6 +112,7 @@ function read_xenium(xenium_dir::String; prefix = "xenium", min_gene = 0, min_ce
     count_molecules.cell[count_molecules.cell.==-1] .= 0
     raw_count = RawCountObject(counts, cells, genes)
     count_molecules.cell = string.(count_molecules.cell)
+    count_molecules = filter(:gene => ∈(Set(genes)), count_molecules)
     count_cells.cell = string.(count_cells.cell)
     spObj = CartanaObject(count_molecules, count_cells, raw_count;
             prefix = prefix, min_gene = min_gene, min_cell = min_gene)
