@@ -88,7 +88,7 @@ function read_visium(visium_dir::String;
     return vsm_obj
 end
 
-function read_xenium(xenium_dir::String; prefix = "xenium", min_gene =0.0, min_cell = 0.0)
+function read_xenium(xenium_dir::String; prefix = "xenium", min_gene = 0, min_cell = 0)
     gene_file = xenium_dir * "/cell_feature_matrix/features.tsv.gz"
     cell_file = xenium_dir * "/cell_feature_matrix/barcodes.tsv.gz"
     count_file = xenium_dir * "/cell_feature_matrix/matrix.mtx.gz"
@@ -101,11 +101,11 @@ function read_xenium(xenium_dir::String; prefix = "xenium", min_gene =0.0, min_c
     cells = DataFrame(CSVFiles.load(CSVFiles.File(format"TSV", cell_file); header_exists=false))
     cells = string.(cells.Column1)
     counts = MatrixMarket.mmread(gunzip(count_file))
-    gene_kept = (vec ∘ collect)(rowSum(counts).> min_cell)
-    genes = genes[gene_kept]
-    cell_kept = (vec ∘ collect)(colSum(counts) .> min_gene)
-    cells = cells[cell_kept]
-    counts = counts[gene_kept, cell_kept]
+    #gene_kept = (vec ∘ collect)(rowSum(counts).> min_cell)
+    #genes = genes[gene_kept]
+    #cell_kept = (vec ∘ collect)(colSum(counts) .> min_gene)
+    #cells = cells[cell_kept]
+    #counts = counts[gene_kept, cell_kept]
     count_molecules =  DataFrame(CSV.File(transcript_meta))
     count_cells =  DataFrame(CSV.File(cell_meta))
     rename!(count_molecules, :cell_id => :cell, :feature_name => :gene, :x_location => :x, :y_location => :y, :z_location => :z)
