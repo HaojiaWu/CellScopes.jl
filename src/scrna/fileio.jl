@@ -101,7 +101,6 @@ function read_xenium(xenium_dir::String; prefix = "xenium", min_gene::Int64 = 0,
     blank_gene = Grep.grep("BLANK", genes)
     neg_gene = Grep.grep("NegControl", genes)
     gene_rm = [blank_gene; neg_gene]
-    genes = setdiff(genes, gene_rm);
     cells = DataFrame(CSVFiles.load(CSVFiles.File(format"TSV", cell_file); header_exists=false))
     cells = string.(cells.Column1)
     counts = MatrixMarket.mmread(gunzip(count_file))
@@ -111,8 +110,10 @@ function read_xenium(xenium_dir::String; prefix = "xenium", min_gene::Int64 = 0,
     rename!(count_cells, :cell_id => :cell, :x_centroid => :x, :y_centroid => :y)
     count_molecules.cell[count_molecules.cell.==-1] .= 0
     raw_count = RawCountObject(counts, cells, genes)
+    genes2 = setdiff(genes, gene_rm);
+    raw_count = subset_count(raw_count; genes=genes2)
     count_molecules.cell = string.(count_molecules.cell)
-    count_molecules = filter(:gene => ∈(Set(genes)), count_molecules)
+    count_molecules = filter(:gene => ∈(Set(genes2)), count_molecules)
     count_cells.cell = string.(count_cells.cell)
     spObj = CartanaObject(count_molecules, count_cells, raw_count;
             prefix = prefix, min_gene = min_gene, min_cell = min_gene)
