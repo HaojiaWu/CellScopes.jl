@@ -268,3 +268,12 @@ function update_count(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject}, c
     end
     return sp_obj
 end
+
+function check_vec(vec1, vec2)
+    diff_elm = setdiff(vec2, vec1)
+   if length(diff_elm) == 0
+       gene_keep = repeat([true], length(vec2))
+   else
+       gene_keep = [x ∈ diff_elm ? false : true for x in vec2]
+   end
+end
