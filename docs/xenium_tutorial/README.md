@@ -87,13 +87,13 @@ cs.sp_dim_plot(brain, "cluster"; anno_color = anno_color,
     canvas_size = (2500, 2000), do_legend=false
     )
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/umap_vsm.png" width="600"> 
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_celltype.jpg" width="600"> 
 
 ##### b. Select a field of view to visualize the cell annotation
 ```julia
 cs.plot_fov(brain, 20, 20)
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/sp_vsm.png" width="600"> 
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_fov.jpg" width="600"> 
 
 The grid plot above allows us to choose the specific region of interest for visualization. For instance, we can crop the view to focus on the hippocampus, as shown in the example below.
 
@@ -110,7 +110,7 @@ cs.sp_dim_plot(brain, "cluster"; anno_color = anno_color,
     )
 ```
 
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/sp_vsm_transparent.png" width="600"> 
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_hippo1.png" width="600"> 
 
 We can also visualize the cell type annotation directly on cell polygons.
 <br>
@@ -120,7 +120,7 @@ cs.plot_cell_polygons(brain, "cluster"; x_lims = (x1, x2),
     width = 800, height = 550)
 ```
 
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/sp_vsm_crop.png" width="600"> 
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xeniium_hippo2.png" width="600"> 
 
 #### 4.2 Gene expression visiualization
 Plot genes on whole tissue:
@@ -128,7 +128,7 @@ Plot genes on whole tissue:
 ```julia
 cs.sp_feature_plot(brain, "Bcl11b"; color_keys=["gray94", "lemonchiffon", "red"], height=3000, width=3000, marker_size = 4)
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/sp_feature.png" width="600"> 
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_whole_gene.jpg" width="600"> 
 
 Plot genes on the selected region:
 
@@ -136,7 +136,7 @@ Plot genes on the selected region:
 cs.plot_gene_polygons(brain, ["Bcl11b"]; y_lims = (4200, 5500),x_lims = (2500, 4600),
     width = 800, height = 550, color_keys=["#440154", "#440154","#3b528b","#fde725"], bg_color="black")
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/sp_feature_select.png" width="600"> 
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_gene.png" width="600"> 
 
 #### 4.3 Gene imputation
 ```CellScopes.jl``` provides wrapper functions to run gene imputation using three different tools: SpaGE, gimVI, and tangram. The code snippet below demonstrates how to run SpaGE using ```CellScopes.jl```.
@@ -146,7 +146,6 @@ data_path = "/mnt/sdc/new_analysis_cellscopes/brain_sc/"
 SpaGE_path = "/mnt/sdc/new_analysis_cellscopes/SpaGE/"
 brain = cs.run_spaGE(brain, data_path, SpaGE_path)
 ```
-
 Imputed gene values can be visualized by setting ```use_imputed = true``` in the ```sp_feature_plot``` function.
 
 ```julia
