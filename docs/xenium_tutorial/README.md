@@ -151,7 +151,7 @@ Imputed gene values can be visualized by setting ```use_imputed = true``` in the
 ```julia
 cs.sp_feature_plot(brain, ["Adcy5","Ccdc3", "Prox1"]; color_keys=["gray90", "lemonchiffon", "red"], use_imputed = true)
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/sp_feature_select.png" width="600"> 
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_gene_impute1.png" width="600"> 
 
 To zoom in the area of interest, simply run: 
 
@@ -161,7 +161,7 @@ cs.sp_feature_plot(brain2, ["Ccdc3"];
     use_imputed = true, x_lims = (x1, x2), marker_size = 10,
     y_lims = (y1, y2),width = 800, height = 550)
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/sp_feature_select.png" width="600"> 
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_gene_impute2.png" width="600"> 
 
 #### 4.4 Save the object
 
