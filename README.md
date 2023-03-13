@@ -54,9 +54,9 @@ kidney = cs.normalize_data(kidney);
 We used the [JLD2.jl](https://github.com/JuliaIO/JLD2.jl) package to save and load the ```CellScopes``` objects. Please read the original tutorial to learn the methods from JLD2 for file input/output. Here are some example lines:
 ```julia
 ### save CartanaObject to disk.
-save(kidney; filename = "kidney_SpaObj.jld2") 
+cs.save(kidney; filename = "kidney_SpaObj.jld2") 
 ### read SpaObj object from disk.
-kidney = load(filename="kidney_SpaObj.jld2")
+kidney = cs.load(filename="kidney_SpaObj.jld2")
 ```
 
 ### 3.5. Data processing and analysis
