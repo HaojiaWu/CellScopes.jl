@@ -1,7 +1,7 @@
 # CellScopes.jl <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/logo.png" width="60" height="60"> <br>
 ```CellScopes.jl``` is a toolkit built using the Julia programming language, designed for the analysis of single cell and spatial transcriptomic data. It offers a range of functionalities including data normalization, dimensional reduction, cell clustering and visualization, all tailored to various types of data, to enable researchers to gain valuable insights into the complexity of cellular systems. The current version of ```CellScopes.jl``` is structured as follows:
 
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/CellScopes-version-1.png" width="600"> <br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/CellScopes.png" width="600"> <br>
 
 ## 1. Installation
 To install ```CellScopes.jl```, you will need to have Julia 1.6 or higher installed. It is recommended to use Julia 1.7.3 or higher to avoid issues with dependencies. To install all of the necessary dependencies, run the following command line in Julia. Note that this will not install the unregisterd package ```Leiden.jl```, which you may need to install manually from the GitHub repository first.
