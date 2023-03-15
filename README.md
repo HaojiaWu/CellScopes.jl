@@ -132,21 +132,19 @@ cell_sub=filter(:celltype => x -> x =="CD-PC", cell_sub); ### select the PC cell
 center=[mean(cell_sub.x),mean(cell_sub.y)]; ### find the center point as origin
 kidney = cs.compute_kidney_coordinates(kidney, center)
 ```
-#### e. Gene imputation
-Since most of the imaging-based spatial techniques only allow for detection of several hundreds genes, it is important to employ data integration approaches to infer the expression of the genes not included in the gene panel, by using the corresponding scRNA-seq dataset as reference. ```CellScopes.jl``` provides julia functions to run [SpaGE](), [gimVI]() and [Tangram](https://github.com/broadinstitute/Tangram) for gene imputation. Please refer to the github repos for more detail. The codes below show you how to run these tools conveniently. ```CellScopes.jl``` also provides functions to plot the results (See the Visualization session).
+#### e. Integrating scRNA-seq for gene imputation
+Since most of the imaging-based spatial techniques only allow for detection of several hundreds genes, it is important to employ data integration approaches to infer the expression of the genes not included in the gene panel, by using the corresponding scRNA-seq dataset as reference. ```CellScopes.jl``` provides julia functions to run [SpaGE](https://github.com/tabdelaal/SpaGE), [gimVI](https://github.com/scverse/scvi-tools) and [Tangram](https://github.com/broadinstitute/Tangram) for gene imputation. Please refer to the github repos for more detail. The codes below show you how to run these tools conveniently. ```CellScopes.jl``` also provides functions to plot the results (See the Visualization session).
 ```julia
-using CSV, DataFrames, JLD2, PyCall,Pkg
-ENV["PYTHON"]="/home/users/haojiawu/anaconda3/envs/tangram-env/bin/python"
-Pkg.build("PyCall")
-kidney=cs.run_tangram(kidney, "/home/users/haojiawu/anaconda3/envs/tangram-env/bin/python",
-    "IRI_sham/sc_matrix_w6.mtx",
-    "IRI_sham/sc_genes_w6.tsv",
-    "IRI_sham/sc_barcodes_w6.tsv",
-    "IRI_sham/sc_metadat_w6.csv",
-    "markers_mapping.csv",
-    "name"
-)
+data_path = "/mnt/sdc/new_analysis_cellscopes/for_imputate/IRI_2d/"
+### SpaGE
+spaGE_path = "/mnt/sdc/new_analysis_cellscopes/SpaGE"
+@time kidney = cs.run_spaGE(kidney, data_path, spaGE_path);
+### gimVI
+kidney = cs.run_gimVI(kidney, data_path)
+### Tangram
+kidney = cs.run_tangram(kidney, data_path)
 ```
+Some tools such as tangram might need a long time to run. Imputed gene count will be stored in the ```spImputedObject``` of the ```CartanaObject```.
 
 ### 3.6. Visualization
 We provided a number of functions to visualize the results from the above analysis. 
