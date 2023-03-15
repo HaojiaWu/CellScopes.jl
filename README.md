@@ -149,6 +149,17 @@ Some tools such as tangram might need a long time to run. Imputed gene count wil
 ### 3.6. Visualization
 We provided a number of functions to visualize the results from the above analysis. 
 #### a. Plot gene expression on segmented cells. 
+The sp_feature_plot function is for visualizing spatial expression pattern of the selected genes on the segmented cells. 
+```julia
+cs.sp_feature_plot(kidney, "Umod"; color_keys=["gray94", "lemonchiffon", "red"], height=3000, width=3000, marker_size = 4)
+cs.sp_feature_plot(kidney, "Aqp2"; color_keys=["gray94", "lemonchiffon", "red"], height=3000, width=3000, marker_size = 4)
+cs.sp_feature_plot(kidney, "Eln"; color_keys=["gray94", "lemonchiffon", "red"], height=3000, width=3000, marker_size = 4)
+```
+<p float="left">
+  <img src="https://github.com/HaojiaWu/CellScopes.jl/tree/main/data/umod_whole.png" width=32% height=250>
+  <img src="https://github.com/HaojiaWu/CellScopes.jl/tree/main/data/aqp2_whole.png" width=32% height=250> 
+  <img src="https://github.com/HaojiaWu/CellScopes.jl/tree/main/data/eln_whole.png" width=32% height=250>
+</p>
 
 Usually it's hard to see the delicate tructure when ploting gene on the whole kidney. Therefore, we provided three ways to plot gene expression in a selected field of view. <br/>
 
