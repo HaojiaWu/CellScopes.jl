@@ -149,16 +149,6 @@ Some tools such as tangram might need a long time to run. Imputed gene count wil
 ### 3.6. Visualization
 We provided a number of functions to visualize the results from the above analysis. 
 #### a. Plot gene expression on segmented cells. 
-Gene expression can be easily visualized by the ```plot_cell_polygons``` function. Here is an example for ploting the whole kidney.
-```julia
-alpha_trans=1
-anno2 = Dict("Podo" => ("magenta1",alpha_trans), "HealthyPT"=>("green3",alpha_trans), "InjPT"=>("#f92874",alpha_trans),"TAL"=>("lightslateblue",alpha_trans),"DCT"=>("blue",alpha_trans),"CD-PC"=>("turquoise1",alpha_trans),"CD-IC"=>("#924cfa",alpha_trans),"vEC"=>("firebrick",alpha_trans),"gEC"=>("dodgerblue",alpha_trans),"Fib"=>("#edff4d",alpha_trans),"JGA"=>("sienna2",alpha_trans),"Immune"=>("darkgreen",alpha_trans),"Uro"=>("black",alpha_trans));
-p3=cs.plot_cell_polygons(kidney, "celltype"; 
-    anno_color=anno2,x_lims=(0,35000), 
-    y_lims=(0,40000),canvas_size=(5000,6000),
-    stroke_color="gray80")
-```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/whole.jpg" width="300"> <br>
 
 Usually it's hard to see the delicate tructure when ploting gene on the whole kidney. Therefore, we provided three ways to plot gene expression in a selected field of view. <br/>
 
@@ -189,6 +179,17 @@ anno2 = Dict("Podo" => ("fuchsia",alpha_trans), "HealthyPT"=>("green",alpha_tran
 </p>
 
 #### b. Plot cell annotation
+Cell type annotation can be easily visualized by the ```plot_cell_polygons``` function. Here is an example for ploting the whole kidney.
+```julia
+alpha_trans=1
+anno2 = Dict("Podo" => ("magenta1",alpha_trans), "HealthyPT"=>("green3",alpha_trans), "InjPT"=>("#f92874",alpha_trans),"TAL"=>("lightslateblue",alpha_trans),"DCT"=>("blue",alpha_trans),"CD-PC"=>("turquoise1",alpha_trans),"CD-IC"=>("#924cfa",alpha_trans),"vEC"=>("firebrick",alpha_trans),"gEC"=>("dodgerblue",alpha_trans),"Fib"=>("#edff4d",alpha_trans),"JGA"=>("sienna2",alpha_trans),"Immune"=>("darkgreen",alpha_trans),"Uro"=>("black",alpha_trans));
+p3=cs.plot_cell_polygons(kidney, "celltype"; 
+    anno_color=anno2,x_lims=(0,35000), 
+    y_lims=(0,40000),canvas_size=(5000,6000),
+    stroke_color="gray80")
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/whole.jpg" width="300"> <br>
+
 Here are some examples to show how to visualize the kidney structure in different region.
 ```julia
 ### tubule
