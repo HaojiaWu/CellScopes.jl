@@ -161,6 +161,13 @@ cs.sp_feature_plot(kidney, "Eln"; color_keys=["gray94", "dodgerblue1", "blue"], 
   <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/Eln.png" width=30% height=250>
 </p>
 
+```julia
+cmap=ColorSchemes.ColorScheme([colorant"gray98",colorant"red", colorant"red4"])
+p2=cs.plot_gene_polygons(kidney, "Havcr1",cmap; x_lims=(16000,19000), y_lims=(3000,24000),
+    width = 200, height = 1200,stroke_width=0.2)
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/havcr1_polygon.png" height="100"> <br>
+
 Usually it's hard to see the delicate tructure when ploting gene on the whole kidney. Therefore, we provided three ways to plot gene expression in a selected field of view. <br/>
 
 ```julia
@@ -170,9 +177,6 @@ p1=cs.sp_feature_plot(kidney, ["Podxl"];
     pt_size=20,fig_width=600, fig_height=500)
 ##ii. plot gene on cells as segmented polygons
 cmap=ColorSchemes.ColorScheme([colorant"gray98",colorant"red", colorant"red4"])
-p2=cs.plot_gene_polygons(day2, "Havcr1",cmap; x_lims=(16000,19000), y_lims=(3000,24000),
-    width = 200, height = 1200,stroke_width=0.2)
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/havcr1_polygon.png" height="100"> <br>
 
 ##iii. plot transcripts on cells as segmented polygons
 alpha_trans=0.5
