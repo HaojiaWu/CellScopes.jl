@@ -298,16 +298,31 @@ cs.plot_depth_animation(kidney, celltypes = celltypes, markers = markers)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/animations.gif" height="300"> <br>
 
+After kidney coordinate transformation, we can also plot the gene changes across time and space using heatmap.
+```julia
+```
+
 #### g. Plot imputed gene expression in space and time.
 After gene imputation, the expression values of the imputed genes can be visualized using the same function ```sp_feature_plot``` by setting the paramenters ```use_imputed=true``` and ```imp_type="SpaGE/gimVI/tangram"```. Here is the example code:
 ```julia
 cs.sp_feature_plot(kidney, "Wdr17"; use_imputed = true, imp_type = "SpaGE", color_keys = ["gray94", "lemonchiffon1", "red"])
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/Wdr17.png" height="300"> <br>
-
-After gene imputation and kidney coordinate transformation, we can plot the gene changes across time and space.
+Or plot multiple genes like this:
 ```julia
+cs.sp_feature_plot(kidney,["Slc12a1","Sgcz", "Nox4"]; use_imputed=true, 
+    bg_color ="black", imp_type = "SpaGE",
+    color_keys=["#440154","#5ec962","#fde725"])
 ```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/imputed_multiple.png" height="300"> <br>
+
+```julia
+cs.sp_feature_plot_group([kidney, day2,week6], ["Slc5a12","Umod","Havcr1"]; order=true,
+    labels=["Sham", "Day2","Week6"], use_imputed=true, bg_color ="black", imp_type = "SpaGE",
+    color_keys=["#440154","#5ec962","#fde725"])
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/imputed_group.png" height="900"> <br>
+
 
 
 
