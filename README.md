@@ -156,9 +156,9 @@ cs.sp_feature_plot(kidney, "Aqp2"; color_keys=["gray94", "dodgerblue1", "blue"],
 cs.sp_feature_plot(kidney, "Eln"; color_keys=["gray94", "dodgerblue1", "blue"], height=1000, width=800, marker_size = 4)
 ```
 <p float="left">
-  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/Umod.png" width=20% height=250>
-  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/Aqp2.png" width=20% height=250> 
-  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/Eln.png" width=20% height=250>
+  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/Umod.png" width=30% height=250>
+  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/Aqp2.png" width=30% height=250> 
+  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/Eln.png" width=30% height=250>
 </p>
 
 Usually it's hard to see the delicate tructure when ploting gene on the whole kidney. Therefore, we provided three ways to plot gene expression in a selected field of view. <br/>
