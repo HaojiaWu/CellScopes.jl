@@ -151,14 +151,14 @@ We provided a number of functions to visualize the results from the above analys
 #### a. Plot gene expression on segmented cells. 
 The sp_feature_plot function is for visualizing spatial expression pattern of the selected genes on the segmented cells. 
 ```julia
-cs.sp_feature_plot(kidney, "Umod"; color_keys=["gray94", "dodgerblue1", "blue"], height=3000, width=3000, marker_size = 4)
-cs.sp_feature_plot(kidney, "Aqp2"; color_keys=["gray94", "dodgerblue1", "blue"], height=3000, width=3000, marker_size = 4)
-cs.sp_feature_plot(kidney, "Eln"; color_keys=["gray94", "dodgerblue1", "blue"], height=3000, width=3000, marker_size = 4)
+cs.sp_feature_plot(kidney, "Umod"; color_keys=["gray94", "dodgerblue1", "blue"], height=1000, width=800, marker_size = 4)
+cs.sp_feature_plot(kidney, "Aqp2"; color_keys=["gray94", "dodgerblue1", "blue"], height=1000, width=800, marker_size = 4)
+cs.sp_feature_plot(kidney, "Eln"; color_keys=["gray94", "dodgerblue1", "blue"], height=1000, width=800, marker_size = 4)
 ```
 <p float="left">
-  <img src="https://github.com/HaojiaWu/CellScopes.jl/tree/main/data/Umod.png" width=32% height=250>
-  <img src="https://github.com/HaojiaWu/CellScopes.jl/tree/main/data/Aqp2.png" width=32% height=250> 
-  <img src="https://github.com/HaojiaWu/CellScopes.jl/tree/main/data/Eln.png" width=32% height=250>
+  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/Umod.png" width=20% height=250>
+  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/Aqp2.png" width=20% height=250> 
+  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/Eln.png" width=20% height=250>
 </p>
 
 Usually it's hard to see the delicate tructure when ploting gene on the whole kidney. Therefore, we provided three ways to plot gene expression in a selected field of view. <br/>
@@ -184,9 +184,9 @@ anno2 = Dict("Podo" => ("fuchsia",alpha_trans), "HealthyPT"=>("green",alpha_tran
 )
 ```
 <p float="left">
-  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/datapoints.png" width=32% height=250>
-  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/polygons.png" width=32% height=250> 
-  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/glom.png" width=32% height=250>
+  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/datapoints.png" width=32% height=400>
+  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/polygons.png" width=32% height=400> 
+  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/glom.png" width=32% height=400>
 </p>
 
 #### b. Plot cell annotation
