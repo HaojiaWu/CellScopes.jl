@@ -315,7 +315,7 @@ cs.sp_feature_plot(kidney,["Slc12a1","Sgcz", "Nox4"]; use_imputed=true,
     color_keys=["#440154","#5ec962","#fde725"])
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/imputed_multiple.png" height="300"> <br>
-
+If timecourse data are available, ```sp_feature_plot_group``` allows you to plot the gene change across time points.
 ```julia
 cs.sp_feature_plot_group([kidney, day2,week6], ["Slc5a12","Umod","Havcr1"]; order=true,
     labels=["Sham", "Day2","Week6"], use_imputed=true, bg_color ="black", imp_type = "SpaGE",
