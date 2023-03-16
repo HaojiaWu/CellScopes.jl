@@ -299,9 +299,12 @@ cs.plot_depth_animation(kidney, celltypes = celltypes, markers = markers)
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/animations.gif" height="300"> <br>
 
 #### g. Plot imputed gene expression in space and time.
-After gene imputation, the expression values of the imputed genes can be visualized using the same function ```sp_feature_plot``` by setting the paramenter ```use_imputed=true```. Here is the example code:
+After gene imputation, the expression values of the imputed genes can be visualized using the same function ```sp_feature_plot``` by setting the paramenters ```use_imputed=true``` and ```imp_type="SpaGE/gimVI/tangram"```. Here is the example code:
 ```julia
+cs.sp_feature_plot(kidney, "Wdr17"; use_imputed = true, imp_type = "SpaGE", color_keys = ["gray94", "lemonchiffon1", "red"])
 ```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/Wdr17.png" height="300"> <br>
+
 After gene imputation and kidney coordinate transformation, we can plot the gene changes across time and space.
 ```julia
 ```
