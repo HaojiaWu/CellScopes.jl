@@ -272,7 +272,7 @@ p=all_time |> @vlplot()+@vlplot(mark={:area, opacity=0.6}, x={"index", axis={gri
         }},
     width=200,height=200)
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/cellfrac.png" width="400"> <br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/cellfrac.png" width="600"> <br>
 
 #### e. Select and plot field of view (fov).
 ```CellScopes.jl``` allows you to select the field of view for further analysis. First, we provided a function to draw grid on the spatial graph. Then the fov of interest can be selected using the ```subset_fov``` function.
