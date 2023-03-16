@@ -161,10 +161,11 @@ cs.sp_feature_plot(kidney, "Eln"; color_keys=["gray94", "dodgerblue1", "blue"], 
   <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/Eln.png" width=30% height=250>
 </p>
 
+We can inspect gene expression in the area of interest by setting ```x_lims``` and ```y_lims```.
 ```julia
 cmap=ColorSchemes.ColorScheme([colorant"gray98",colorant"red", colorant"red4"])
 p2=cs.plot_gene_polygons(kidney, "Havcr1",cmap; x_lims=(16000,19000), y_lims=(3000,24000),
-    width = 200, height = 1200,stroke_width=0.2)
+    width = 1200, height = 200,stroke_width=0.2)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/havcr1_polygon.png" height="100"> <br>
 
