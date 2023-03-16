@@ -297,3 +297,13 @@ We can make this into animation too.
 cs.plot_depth_animation(kidney, celltypes = celltypes, markers = markers)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/animations.gif" height="300"> <br>
+
+#### g. Plot imputed gene expression in space and time.
+After gene imputation, the expression values of the imputed genes can be visualized using the same function ```sp_feature_plot``` by setting the paramenter ```use_imputed=true```. Here is the example code:
+```julia
+```
+After gene imputation and kidney coordinate transformation, we can plot the gene changes across time and space.
+
+
+
+
