@@ -309,7 +309,7 @@ After kidney coordinate transformation, we can also plot the gene changes across
 cs.plot_gene_group_spatial([sham, hour4, hour12, day2, week6], 100, ["Cxcl1", "Plin2", "Gsta1", "Mki67", "Apoe"], assay_use = "measured")
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/time_space_genes.png" height="200"> <br>
-If gene imputation is done, this function can plot the imputed values of the selected genes by setting ```assay_use = "measured"```.
+If gene imputation is done, this function can plot the imputed values of the selected genes by setting ```assay_use = "imputed"```.
 
 #### g. Plot imputed gene expression in space and time.
 After gene imputation, the expression values of the imputed genes can be visualized using the same function ```sp_feature_plot``` by setting the paramenters ```use_imputed=true``` and ```imp_type="SpaGE/gimVI/tangram"```. Here is the example code:
