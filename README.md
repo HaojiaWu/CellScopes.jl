@@ -167,7 +167,7 @@ cmap=ColorSchemes.ColorScheme([colorant"gray98",colorant"red", colorant"red4"])
 p2=cs.plot_gene_polygons(kidney, "Havcr1",cmap; x_lims=(16000,19000), y_lims=(3000,24000),
     width = 1200, height = 200,stroke_width=0.2)
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/havcr1_polygon.png" height="100"> <br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/havcr1_polygon.png" height="200"> <br>
 
 Usually it's hard to see the delicate tructure when ploting gene on the whole kidney. Therefore, we provided three ways to plot gene expression in a selected field of view. <br/>
 
