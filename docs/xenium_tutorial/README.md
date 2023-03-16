@@ -9,9 +9,9 @@ import CellScopes as cs
 xenium_dir = "/mnt/sdc/new_analysis_cellscopes/xenium_mouse_brain/"
 @time brain = cs.read_xenium(xenium_dir; min_gene = 0, min_cell = 0, prefix = "brain")
 ```
-This should create a ```CartanaObject``` object.
+This should create a ```XeniumObject``` object.
 ```
-CartanaObject in CellScopes.jl
+XeniumObject in CellScopes.jl
 Genes x Cells = 248 x 162033
 Available data:
 - rawCount
