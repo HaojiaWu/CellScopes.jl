@@ -303,7 +303,8 @@ After gene imputation, the expression values of the imputed genes can be visuali
 ```julia
 ```
 After gene imputation and kidney coordinate transformation, we can plot the gene changes across time and space.
-
+```julia
+```
 
 
 
