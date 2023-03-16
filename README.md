@@ -170,15 +170,16 @@ p1=cs.sp_feature_plot(kidney, ["Podxl"];
     pt_size=20,fig_width=600, fig_height=500)
 ##ii. plot gene on cells as segmented polygons
 cmap=ColorSchemes.ColorScheme([colorant"gray98",colorant"red", colorant"red4"])
-p2=cs.plot_gene_polygons(kidney, "Podxl",cmap; 
-    x_lims=(21600,24400), y_lims=(4200,6200),
-    canvas_size=(600,500))
+p2=cs.plot_gene_polygons(day2, "Havcr1",cmap; x_lims=(16000,19000), y_lims=(3000,24000),
+    width = 200, height = 1200,stroke_width=0.2)
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/havcr1_polygon.png" height="100"> <br>
+
 ##iii. plot transcripts on cells as segmented polygons
 alpha_trans=0.5
 anno2 = Dict("Podo" => ("fuchsia",alpha_trans), "HealthyPT"=>("green",alpha_trans),"InjPT"=>("lime",alpha_trans),"TAL"=>("cyan4",alpha_trans),"DCT"=>("yellow",alpha_trans),"CD-PC"=>("gray95",alpha_trans),
             "CD-IC"=>("gray95",alpha_trans),"aEC"=>("red",alpha_trans),"gEC"=>("blue",alpha_trans),"Fib"=>("gray95",alpha_trans),"MC"=>("coral",alpha_trans),"Immune"=>("gray95",alpha_trans),"Uro"=>("gray95",alpha_trans))
 @time cs.plot_transcript_polygons(kidney; 
-    genes=["Podxl","Ehd3","Ren1"], colors=["fuchsia","blue","coral"],canvas_size=(600,600),
+    genes=["Podxl","Ehd3","Ren1"], colors=["fuchsia","blue","coral"],width = 600, height = 600,
     markersize=2,annotation=:celltype, ann_colors=anno2, is_noise=:is_noise,noise_kwargs=(markersize=0, color="transparent"),
     show_legend=false,bg_color="transparent",x_lims=(17600,20000), y_lims=(7700,10000),segline_size=1, transparency=0.3
 )
@@ -196,7 +197,7 @@ alpha_trans=1
 anno2 = Dict("Podo" => ("magenta1",alpha_trans), "HealthyPT"=>("green3",alpha_trans), "InjPT"=>("#f92874",alpha_trans),"TAL"=>("lightslateblue",alpha_trans),"DCT"=>("blue",alpha_trans),"CD-PC"=>("turquoise1",alpha_trans),"CD-IC"=>("#924cfa",alpha_trans),"vEC"=>("firebrick",alpha_trans),"gEC"=>("dodgerblue",alpha_trans),"Fib"=>("#edff4d",alpha_trans),"JGA"=>("sienna2",alpha_trans),"Immune"=>("darkgreen",alpha_trans),"Uro"=>("black",alpha_trans));
 p3=cs.plot_cell_polygons(kidney, "celltype"; 
     anno_color=anno2,x_lims=(0,35000), 
-    y_lims=(0,40000),canvas_size=(5000,6000),
+    y_lims=(0,40000),width = 5000, height = 6000,
     stroke_color="gray80")
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/whole.jpg" width="300"> <br>
@@ -208,21 +209,21 @@ alpha_trans=1
 anno2 = Dict("Podo" => ("magenta1",alpha_trans), "HealthyPT"=>("green3",alpha_trans),"InjPT"=>("#f92874",alpha_trans),"TAL"=>("lightslateblue",alpha_trans),"DCT"=>("blue",alpha_trans),"CD-PC"=>("turquoise1",alpha_trans),"CD-IC"=>("#924cfa",alpha_trans),"vEC"=>("firebrick",alpha_trans),"gEC"=>("dodgerblue",alpha_trans),"Fib"=>("#edff4d",0.5),"JGA"=>("sienna2",alpha_trans),"Immune"=>("darkgreen",alpha_trans),"Uro"=>("black",alpha_trans));
 cs.plot_cell_polygons(kidney, "celltype"; 
     anno_color=anno2, x_lims=(18300,19800), y_lims=(10700,14000), 
-    canvas_size=(300,600),stroke_color="gray80")
+    width = 300, height = 600, stroke_color="gray80")
 
 ### renal artery
 alpha_trans=1
 anno2 = Dict("Podo" => ("white",alpha_trans), "HealthyPT"=>("white",alpha_trans),"InjPT"=>("white",alpha_trans),"TAL"=>("white",alpha_trans),"DCT"=>("white",alpha_trans),"CD-PC"=>("white",alpha_trans),"CD-IC"=>("white",alpha_trans),"vEC"=>("firebrick",alpha_trans),"gEC"=>("white",alpha_trans),"Fib"=>("#edff4d",alpha_trans),"JGA"=>("white",alpha_trans),"Immune"=>("white",alpha_trans),"Uro"=>("white",alpha_trans));
 cs.plot_cell_polygons(kidney, "celltype"; 
     anno_color=anno2, x_lims=(21900,24500), y_lims=(11500,19500),
-    canvas_size=(300,900),stroke_color="gray80")
+    width = 300, height = 900,stroke_color="gray80")
 
 ### renal cortex
 alpha_trans=1
 anno2 = Dict("Podo" => ("magenta1",alpha_trans), "HealthyPT"=>("green3",alpha_trans),"InjPT"=>("#f92874",alpha_trans),"TAL"=>("lightslateblue",alpha_trans),"DCT"=>("blue",alpha_trans),"CD-PC"=>("turquoise1",alpha_trans),"CD-IC"=>("#924cfa",alpha_trans),"vEC"=>("firebrick",alpha_trans),"gEC"=>("dodgerblue",alpha_trans),"Fib"=>("#edff4d",0.5),"JGA"=>("sienna2",alpha_trans),"Immune"=>("darkgreen",alpha_trans),"Uro"=>("black",alpha_trans));
 cs.plot_cell_polygons(kidney, "celltype"; 
     anno_color=anno2, x_lims=(23000,24800), y_lims=(7400,9000), 
-    canvas_size=(450,400),stroke_color="gray80")
+    width = 450, height = 400,stroke_color="gray80")
 ```
 <p float="left">
   <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/tubule.png" height=400>
