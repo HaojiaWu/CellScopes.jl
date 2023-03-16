@@ -3,14 +3,14 @@
 The following tutorials guide you through using ```CellScopes.jl``` to analyze scRNA-seq data from a sample of 2,700 cells, and show you how to scale the analysis up to 400,000 cells. 
 
 ## 1 Tutorial: PBMC 3K
-This tutorial uses the pbmc3k dataset from 10x Genomics, which has been previously used by [Seurat](https://satijalab.org/seurat/articles/pbmc3k_tutorial.html) and [Scanpy](https://scanpy-tutorials.readthedocs.io/en/latest/pbmc3k.html) for demo purpose. This will read in the data and create a RawCountObject that can be used as input for ```CellScopes.jl```.
-### 1.1 Download the pbmc3k data (in Terminal)
+This tutorial uses the pbmc3k dataset from 10x Genomics, which has been previously used by [Seurat](https://satijalab.org/seurat/articles/pbmc3k_tutorial.html) and [Scanpy](https://scanpy-tutorials.readthedocs.io/en/latest/pbmc3k.html) for demo purpose. This will read in the data and create a RawCountObject that can be used as input for ```CellScopes.jl```. All codes from this tutorial are run on Julia REPL.
+### 1.1 Download the pbmc3k data
 ```bash
-wget https://cf.10xgenomics.com/samples/cell/pbmc3k/pbmc3k_filtered_gene_bc_matrices.tar.gz
-tar xvf pbmc3k_filtered_gene_bc_matrices.tar.gz
+;wget https://cf.10xgenomics.com/samples/cell/pbmc3k/pbmc3k_filtered_gene_bc_matrices.tar.gz
+;tar xvf pbmc3k_filtered_gene_bc_matrices.tar.gz
 ```
 
-### 1.2 Read the data (in Julia)
+### 1.2 Read the data
 The cells and genes can be filtered by setting the parameters ```min_gene``` and ```min_cell```, respectively.
 ```julia
 import CellScopes as cs
