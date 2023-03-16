@@ -161,7 +161,7 @@ cs.sp_feature_plot(kidney, "Eln"; color_keys=["gray94", "dodgerblue1", "blue"], 
   <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/Eln.png" width=30% height=300>
 </p>
 
-We can inspect gene expression in the area of interest by setting ```x_lims``` and ```y_lims```.
+Usually it's hard to see the delicate tructure when ploting gene on the whole kidney. To examine gene expression in a specific region of interest, we can set the values for x_lims and y_lims.
 ```julia
 cmap=ColorSchemes.ColorScheme([colorant"gray98",colorant"red", colorant"red4"])
 p2=cs.plot_gene_polygons(kidney, "Havcr1",cmap; x_lims=(16000,19000), y_lims=(3000,24000),
@@ -169,7 +169,7 @@ p2=cs.plot_gene_polygons(kidney, "Havcr1",cmap; x_lims=(16000,19000), y_lims=(30
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/havcr1_polygon.png" height="200"> <br>
 
-Usually it's hard to see the delicate tructure when ploting gene on the whole kidney. Therefore, we provided three ways to plot gene expression in a selected field of view. <br/>
+```CellScopes.jl``` actually provide three ways to plot gene expression in a selected field of view. <br/>
 
 ```julia
 ##i.plot gene on cells as data points
