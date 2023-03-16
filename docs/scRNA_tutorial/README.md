@@ -5,7 +5,7 @@ The following tutorials guide you through using ```CellScopes.jl``` to analyze s
 ## 1 Tutorial: PBMC 3K
 This tutorial uses the pbmc3k dataset from 10x Genomics, which has been previously used by [Seurat](https://satijalab.org/seurat/articles/pbmc3k_tutorial.html) and [Scanpy](https://scanpy-tutorials.readthedocs.io/en/latest/pbmc3k.html) for demo purpose. This will read in the data and create a RawCountObject that can be used as input for ```CellScopes.jl```. All codes from this tutorial are run on Julia REPL.
 ### 1.1 Download the pbmc3k data
-```bash
+```julia
 ;wget https://cf.10xgenomics.com/samples/cell/pbmc3k/pbmc3k_filtered_gene_bc_matrices.tar.gz
 ;tar xvf pbmc3k_filtered_gene_bc_matrices.tar.gz
 ```
