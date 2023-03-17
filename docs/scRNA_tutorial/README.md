@@ -101,7 +101,7 @@ Available data:
 =#
 ```
 ### 1.7 Cluster the cells.
-We use a graph-based approach to identify the clusters. We first construct a KNN graph based on the significant components using the [NearestNeighborDescent.jl](https://github.com/dillondaudert/NearestNeighborDescent.jl) package. We then extract the KNN matrix from the graph and convert it into an adjacency matrix. This adjacent matrix is used as input for the [Leiden.jl](https://github.com/bicycle1885/Leiden.jl) package, which performs community detection. The entire process is implemented in the RunClustering function.
+We use a graph-based approach to identify the clusters. We first construct a KNN graph based on the significant components using the [NearestNeighborDescent.jl](https://github.com/dillondaudert/NearestNeighborDescent.jl) package. We then extract the KNN matrix from the graph and convert it into an adjacency matrix. This adjacent matrix is used as input for the [Leiden.jl](https://github.com/bicycle1885/Leiden.jl) package, which performs community detection. The entire process is implemented in the ```run_clustering``` function.
 
 ```julia
 pbmc = cs.run_clustering(pbmc; res=0.06, n_neighbors=100)
@@ -118,7 +118,7 @@ Available data:
 =#
 ```
 ### 1.8 Run UMAP or tSNE.
-```CellScopes.jl``` provides various non-linear dimensionality reduction techniques, including tSNE and UMAP, to allow for visualization and exploration of datasets. In the current version, UMAP is much faster than tSNE for large datasets, so it is highly recommended to use UMAP. We use the [TSne.jl](https://github.com/lejon/TSne.jl) and [UMAP.jl](https://github.com/dillondaudert/UMAP.jl) packages for tSNE and UMAP analysis, respectively.
+```CellScopes.jl``` provides two non-linear dimensionality reduction techniques, tSNE and UMAP, to allow for visualization and exploration of datasets. In the current version, UMAP is much faster than tSNE for large datasets, so it is highly recommended. We use the [TSne.jl](https://github.com/lejon/TSne.jl) and [UMAP.jl](https://github.com/dillondaudert/UMAP.jl) packages for tSNE and UMAP analysis, respectively.
 ```julia
 pbmc = cs.run_tsne(pbmc; max_iter = 3000, perplexit = 50)
 pbmc = cs.run_umap(pbmc; min_dist=0.4)
@@ -137,13 +137,13 @@ Available data:
 =#
 ```
 ### 1.9 Find markers.
-```CellScopes.jl``` can help you find markers that define clusters through differential expression. Same as Seurat and Scanpy, we perform wilcoxon rank sum test on each pair of cell types to identify the differential genes. This is implemented by the [HypothesisTests.jl](https://github.com/JuliaStats/HypothesisTests.jl) and [MultipleTesting.jl](https://github.com/juliangehring/MultipleTesting.jl)
+```CellScopes.jl``` can help you find markers that define clusters through differential expression analysis. Same as Seurat and Scanpy, we perform wilcoxon rank sum test on each pair of cell types to identify the differential genes. This is implemented by the [HypothesisTests.jl](https://github.com/JuliaStats/HypothesisTests.jl) and [MultipleTesting.jl](https://github.com/juliangehring/MultipleTesting.jl)
 ```julia
 markers = cs.find_markers(pbmc; cluster_1 = "7", cluster_2 = "6")
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/markers.png" width="600"> <br>
 
-Like in Seurat and Scanpy, we also provide a ```FindAllMarkers``` function to identify the marker genes for all clusters.
+Like in Seurat and Scanpy, we also provide a ```find_all_markers``` function to identify the marker genes for all clusters.
 ```julia
 all_markers = cs.find_all_markers(pbmc)
 ```
@@ -169,7 +169,7 @@ cs.dim_plot(pbmc; dim_type = "umap", marker_size = 4)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/umap.png" width="600"> <br>
 
-d. DimPlot on selected cluster
+d. Dim plot on selected cluster
 ```julia
 cs.highlight_cells(pbmc, "6")
 ```
