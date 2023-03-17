@@ -149,7 +149,7 @@ Some tools, like tangram, may take a considerable amount of time to run. It's im
 ### 3.6. Visualization
 We provided a number of functions to visualize the results from the above analysis. 
 #### a. Plot gene expression on segmented cells. 
-The sp_feature_plot function is for visualizing spatial expression pattern of the selected genes on the segmented cells. 
+The ```sp_feature_plot function``` is for visualizing spatial expression pattern of the selected genes on the segmented cells. 
 ```julia
 cs.sp_feature_plot(kidney, "Umod"; color_keys=["gray94", "dodgerblue1", "blue"], height=1000, width=800, marker_size = 4)
 cs.sp_feature_plot(kidney, "Aqp2"; color_keys=["gray94", "dodgerblue1", "blue"], height=1000, width=800, marker_size = 4)
