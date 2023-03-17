@@ -134,7 +134,7 @@ Plot genes on the selected region:
 
 ```julia
 cs.plot_gene_polygons(brain, ["Bcl11b"]; y_lims = (x1, x2),x_lims = (y1, y2),
-    width = 800, height = 550, color_keys=["#440154", "#440154","#3b528b","#fde725"], bg_color="black")
+    width = 800, height = 550, color_keys=["#440154", "#440154","#3b528b","#ffff67"], bg_color="black")
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_gene.png" width="600"> 
 
