@@ -91,7 +91,7 @@ cs.sp_feature_plot(sham, ["Aqp2","Slc7a13", "Umod", "Slc12a1","Slc12a3","Slc34a1
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/sp_feature.png" width="600"> 
 
-Plot genes on the selected reagion:
+Plot genes on the selected region:
 
 ```julia
 cs.sp_feature_plot(sham, ["Aqp2","Slc7a13", "Umod", "Slc12a1","Slc12a3","Slc34a1"]; 
