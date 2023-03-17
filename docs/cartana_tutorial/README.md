@@ -121,12 +121,11 @@ kidney = cs.run_gimVI(kidney, data_path)
 ### Tangram
 kidney = cs.run_tangram(kidney, data_path)
 ```
-Some tools such as tangram might need a long time to run. Imputed gene count will be stored in the ```spImputedObject``` of the ```CartanaObject```.
-
+Some tools, like tangram, may take a considerable amount of time to run. It's important to ensure that sufficient time is allowed for the tool to complete its execution. The resulting imputed gene counts will be saved within the ```spImputedObject``` of the ```CartanaObject```.
 ### 6. Visualization
 We provided a number of functions to visualize the results from the above analysis. 
 #### a. Plot gene expression on segmented cells. 
-The sp_feature_plot function is for visualizing spatial expression pattern of the selected genes on the segmented cells. 
+The ```sp_feature_plot function``` is for visualizing spatial expression pattern of the selected genes on the segmented cells. 
 ```julia
 cs.sp_feature_plot(kidney, "Umod"; color_keys=["gray94", "dodgerblue1", "blue"], height=1000, width=800, marker_size = 4)
 cs.sp_feature_plot(kidney, "Aqp2"; color_keys=["gray94", "dodgerblue1", "blue"], height=1000, width=800, marker_size = 4)
@@ -138,7 +137,7 @@ cs.sp_feature_plot(kidney, "Eln"; color_keys=["gray94", "dodgerblue1", "blue"], 
   <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/Eln.png" width=30% height=300>
 </p>
 
-Usually it's hard to see the delicate tructure when ploting gene on the whole kidney. To examine gene expression in a specific region of interest, we can set the values for x_lims and y_lims.
+Usually it's hard to see the delicate tructure when ploting gene on the whole kidney. To examine gene expression in a specific region of interest, we can set the values for ```x_lims``` and ```y_lims```.
 ```julia
 cmap=ColorSchemes.ColorScheme([colorant"gray98",colorant"red", colorant"red4"])
 p2=cs.plot_gene_polygons(kidney, "Havcr1",cmap; x_lims=(16000,19000), y_lims=(3000,24000),
@@ -167,13 +166,13 @@ anno2 = Dict("Podo" => ("fuchsia",alpha_trans), "HealthyPT"=>("green",alpha_tran
 )
 ```
 <p float="left">
-  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/datapoints.png" width=32% height=400>
-  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/polygons.png" width=32% height=400> 
-  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/glom.png" width=32% height=400>
+  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/datapoints.png" width=32% height=200>
+  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/polygons.png" width=32% height=200> 
+  <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/glom.png" width=32% height=200>
 </p>
 
 #### b. Plot cell annotation
-Cell type annotation can be easily visualized by the ```plot_cell_polygons``` function. Here is an example for ploting the whole kidney.
+Cell type annotations can be easily visualized using the ```plot_cell_polygons``` function. Here's an example of how to plot the entire kidney:
 ```julia
 alpha_trans=1
 anno2 = Dict("Podo" => ("magenta1",alpha_trans), "HealthyPT"=>("green3",alpha_trans), "InjPT"=>("#f92874",alpha_trans),"TAL"=>("lightslateblue",alpha_trans),"DCT"=>("blue",alpha_trans),"CD-PC"=>("turquoise1",alpha_trans),"CD-IC"=>("#924cfa",alpha_trans),"vEC"=>("firebrick",alpha_trans),"gEC"=>("dodgerblue",alpha_trans),"Fib"=>("#edff4d",alpha_trans),"JGA"=>("sienna2",alpha_trans),"Immune"=>("darkgreen",alpha_trans),"Uro"=>("black",alpha_trans));
@@ -184,7 +183,7 @@ p3=cs.plot_cell_polygons(kidney, "celltype";
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/whole.jpg" width="300"> <br>
 
-Here are some examples to show how to visualize the kidney structure in different region.
+Here are some examples demonstrating how to visualize the structure of the kidney in various regions.
 ```julia
 ### tubule
 alpha_trans=1
@@ -214,7 +213,7 @@ cs.plot_cell_polygons(kidney, "celltype";
 </p>
 
 #### c. Plot gene expression across clusters.
-We provided a gene rank function to identify the marker genes for each cluster. If cell types were annotated, the ```sp_dot_plot``` function can visualize the gene expression across cell types.
+We provide a gene ranking function that helps identify marker genes for each cluster. If cell types have been annotated, the ```sp_dot_plot``` function can be used to visualize gene expression across these cell types.
 
 **i.** plot gene rank
 ```julia
@@ -231,7 +230,7 @@ cs.sp_dot_plot(kidney, genes, :celltype; cell_order=cell_order, expr_cutoff=0.1,
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/dotplot2.png" width="400"> <br>
 
 #### d. Plot cell fraction.
-We also provided a way to plot cell fraction across multiple conditions.
+We also offer a method for visualizing cell fraction across multiple conditions.
 ```julia
 using VegaLite
 sham_cell=cs.make_cell_proportion_df(sham.spmetaData.cell; nfeatures=0)
@@ -258,7 +257,7 @@ p=all_time |> @vlplot()+@vlplot(mark={:area, opacity=0.6}, x={"index", axis={gri
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/cellfrac.png" width="600"> <br>
 
 #### e. Select and plot field of view (fov).
-```CellScopes.jl``` allows you to select the field of view for further analysis. First, we provided a function to draw grid on the spatial graph. Then the fov of interest can be selected using the ```subset_fov``` function.
+With ```CellScopes.jl```, you can select the field of view to analyze further.  The ```plot_fov``` is provided to draw a grid on the entire spatial graph. Then, you can select the area of interest by using the ```subset_fov``` function based on the coordinates of the four corners that define the rectangular region.
 ```julia
 cs.plot_fov(kidney, 10,10; group_label="celltype", cell_highlight="CD-PC", shield=true)
 cell_sub = cs.subset_fov(kidney, [47,48,57,58], 10,10);
@@ -266,7 +265,7 @@ cell_sub = cs.subset_fov(kidney, [47,48,57,58], 10,10);
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/grid.jpg" width="400"> <br>
 
 #### f. Plot cell type/transcript distribution from cortex to papilla.
-After we transform the xy coordinates to the kidney coordinates (See the **Data processing and analysis** section), we can plot the cell type and transcript distribution from outer cortex to papilla.
+Once we transform the xy-coordinates to the kidney coordinates (as described in the **Data Processing and Analysis** section), we can generate plots showing the distribution of cell types and transcripts from the outer cortex to the papilla.
 ```julia
 markers = ["Slc5a2","Slc12a3","Podxl","Slc26a4","Ehd3","Havcr1","Cd74","Ren1","Col1a1", "Eln","Umod","Krt19","Aqp2"]
 markers = reverse(markers);
@@ -281,7 +280,7 @@ cs.plot_depth_animation(kidney, celltypes = celltypes, markers = markers)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/animations.gif" height="300"> <br>
 
-After kidney coordinate transformation, we can also plot the gene changes across time and space using heatmap.
+After the kidney coordinate transformation, we can create heatmaps that show changes in gene expression over time and space.
 ```julia
 cs.plot_gene_group_spatial([sham, hour4, hour12, day2, week6], 100, ["Cxcl1", "Plin2", "Gsta1", "Mki67", "Apoe"], assay_use = "measured")
 ```
@@ -289,7 +288,7 @@ cs.plot_gene_group_spatial([sham, hour4, hour12, day2, week6], 100, ["Cxcl1", "P
 If gene imputation is done, this function can plot the imputed values of the selected genes by setting ```assay_use = "imputed"```.
 
 #### g. Plot imputed gene expression in space and time.
-After gene imputation, the expression values of the imputed genes can be visualized using the same function ```sp_feature_plot``` by setting the paramenters ```use_imputed=true``` and ```imp_type="SpaGE/gimVI/tangram"```. Here is the example code:
+After performing gene imputation, the expression values of the imputed genes can be visualized using the ```sp_feature_plot``` function by setting the parameters ```use_imputed=true``` and ```imp_type="SpaGE/gimVI/tangram"```. Here's an example code snippet:
 ```julia
 cs.sp_feature_plot(kidney, "Wdr17"; use_imputed = true, imp_type = "SpaGE", color_keys = ["gray94", "lemonchiffon1", "red"])
 ```
