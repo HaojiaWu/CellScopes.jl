@@ -115,7 +115,7 @@ function read_xenium(xenium_dir::String; prefix = "xenium", min_gene::Int64 = 0,
     count_molecules.cell = string.(count_molecules.cell)
     count_molecules = filter(:gene => ∈(Set(genes2)), count_molecules)
     count_cells.cell = string.(count_cells.cell)
-    spObj = CartanaObject(count_molecules, count_cells, raw_count;
+    spObj = XeniumObject(count_molecules, count_cells, raw_count;
             prefix = prefix, min_gene = min_gene, min_cell = min_gene)
     clustering.cell = prefix .*  "_" .* string.(clustering.Barcode)
     all_cells = spObj.rawCount.cell_name
