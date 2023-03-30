@@ -1,4 +1,4 @@
-function polygons_cell_mapping(sp::CartanaObject; anno::Union{String, Symbol}="cluster")
+function polygons_cell_mapping(sp::Union{CartanaObject, XeniumObject}; anno::Union{String, Symbol}="cluster")
     polygons=sp.polygonData
     center_df=DataFrame()
     cell=Int[]

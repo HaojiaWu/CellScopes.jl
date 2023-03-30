@@ -87,7 +87,7 @@ function sp_dot_plot(sp::Union{CartanaObject, VisiumObject, XeniumObject}, genes
     return p
 end
 
-function sp_feature_plot(sp::Union{CartanaObject, VisiumObject,XeniumObject}, gene_list::Union{String, Vector{String}, Tuple{String}}; layer::String = "cells", x_col::Union{String, Symbol}="x",
+function sp_feature_plot(sp::Union{CartanaObject, VisiumObject, XeniumObject}, gene_list::Union{String, Vector{String}, Tuple{String}}; layer::String = "cells", x_col::Union{String, Symbol}="x",
     y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order::Bool=true, scale::Bool = false,titlesize::Int64=24, 
     height::Real = 500, width::Real = 500, combine = true, img_res::String = "low",  adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3, use_imputed=false, imp_type::Union{String, Nothing} = nothing,
     color_keys=["gray94","orange","red3"], gene_colors = nothing, alpha::Real = 1, legend_fontsize = 10, do_legend=false, legend_size = 10, bg_color = "white")
@@ -626,7 +626,7 @@ function sp_highlight_cells(sp::Union{CartanaObject, VisiumObject,XeniumObject},
     MK.current_figure()
 end
 
-function sp_gene_rank(sp::CartanaObject, celltype::String, cluster::String; num_gene::Int64=20)
+function sp_gene_rank(sp::Union{CartanaObject, XeniumObject}, celltype::String, cluster::String; num_gene::Int64=20)
     gene_list=unique(sp.spmetaData.molecule.gene)
     all_df=DataFrame()
     for (i, gene) in enumerate(gene_list)
@@ -651,7 +651,7 @@ function sp_gene_rank(sp::CartanaObject, celltype::String, cluster::String; num_
         y={:rank,axis={title="Ranking", grid=false}})
 end
 
-function sp_feature_plot_group(sp_list::Vector{CartanaObject}, genes::Vector{String};
+function sp_feature_plot_group(sp_list::Union{Vector{CartanaObject}, Vector{XeniumObject}}, genes::Vector{String};
     c_map=nothing, marker_size = 2, order=false, use_imputed = true,  imp_type::Union{String, Nothing}=nothing,
     height::Real = 500, width::Real = 500, titlesize::Int64 = 24, labels=nothing,
     color_keys=["gray94","orange","red3"],alpha::Real=1, bg_color=:white)
@@ -1255,7 +1255,7 @@ function overlay_visium_cartana_gene(vs::VisiumObject, sp::Union{CartanaObject,X
     MK.current_figure()
 end
 
-function plot_gene_group_spatial(sp_list::Vector{Union{CartanaObject,XeniumObject}}, n_bin, gene_list; group_names::Union{Vector, String, Nothing}=nothing,
+function plot_gene_group_spatial(sp_list::Union{Vector{CartanaObject},Vector{XeniumObject}}, n_bin, gene_list; group_names::Union{Vector, String, Nothing}=nothing,
     color_range::Vector=["white", "ivory","gold","orange","tomato","red"],legend_min::Union{Float64, Int64}=0, 
     legend_max::Union{Float64, Int64}=1, assay_use = "measured", imp_type = "SpaGE")
     n_obj = length(sp_list)
