@@ -51,7 +51,7 @@ function run_SpaGCN(sp::AbstractSpaObj, count_path::String, python_path::String;
             return sp
 end
 
-function run_tangram(sp::Union{CartanaObject, Xeniumobject}, data_path::String)
+function run_tangram(sp::Union{CartanaObject, XeniumObject}, data_path::String)
     py"""
     import os
     import numpy as np
