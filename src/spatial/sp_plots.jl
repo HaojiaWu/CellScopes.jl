@@ -504,6 +504,8 @@ function sp_dim_plot(sp::Union{CartanaObject, VisiumObject,XeniumObject}, anno::
         x_col = Symbol(x_col)
         y_col = Symbol(y_col)
         rename!(anno_df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
+        anno_df[!, x_col] = parse.(Float64, anno_df[!, x_col])
+        anno_df[!, y_col] = parse.(Float64, anno_df[!, y_col])
         if img_res == "high"
             scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
         elseif img_res == "low"
