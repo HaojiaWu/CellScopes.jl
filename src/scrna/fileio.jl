@@ -48,6 +48,7 @@ function read_visium(visium_dir::String;
     # locate all files
     highres_image_file = visium_dir * "/spatial/tissue_hires_image.png"
     lowres_image_file = visium_dir * "/spatial/tissue_lowres_image.png"
+    fullres_image_file = visium_dir * "/spatial/tissue_fullres_image.tif"
     detected_tissue = visium_dir * "/spatial/detected_tissue_image.jpg"
     aligned_image_file = visium_dir * "/spatial/aligned_fiducials.jpg"
     position_file = visium_dir * "/spatial/tissue_positions_list.csv"
@@ -76,10 +77,11 @@ function read_visium(visium_dir::String;
     positions.barcode = string.(positions.barcode)
     high_img = FileIO.load(highres_image_file)
     low_img = FileIO.load(lowres_image_file)
+    full_img = FileIO.load(fullres_image_file)
     tissue_img = FileIO.load(detected_tissue)
     aligned_img = FileIO.load(aligned_image_file)
     json_data = JSON.parsefile(json_file)
-    image_obj = VisiumImgObject(high_img, low_img, tissue_img, aligned_img, json_data)
+    image_obj = VisiumImgObject(high_img, low_img, full_img, tissue_img, aligned_img, json_data)
     # create visiumobject
     vsm_obj = VisiumObject(rawcount)
     vsm_obj.spmetaData = positions

@@ -510,8 +510,10 @@ function sp_dim_plot(sp::Union{CartanaObject, VisiumObject,XeniumObject}, anno::
             scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
         elseif img_res == "low"
             scale_factor = sp.imageData.jsonParameters["tissue_lowres_scalef"]
+        elseif img_res == "full"
+            scale_factor = sp.imageData.jsonParameters["fiducial_diameter_fullres"]
         else
-            error("img_res can only be \"high\" or \"low\"!")
+            error("img_res can only be \"high\", \"low\" or \"full\"!")
         end
         anno_df[!, x_col] =  anno_df[!, x_col] .* scale_factor
         anno_df[!, y_col] =  anno_df[!, y_col] .* scale_factor
@@ -554,8 +556,10 @@ function sp_dim_plot(sp::Union{CartanaObject, VisiumObject,XeniumObject}, anno::
     if isa(sp, VisiumObject)
         if img_res == "high"
             img = deepcopy(sp.imageData.highresImage)
-        else
+        elseif img_res == "low"
             img = deepcopy(sp.imageData.lowresImage)
+        else
+            img = deepcopy(sp.imageData.fullresImage)
         end
         img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
         MK.image!(ax1, img2)

@@ -183,10 +183,11 @@ end
 mutable struct VisiumImgObject <: AbstractImagingObj
     highresImage::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Nothing}
     lowresImage::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Nothing}
+    fullresImage::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Nothing}
     detectedTissue::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Nothing}
     alignedImage::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Nothing}
     jsonParameters::Union{Dict{String, Any}, Nothing}
-    VisiumImgObject(highresImage, lowresImage, detectedTissue, alignedImage, jsonParameters) = new(highresImage, lowresImage, detectedTissue, alignedImage, jsonParameters)
+    VisiumImgObject(highresImage, lowresImage, fullresImage, detectedTissue, alignedImage, jsonParameters) = new(highresImage, lowresImage, fullresImage, detectedTissue, alignedImage, jsonParameters)
 end
 
 mutable struct VisiumObject <: AbstractSequencingObj
