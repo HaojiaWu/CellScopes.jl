@@ -48,7 +48,7 @@ function read_visium(visium_dir::String;
     # locate all files
     highres_image_file = visium_dir * "/spatial/tissue_hires_image.png"
     lowres_image_file = visium_dir * "/spatial/tissue_lowres_image.png"
-    fullres_image_file = visium_dir * "/spatial/tissue_fullres_image.tif"
+    fullres_image_file = visium_dir * "/spatial/tissue_fullres_image.png"
     detected_tissue = visium_dir * "/spatial/detected_tissue_image.jpg"
     aligned_image_file = visium_dir * "/spatial/aligned_fiducials.jpg"
     position_file = visium_dir * "/spatial/tissue_positions_list.csv"
@@ -78,6 +78,7 @@ function read_visium(visium_dir::String;
     high_img = FileIO.load(highres_image_file)
     low_img = FileIO.load(lowres_image_file)
     full_img = FileIO.load(fullres_image_file)
+    full_img = convert(Matrix{RGB{N0f8}}, full_img)
     tissue_img = FileIO.load(detected_tissue)
     aligned_img = FileIO.load(aligned_image_file)
     json_data = JSON.parsefile(json_file)
