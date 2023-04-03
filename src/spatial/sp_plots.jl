@@ -110,8 +110,15 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject, XeniumObject}, g
                 scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
             elseif img_res == "low"
                 scale_factor = sp.imageData.jsonParameters["tissue_lowres_scalef"]
+            elseif img_res == "full"
+                dim_full = size(sp.imageData.fullresImage)
+                dim_high = size(sp.imageData.highresImage)
+                x_ratio = dim_full[1]/dim_high[1]
+                y_ratio = dim_full[2]/dim_high[2]
+                scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
+                scale_factor = scale_factor * (x_ratio + y_ratio)/2    
             else
-                error("img_res can only be \"high\" or \"low\"!")
+                error("img_res can only be \"high\", \"low\" or \"full\"!")
             end
             coord_cell[!, x_col] =  coord_cell[!, x_col] .* scale_factor
             coord_cell[!, y_col] =  coord_cell[!, y_col] .* scale_factor
@@ -189,8 +196,10 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject, XeniumObject}, g
             if isa(sp, VisiumObject)
                 if img_res == "high"
                     img = deepcopy(sp.imageData.highresImage)
-                else
+                elseif img_res == "low"
                     img = deepcopy(sp.imageData.lowresImage)
+                else
+                    img = deepcopy(sp.imageData.fullresImage)
                 end
                 img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
                 MK.image!(ax1, img2)
