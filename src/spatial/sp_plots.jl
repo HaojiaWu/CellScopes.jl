@@ -106,6 +106,8 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject, XeniumObject}, g
             x_col = Symbol(x_col)
             y_col = Symbol(y_col)
             rename!(coord_cell, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
+            coord_cell[!, x_col] = parse.(Float64, coord_cell[!, x_col])
+            coord_cell[!, y_col] = parse.(Float64, coord_cell[!, y_col])
             if img_res == "high"
                 scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
             elseif img_res == "low"
