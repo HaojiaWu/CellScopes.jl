@@ -90,7 +90,7 @@ end
 function sp_feature_plot(sp::Union{CartanaObject, VisiumObject, XeniumObject}, gene_list::Union{String, Vector{String}, Tuple{String}}; layer::String = "cells", x_col::Union{String, Symbol}="x",
     y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order::Bool=true, scale::Bool = false,titlesize::Int64=24, 
     height::Real = 500, width::Real = 500, combine = true, img_res::String = "low",  adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3, use_imputed=false, imp_type::Union{String, Nothing} = nothing,
-    color_keys=["gray94","orange","red3"], gene_colors = nothing, alpha = [0,0.3,1.0], legend_fontsize = 10, do_legend=false, legend_size = 10, bg_color = "white")
+    color_keys=["gray94","orange","red3"], gene_colors = nothing, alpha = [1.0,1.0,1.0], legend_fontsize = 10, do_legend=false, legend_size = 10, bg_color = "white")
     if isa(gene_list, String)
         gene_list = [gene_list]
     end
@@ -177,7 +177,12 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject, XeniumObject}, g
                 seg1 = total_col ÷ 3
                 seg2 = total_col - seg1 - seg1
                 alpha_all = [repeat([alpha[1]], seg1); repeat([alpha[2]], seg1); repeat([alpha[3]], seg2)]
-                plt_color = [(i, j) for (i,j) in zip(plt_color, alpha_all)]
+                cell_order = string.(coord_cell[!, cell_col])
+                color2 = DataFrame(expr = gene_expr, color = plot_color, cell = cell_order)
+                sort!(color2, :expr)
+                color2.alpha = alpha_all
+                color2 = color2[indexin(cell_order, color2.cell),:]
+                plt_color = [(i, j) for (i,j) in zip(color2.color, color2.alpha)]
                 df_plt.plt_color = plt_color
                 if order
                     df_plt = sort(df_plt,:gene_expr)
