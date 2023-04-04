@@ -90,7 +90,7 @@ end
 function sp_feature_plot(sp::Union{CartanaObject, VisiumObject, XeniumObject}, gene_list::Union{String, Vector{String}, Tuple{String}}; layer::String = "cells", x_col::Union{String, Symbol}="x",
     y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order::Bool=true, scale::Bool = false,titlesize::Int64=24, 
     height::Real = 500, width::Real = 500, combine = true, img_res::String = "low",  adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3, use_imputed=false, imp_type::Union{String, Nothing} = nothing,
-    color_keys=["gray94","orange","red3"], gene_colors = nothing, alpha::Real = 1, legend_fontsize = 10, do_legend=false, legend_size = 10, bg_color = "white")
+    color_keys=["gray94","orange","red3"], gene_colors = nothing, alpha = [1.0,1.0], legend_fontsize = 10, do_legend=false, legend_size = 10, bg_color = "white")
     if isa(gene_list, String)
         gene_list = [gene_list]
     end
@@ -161,26 +161,20 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject, XeniumObject}, g
         for (i, gene) in enumerate(gene_list)
             gene_expr = subset_count(norm_counts; genes = [gene])
             gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
-            if isa(sp, VisiumObject)
-                cell_kept = (vec ∘ collect)(gene_expr .>  0)
-                gene_expr = gene_expr[cell_kept]
-            end
             if scale
                 gene_expr = unit_range_scale(gene_expr)
             end
             df = DataFrame()
             df.gene_expr = gene_expr
             coord_cell[!, cell_col] = string.(coord_cell[!, cell_col])
-            if isa(sp, VisiumObject)
-                coord_cell = coord_cell[cell_kept,:]
-            end
             df[!, cell_col] = string.(coord_cell[!, cell_col])
             df_plt = innerjoin(df, coord_cell, on = cell_col)
             df_plt.gene .= gene
             if sum(gene_expr) > 0.0
                 colors = get(c_map, gene_expr, :extrema)
                 plt_color = "#" .* hex.(colors)
-                plt_color = [(i, alpha) for i in plt_color]
+                alpha_all = collect(range(alpha[1], alpha[2], length(plt_color)))
+                plt_color = [(i, j) for (i,j) in zip(plt_color, alpha_all)]
                 df_plt.plt_color = plt_color
                 if order
                     df_plt = sort(df_plt,:gene_expr)
