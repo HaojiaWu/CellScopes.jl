@@ -161,12 +161,19 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject, XeniumObject}, g
         for (i, gene) in enumerate(gene_list)
             gene_expr = subset_count(norm_counts; genes = [gene])
             gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
+            if isa(sp, VisiumObject)
+                cell_kept = (vec ∘ collect)(gene_expr .>  0)
+                gene_expr = gene_expr[cell_kept]
+            end
             if scale
                 gene_expr = unit_range_scale(gene_expr)
             end
             df = DataFrame()
             df.gene_expr = gene_expr
             coord_cell[!, cell_col] = string.(coord_cell[!, cell_col])
+            if isa(sp, VisiumObject)
+                coord_cell = coord_cell[cell_kept,:]
+            end
             df[!, cell_col] = string.(coord_cell[!, cell_col])
             df_plt = innerjoin(df, coord_cell, on = cell_col)
             df_plt.gene .= gene
