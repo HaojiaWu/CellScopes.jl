@@ -177,7 +177,7 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject, XeniumObject}, g
                 seg1 = total_col ÷ 3
                 seg2 = total_col - seg1 - seg1
                 alpha_all = [repeat([alpha[1]], seg1); repeat([alpha[2]], seg1); repeat([alpha[3]], seg2)]
-                cell_order = string.(coord_cell[!, cell_col])
+                cell_order = "cell" .* df[!, cell_col]
                 color2 = DataFrame(expr = gene_expr, color = plot_color, cell = cell_order)
                 sort!(color2, :expr)
                 color2.alpha = alpha_all
