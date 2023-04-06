@@ -682,7 +682,7 @@ function sp_gene_rank(sp::Union{CartanaObject, XeniumObject}, celltype::String, 
         y={:rank,axis={title="Ranking", grid=false}})
 end
 
-function sp_feature_plot_group(sp_list::Union{Vector{CartanaObject}, Vector{XeniumObject}}, genes::Vector{String};
+function sp_feature_plot_group(sp_list::Union{Vector{CartanaObject}, Vector{XeniumObject}, Vector{VisiumObject}}, genes::Vector{String};
     x_col::Union{String, Symbol}="x",y_col::Union{String, Symbol}="y", alpha = [1.0,1.0], clip = 0,
     marker_size = 2, order=false, use_imputed = true,  imp_type::Union{String, Nothing}=nothing,
     height::Real = 500, width::Real = 500, titlesize::Int64 = 24, labels=nothing,
@@ -752,23 +752,23 @@ function sp_feature_plot_group(sp_list::Union{Vector{CartanaObject}, Vector{Xeni
             end
         end
         for i in 1:length(sp_list)
-            if isa(sp, VisiumObject)
-                coord_cell = deepcopy(sp.spmetaData)
+            if isa(sp_list[i], VisiumObject)
+                coord_cell = deepcopy(sp_list[i].spmetaData)
                 x_col = Symbol(x_col)
                 y_col = Symbol(y_col)
                 rename!(coord_cell, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
                 coord_cell[!, x_col] = parse.(Float64, coord_cell[!, x_col])
                 coord_cell[!, y_col] = parse.(Float64, coord_cell[!, y_col])
                 if img_res == "high"
-                    scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
+                    scale_factor = sp_list[i].imageData.jsonParameters["tissue_hires_scalef"]
                 elseif img_res == "low"
-                    scale_factor = sp.imageData.jsonParameters["tissue_lowres_scalef"]
+                    scale_factor = sp_list[i].imageData.jsonParameters["tissue_lowres_scalef"]
                 elseif img_res == "full"
-                    dim_full = size(sp.imageData.fullresImage)
-                    dim_high = size(sp.imageData.highresImage)
+                    dim_full = size(sp_list[i].imageData.fullresImage)
+                    dim_high = size(sp_list[i].imageData.highresImage)
                     x_ratio = dim_full[1]/dim_high[1]
                     y_ratio = dim_full[2]/dim_high[2]
-                    scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
+                    scale_factor = sp_list[i].imageData.jsonParameters["tissue_hires_scalef"]
                     scale_factor = scale_factor * (x_ratio + y_ratio)/2    
                 else
                     error("img_res can only be \"high\", \"low\" or \"full\"!")
@@ -800,11 +800,11 @@ function sp_feature_plot_group(sp_list::Union{Vector{CartanaObject}, Vector{Xeni
                             titlesize = titlesize , xlabel = "", ylabel = y_label, ylabelsize = titlesize)
             if isa(sp_list[i], VisiumObject)
                 if img_res == "high"
-                    img = deepcopy(sp.imageData.highresImage)
+                    img = deepcopy(sp_list[i].imageData.highresImage)
                 elseif img_res == "low"
-                    img = deepcopy(sp.imageData.lowresImage)
+                    img = deepcopy(sp_list[i].imageData.lowresImage)
                 else
-                    img = deepcopy(sp.imageData.fullresImage)
+                    img = deepcopy(sp_list[i].imageData.fullresImage)
                 end
                 img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
                 MK.image!(ax, img2)
