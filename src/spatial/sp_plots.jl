@@ -684,9 +684,9 @@ end
 
 function sp_feature_plot_group(sp_list::Union{Vector{CartanaObject}, Vector{XeniumObject}, Vector{VisiumObject}}, genes::Vector{String};
     x_col::Union{String, Symbol}="x",y_col::Union{String, Symbol}="y", alpha = [1.0,1.0], clip = 0,
-    marker_size = 2, order=false, use_imputed = true,  imp_type::Union{String, Nothing}=nothing,
+    marker_size = 2, order=false, use_imputed = false,  imp_type::Union{String, Nothing}=nothing,
     height::Real = 500, width::Real = 500, titlesize::Int64 = 24, labels=nothing, img_res="low",
-    adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3, scale = false,
+    adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3, scale = false,x_lims=nothing, y_lims=nothing, 
     color_keys=["gray94","orange","red3"], bg_color=:white)
     c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
     if isa(labels, Nothing)
@@ -785,6 +785,12 @@ function sp_feature_plot_group(sp_list::Union{Vector{CartanaObject}, Vector{Xeni
             end
             data_plt.color = plt_color[seg_all[i]]
             data_plt.gene_expr = all_expr[seg_all[i]]
+            if isa(x_lims, Nothing)
+                x_lims=(minimum(data_plt[!, x_col])-0.05*maximum(data_plt[!, x_col]),1.05*maximum(data_plt[!, x_col]))
+            end
+            if isa(y_lims, Nothing)
+                y_lims=(minimum(data_plt[!, y_col])-0.05*maximum(data_plt[!, y_col]),1.05*maximum(data_plt[!, y_col]))
+            end
             if order
                 sort!(data_plt, :gene_expr)
             end
@@ -813,6 +819,8 @@ function sp_feature_plot_group(sp_list::Union{Vector{CartanaObject}, Vector{Xeni
                 img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
                 MK.image!(ax, img2)
             end
+            MK.xlims!(MK.current_axis(), x_lims)
+            MK.ylims!(MK.current_axis(), y_lims)
             MK.scatter!(ax, data_plt[!, x_col], data_plt[!, y_col]; 
                 color=data_plt.color, strokewidth=0,markersize=marker_size)
             if i == length(sp_list)
