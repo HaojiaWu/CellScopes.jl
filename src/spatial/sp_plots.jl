@@ -685,7 +685,8 @@ end
 function sp_feature_plot_group(sp_list::Union{Vector{CartanaObject}, Vector{XeniumObject}, Vector{VisiumObject}}, genes::Vector{String};
     x_col::Union{String, Symbol}="x",y_col::Union{String, Symbol}="y", alpha = [1.0,1.0], clip = 0,
     marker_size = 2, order=false, use_imputed = true,  imp_type::Union{String, Nothing}=nothing,
-    height::Real = 500, width::Real = 500, titlesize::Int64 = 24, labels=nothing,
+    height::Real = 500, width::Real = 500, titlesize::Int64 = 24, labels=nothing, img_res="low",
+    adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3, scale = false,
     color_keys=["gray94","orange","red3"], bg_color=:white)
     c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
     if isa(labels, Nothing)
@@ -727,6 +728,9 @@ function sp_feature_plot_group(sp_list::Union{Vector{CartanaObject}, Vector{Xeni
                 end
             end
             all_expr=[all_expr;gene_expr]
+            if scale
+                all_expr = unit_range_scale(all_expr)
+            end
         end
         all_expr=Float64.(all_expr)
         colors = get(c_map, all_expr, :extrema)
