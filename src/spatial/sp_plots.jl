@@ -728,11 +728,11 @@ function sp_feature_plot_group(sp_list::Union{Vector{CartanaObject}, Vector{Xeni
                 end
             end
             all_expr=[all_expr;gene_expr]
+            all_expr=Float64.(all_expr)
             if scale
                 all_expr = unit_range_scale(all_expr)
             end
         end
-        all_expr=Float64.(all_expr)
         colors = get(c_map, all_expr, :extrema)
         plt_color = "#" .* hex.(colors)
         total_col = length(plt_color)
