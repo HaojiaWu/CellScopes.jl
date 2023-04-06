@@ -686,7 +686,7 @@ function sp_feature_plot_group(sp_list::Union{Vector{CartanaObject}, Vector{Xeni
     x_col::Union{String, Symbol}="x",y_col::Union{String, Symbol}="y", alpha = [1.0,1.0], clip = 0,
     marker_size = 2, order=false, use_imputed = true,  imp_type::Union{String, Nothing}=nothing,
     height::Real = 500, width::Real = 500, titlesize::Int64 = 24, labels=nothing,
-    color_keys=["gray94","orange","red3"],alpha::Real=1, bg_color=:white)
+    color_keys=["gray94","orange","red3"], bg_color=:white)
     c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
     if isa(labels, Nothing)
         labels = "Group" .* string.(collect(1:length(sp_list)))
