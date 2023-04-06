@@ -90,7 +90,7 @@ end
 function sp_feature_plot(sp::Union{CartanaObject, VisiumObject, XeniumObject}, gene_list::Union{String, Vector{String}, Tuple{String}}; layer::String = "cells", x_col::Union{String, Symbol}="x",
     y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order::Bool=true, scale::Bool = false,titlesize::Int64=24, 
     height::Real = 500, width::Real = 500, combine = true, img_res::String = "low",  adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3, use_imputed=false, imp_type::Union{String, Nothing} = nothing,
-    color_keys=["gray94","orange","red3"], gene_colors = nothing, alpha = [1.0,1.0], clip = 1, legend_fontsize = 10, do_legend=false, legend_size = 10, bg_color = "white")
+    color_keys=["gray94","orange","red3"], gene_colors = nothing, alpha = [1.0,1.0], clip = 0, legend_fontsize = 10, do_legend=false, legend_size = 10, bg_color = "white")
     if isa(gene_list, String)
         gene_list = [gene_list]
     end
@@ -683,7 +683,8 @@ function sp_gene_rank(sp::Union{CartanaObject, XeniumObject}, celltype::String, 
 end
 
 function sp_feature_plot_group(sp_list::Union{Vector{CartanaObject}, Vector{XeniumObject}}, genes::Vector{String};
-    c_map=nothing, marker_size = 2, order=false, use_imputed = true,  imp_type::Union{String, Nothing}=nothing,
+    x_col::Union{String, Symbol}="x",y_col::Union{String, Symbol}="y", alpha = [1.0,1.0], clip = 0,
+    marker_size = 2, order=false, use_imputed = true,  imp_type::Union{String, Nothing}=nothing,
     height::Real = 500, width::Real = 500, titlesize::Int64 = 24, labels=nothing,
     color_keys=["gray94","orange","red3"],alpha::Real=1, bg_color=:white)
     c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
@@ -730,7 +731,16 @@ function sp_feature_plot_group(sp_list::Union{Vector{CartanaObject}, Vector{Xeni
         all_expr=Float64.(all_expr)
         colors = get(c_map, all_expr, :extrema)
         plt_color = "#" .* hex.(colors)
-        plt_color = [(k, alpha) for k in plt_color]
+        total_col = length(plt_color)
+        alpha_new = []
+        for i in all_expr
+            if i > maximum(all_expr) * clip
+                alpha_new = [alpha_new; alpha[2]]
+            else
+                alpha_new = [alpha_new; alpha[1]]
+            end
+        end
+        plt_color = [(i, j) for (i,j) in zip(plt_color, alpha_new)]
         segments=[size(sp_list[i].normCount.count_mtx)[2] for i in 1:length(sp_list)]
         segments=cumsum(segments)
         seg_all=[]
@@ -742,7 +752,33 @@ function sp_feature_plot_group(sp_list::Union{Vector{CartanaObject}, Vector{Xeni
             end
         end
         for i in 1:length(sp_list)
-            data_plt = deepcopy(sp_list[i].spmetaData.cell)
+            if isa(sp, VisiumObject)
+                coord_cell = deepcopy(sp.spmetaData)
+                x_col = Symbol(x_col)
+                y_col = Symbol(y_col)
+                rename!(coord_cell, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
+                coord_cell[!, x_col] = parse.(Float64, coord_cell[!, x_col])
+                coord_cell[!, y_col] = parse.(Float64, coord_cell[!, y_col])
+                if img_res == "high"
+                    scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
+                elseif img_res == "low"
+                    scale_factor = sp.imageData.jsonParameters["tissue_lowres_scalef"]
+                elseif img_res == "full"
+                    dim_full = size(sp.imageData.fullresImage)
+                    dim_high = size(sp.imageData.highresImage)
+                    x_ratio = dim_full[1]/dim_high[1]
+                    y_ratio = dim_full[2]/dim_high[2]
+                    scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
+                    scale_factor = scale_factor * (x_ratio + y_ratio)/2    
+                else
+                    error("img_res can only be \"high\", \"low\" or \"full\"!")
+                end
+                coord_cell[!, x_col] =  coord_cell[!, x_col] .* scale_factor
+                coord_cell[!, y_col] =  coord_cell[!, y_col] .* scale_factor
+                data_plt = coord_cell
+            else
+                data_plt = deepcopy(sp_list[i].spmetaData.cell)
+            end
             data_plt.color = plt_color[seg_all[i]]
             data_plt.gene_expr = all_expr[seg_all[i]]
             if order
@@ -762,7 +798,18 @@ function sp_feature_plot_group(sp_list::Union{Vector{CartanaObject}, Vector{Xeni
                             xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
                             xgridvisible = false, ygridvisible = false,yreversed=false, title = title_name, 
                             titlesize = titlesize , xlabel = "", ylabel = y_label, ylabelsize = titlesize)
-            MK.scatter!(ax, data_plt.x, data_plt.y; 
+            if isa(sp_list[i], VisiumObject)
+                if img_res == "high"
+                    img = deepcopy(sp.imageData.highresImage)
+                elseif img_res == "low"
+                    img = deepcopy(sp.imageData.lowresImage)
+                else
+                    img = deepcopy(sp.imageData.fullresImage)
+                end
+                img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
+                MK.image!(ax, img2)
+            end
+            MK.scatter!(ax, data_plt[!, x_col], data_plt[!, y_col]; 
                 color=data_plt.color, strokewidth=0,markersize=marker_size)
             if i == length(sp_list)
                 MK.Colorbar(fig[m,length(sp_list)+1], label = "", 
