@@ -133,7 +133,8 @@ mutable struct XeniumObject <: AbstractImagingObj
     coordData::Union{SpaCoordObj, Nothing}
     imputeData::Union{SpaImputeObj, Nothing}
     imageData::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}}
-    polygonData::Union{Vector{Matrix{Float64}}, Nothing}
+    polygonData
+
     function XeniumObject(molecule_data::DataFrame, cell_data::DataFrame, counts::RawCountObject, polygon::Vector{Matrix{Float64}}; 
         prefix::Union{String, Nothing}=nothing, postfix::Union{String, Nothing}=nothing, meta_data::Union{DataFrame, Nothing} = nothing,
         min_gene::Int64=0, min_cell::Int64=0, x_col::Union{String, Symbol} = "x", 
@@ -168,7 +169,7 @@ mutable struct XeniumObject <: AbstractImagingObj
         cell_data = cell_data[cell_check, :]
         mol_check = check_vec(cell_name, molecule_data[!, cell_col])
         molecule_data = molecule_data[mol_check, :]
-        spObj=new(counts)
+        spObj = new(counts)
         meta = SpaMetaObj(cell_data, molecule_data, nothing)
         spObj.spmetaData = meta
         cell_coord = cell_data[!, [x_col, y_col]]
