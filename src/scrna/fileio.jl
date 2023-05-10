@@ -98,6 +98,25 @@ function read_xenium(xenium_dir::String; prefix = "xenium", min_gene::Int64 = 0,
     cell_meta = xenium_dir * "/cells.csv.gz"
     transcript_meta = xenium_dir * "/transcripts.csv.gz"
     cluster_file = xenium_dir * "/analysis/clustering/gene_expression_graphclust/clusters.csv"
+    seg = DataFrame(CSVFiles.load(CSVFiles.File(format"CSV", "/mnt/sdd/xenium_brain_data/replicate1/cell_boundaries.csv.gz"); header_exists=true))
+    grouped = groupby(seg, :cell_id)
+    cell_ids = unique(seg.cell_id)
+    poly = Vector{Matrix{Float64}}(undef, length(cell_ids))
+    n = length(cell_ids)
+    println("Formatting cell polygons...")
+    p = Progress(n, dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, color=:blue)
+    for idx in 1:length(cell_ids)
+        cell_data = grouped[idx]
+        cell_1 = Matrix(cell_data[!, 2:end])
+        poly[idx] = cell_1
+        next!(p)
+    end
+    println("Cell polygons formatted...")
+    umap_file = xenium_dir * "analysis/umap/gene_expression_2_components/projection.csv"
+    xenium_umap =  DataFrame(CSV.File(umap_file))
+    xenium_umap.Barcode = string.(xenium_umap.Barcode)
+    xenium_umap = Matrix(xenium_umap[!, 2:end])
+    umap_obj = UMAPObject(xenium_umap, "UMAP", 2, nothing, nothing, nothing, nothing, nothing)
     clustering =  DataFrame(CSV.File(cluster_file))
     genes = DataFrame(CSVFiles.load(CSVFiles.File(format"TSV", gene_file); header_exists=false))
     genes = string.(genes.Column2)
@@ -113,8 +132,10 @@ function read_xenium(xenium_dir::String; prefix = "xenium", min_gene::Int64 = 0,
     rename!(count_cells, :cell_id => :cell, :x_centroid => :x, :y_centroid => :y)
     count_molecules.cell[count_molecules.cell.==-1] .= 0
     raw_count = RawCountObject(counts, cells, genes)
-    genes2 = setdiff(genes, gene_rm);
+    genes2 = setdiff(genes, gene_rm)
+    println("Filtering cells and genes...")
     raw_count = subset_count(raw_count; genes=genes2)
+    println("Cells and genes filtered...")
     count_molecules.cell = string.(count_molecules.cell)
     count_molecules = filter(:gene => ∈(Set(genes2)), count_molecules)
     count_cells.cell = string.(count_cells.cell)
@@ -123,8 +144,11 @@ function read_xenium(xenium_dir::String; prefix = "xenium", min_gene::Int64 = 0,
     clustering.cell = prefix .*  "_" .* string.(clustering.Barcode)
     all_cells = spObj.rawCount.cell_name
     clustering = filter(:cell=> ∈(Set(all_cells)), clustering)
-    spObj.spmetaData.cell.cluster = clustering.Cluster
-    spObj.metaData.cluster = clustering.Cluster
+    spObj.spmetaData.cell.cluster = string.(clustering.Cluster)
+    spObj.metaData.cluster = string.(clustering.Cluster)
     spObj.spmetaData.molecule = map_values(spObj.spmetaData.molecule, :cell, :cluster, clustering.cell, clustering.Cluster)
+    spObj.spmetaData.molecule.cluster = string.(spObj.spmetaData.molecule.cluster)
+    spObj.dimReduction.umap = umap_obj
+    spObj.polygonData = poly
     return spObj
 end
