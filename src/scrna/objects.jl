@@ -65,32 +65,32 @@ mutable struct PCAObject <: AbstractDimReduction
     cell_embedding::AbstractMatrix{<:Real}
     pca_model::Union{PCA{Float64}, Nothing}
     percent_var::Union{Vector{Float64}, Nothing}
-    key::String
-    method::Symbol
+    key::Union{String, Nothing}
+    method::Union{Symbol, Nothing}
     pratio::Union{Real, Nothing}
-    maxoutdim::Union{Int64}
+    maxoutdim::Union{Int64, Nothing}
     PCAObject(cell_embedding, pca_model, percent_var, key, method, pratio, maxoutdim) = new(cell_embedding, pca_model, percent_var, key, method, pratio, maxoutdim)
 end
 
 mutable struct tSNEObject <: AbstractDimReduction
     cell_embedding::AbstractMatrix{<:Real}
-    key::String
-    ndim::Int64
-    reduce_dims::Int64
-    max_iter::Int64
-    perplexit::Int64
+    key::Union{String, Nothing}
+    ndim::Union{Int64, Nothing}
+    reduce_dims::Union{Int64, Nothing}
+    max_iter::Union{Int64, Nothing}
+    perplexit::Union{Int64, Nothing}
     tSNEObject(cell_embedding, key, ndim, reduce_dims, max_iter, perplexit) = new(cell_embedding, key, ndim, reduce_dims, max_iter, perplexit)
 end
 
 mutable struct UMAPObject <: AbstractDimReduction
     cell_embedding::AbstractMatrix{<:Real}
-    key::String
-    n_components::Int64
-    n_dimensions::Int64
-    n_neighbors::Int64
-    metric::String
-    min_dist::Real
-    knn_data::AbstractMatrix{<:Real}
+    key::Union{String, Nothing}
+    n_components::Union{Int64, Nothing}
+    n_dimensions::Union{Int64, Nothing}
+    n_neighbors::Union{Int64, Nothing}
+    metric::Union{String, Nothing}
+    min_dist::Union{Real, Nothing}
+    knn_data::Union{AbstractMatrix{<:Real}, Nothing}
     UMAPObject(cell_embedding, key, n_components, n_dimensions, n_neighbors, metric, min_dist, knn_data) = new(cell_embedding, key, n_components, n_dimensions, n_neighbors, metric, min_dist, knn_data)    
 end
 
