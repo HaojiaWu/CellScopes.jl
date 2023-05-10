@@ -70,7 +70,7 @@ mutable struct CartanaObject <: AbstractImagingObj
     coordData::Union{SpaCoordObj, Nothing}
     imputeData::Union{SpaImputeObj, Nothing}
     imageData::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}}
-    polygonData::Array{Array{Float64, 2}, 1}
+    polygonData::Union{Vector{Matrix{Float64}}, Nothing}
     function CartanaObject(molecule_data::DataFrame, cell_data::DataFrame, counts::RawCountObject; 
         prefix::Union{String, Nothing}=nothing, postfix::Union{String, Nothing}=nothing, meta_data::Union{DataFrame, Nothing} = nothing,
         min_gene::Int64=0, min_cell::Int64=0, x_col::Union{String, Symbol} = "x", 
@@ -113,6 +113,7 @@ mutable struct CartanaObject <: AbstractImagingObj
         coord = SpaCoordObj(cell_coord, mol_coord, nothing, nothing)
         spObj.coordData = coord
         spObj.metaData = meta_data
+        spObj.polygonData = nothing
         return spObj
         println("CartanaObject was successfully created!")
     end
@@ -132,7 +133,7 @@ mutable struct XeniumObject <: AbstractImagingObj
     coordData::Union{SpaCoordObj, Nothing}
     imputeData::Union{SpaImputeObj, Nothing}
     imageData::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}}
-    polygonData::Array{Array{Float64, 2}, 1}
+    polygonData::Union{Vector{Matrix{Float64}}, Nothing}
     function XeniumObject(molecule_data::DataFrame, cell_data::DataFrame, counts::RawCountObject; 
         prefix::Union{String, Nothing}=nothing, postfix::Union{String, Nothing}=nothing, meta_data::Union{DataFrame, Nothing} = nothing,
         min_gene::Int64=0, min_cell::Int64=0, x_col::Union{String, Symbol} = "x", 
@@ -175,6 +176,7 @@ mutable struct XeniumObject <: AbstractImagingObj
         coord = SpaCoordObj(cell_coord, mol_coord, nothing, nothing)
         spObj.coordData = coord
         spObj.metaData = meta_data
+        spObj.polygonData = nothing
         return spObj
         println("XeniumObject was successfully created!")
     end
