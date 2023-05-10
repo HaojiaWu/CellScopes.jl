@@ -134,7 +134,7 @@ mutable struct XeniumObject <: AbstractImagingObj
     imputeData::Union{SpaImputeObj, Nothing}
     imageData::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}}
     polygonData::Union{Vector{Matrix{Float64}}, Nothing}
-    function XeniumObject(molecule_data::DataFrame, cell_data::DataFrame, counts::RawCountObject; 
+    function XeniumObject(molecule_data::DataFrame, cell_data::DataFrame, counts::RawCountObject, polygon::Vector{Matrix{Float64}}; 
         prefix::Union{String, Nothing}=nothing, postfix::Union{String, Nothing}=nothing, meta_data::Union{DataFrame, Nothing} = nothing,
         min_gene::Int64=0, min_cell::Int64=0, x_col::Union{String, Symbol} = "x", 
         y_col::Union{String, Symbol} = "y", cell_col::Union{String, Symbol} = "cell")
@@ -176,7 +176,7 @@ mutable struct XeniumObject <: AbstractImagingObj
         coord = SpaCoordObj(cell_coord, mol_coord, nothing, nothing)
         spObj.coordData = coord
         spObj.metaData = meta_data
-        spObj.polygonData = nothing
+        spObj.polygonData = polygon
         return spObj
         println("XeniumObject was successfully created!")
     end

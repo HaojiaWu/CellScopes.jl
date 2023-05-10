@@ -139,7 +139,7 @@ function read_xenium(xenium_dir::String; prefix = "xenium", min_gene::Int64 = 0,
     count_molecules.cell = string.(count_molecules.cell)
     count_molecules = filter(:gene => ∈(Set(genes2)), count_molecules)
     count_cells.cell = string.(count_cells.cell)
-    spObj = XeniumObject(count_molecules, count_cells, raw_count;
+    spObj = XeniumObject(count_molecules, count_cells, raw_count, poly;
             prefix = prefix, min_gene = min_gene, min_cell = min_gene)
     clustering.cell = prefix .*  "_" .* string.(clustering.Barcode)
     all_cells = spObj.rawCount.cell_name
@@ -149,6 +149,5 @@ function read_xenium(xenium_dir::String; prefix = "xenium", min_gene::Int64 = 0,
     spObj.spmetaData.molecule = map_values(spObj.spmetaData.molecule, :cell, :cluster, clustering.cell, clustering.Cluster)
     spObj.spmetaData.molecule.cluster = string.(spObj.spmetaData.molecule.cluster)
     spObj.dimReduction.umap = umap_obj
-    spObj.polygonData = poly
     return spObj
 end
