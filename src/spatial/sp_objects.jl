@@ -170,7 +170,8 @@ mutable struct XeniumObject <: AbstractImagingObj
         mol_check = check_vec(cell_name, molecule_data[!, cell_col])
         molecule_data = molecule_data[mol_check, :]
         spObj = new(counts)
-        meta = SpaMetaObj(cell_data, molecule_data, nothing)
+        polygon_df = DataFrame(polygon_number = 1:length(poly_data), mapped_cell = cell_data.cell, cluster=cell_data.cluster)
+        meta = SpaMetaObj(cell_data, molecule_data, polygon_df)
         spObj.spmetaData = meta
         cell_coord = cell_data[!, [x_col, y_col]]
         mol_coord = molecule_data[!, [x_col, y_col]]
@@ -179,7 +180,7 @@ mutable struct XeniumObject <: AbstractImagingObj
         spObj.metaData = meta_data
         spObj.polygonData = poly_data
         reduct_obj = ReductionObject(nothing, nothing, umap_obj)
-        spObj.dimReduction = reduct_obj
+        spObj.dimReduction = reduct_obj        
         return spObj
         println("XeniumObject was successfully created!")
     end
