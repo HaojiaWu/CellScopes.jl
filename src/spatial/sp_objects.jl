@@ -178,7 +178,8 @@ mutable struct XeniumObject <: AbstractImagingObj
         spObj.coordData = coord
         spObj.metaData = meta_data
         spObj.polygonData = poly_data
-        spObj.dimReduction.umap = umap_obj
+        reduct_obj = ReductionObject(nothing, nothing, umap_obj)
+        spObj.dimReduction = reduct_obj
         return spObj
         println("XeniumObject was successfully created!")
     end
