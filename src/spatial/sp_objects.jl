@@ -180,7 +180,9 @@ mutable struct XeniumObject <: AbstractImagingObj
         spObj.metaData = meta_data
         spObj.polygonData = poly_data
         reduct_obj = ReductionObject(nothing, nothing, umap_obj)
-        spObj.dimReduction = reduct_obj        
+        spObj.dimReduction = reduct_obj
+        spObj = normalize_object(spObj)
+        spObj.polynormCount = spObj.normCount
         return spObj
         println("XeniumObject was successfully created!")
     end
