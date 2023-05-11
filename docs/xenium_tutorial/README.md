@@ -116,7 +116,7 @@ We can also visualize the cell type annotation directly on cell polygons.
 <br>
 ```julia
 cs.plot_cell_polygons(brain, "cluster"; x_lims = (x1, x2),
-    y_lims = (y1, y2), cell_colors= anno_color, stroke_color="black",
+    y_lims = (y1, y2), cell_colors= colors, stroke_color="black",
     width = 800, height = 550)
 ```
 
@@ -133,7 +133,7 @@ cs.sp_feature_plot(brain, "Bcl11b"; color_keys=["gray94", "lemonchiffon", "red"]
 Plot genes on the selected region:
 
 ```julia
-cs.plot_gene_polygons(brain, ["Bcl11b"]; y_lims = (x1, x2),x_lims = (y1, y2),
+cs.plot_gene_polygons(brain, ["Bcl11b"]; x_lims = (x1, x2),y_lims = (y1, y2),
     width = 800, height = 550, color_keys=["#440154", "#440154","#3b528b","#ffff67"], bg_color="black")
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_gene.png" width="600"> 
