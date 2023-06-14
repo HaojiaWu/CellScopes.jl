@@ -2,7 +2,7 @@
 
 julia_version = "1.8.5"
 manifest_format = "2.0"
-project_hash = "13ed2e16618a12c71577888bd1791d5473453546"
+project_hash = "61975a5d6fbd0472d7a99f5cafd389a92e6b5c92"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -185,6 +185,11 @@ git-tree-sha1 = "5084cc1a28976dd1642c9f337b28a3cb03e0f7d2"
 uuid = "324d7699-5711-5eae-9e2f-1d82baa6b597"
 version = "0.10.7"
 
+[[deps.Chain]]
+git-tree-sha1 = "8c4920235f6c561e401dfe569beb8b924adad003"
+uuid = "8be319e6-bccf-4806-a6f7-6fae938471bc"
+version = "0.5.0"
+
 [[deps.ChainRulesCore]]
 deps = ["Compat", "LinearAlgebra", "SparseArrays"]
 git-tree-sha1 = "e7ff6cadf743c098e08fca25c91103ee4303c9bb"
@@ -320,6 +325,12 @@ deps = ["Compat", "DataAPI", "Future", "InvertedIndices", "IteratorInterfaceExte
 git-tree-sha1 = "db2a9cb664fcea7836da4b414c3278d71dd602d2"
 uuid = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 version = "1.3.6"
+
+[[deps.DataFramesMeta]]
+deps = ["Chain", "DataFrames", "MacroTools", "OrderedCollections", "Reexport"]
+git-tree-sha1 = "7f13b2f9fa5fc843a06596f1cc917ed1a3d6740b"
+uuid = "1313f7d8-7da2-5740-9ea0-a2ca25f37964"
+version = "0.14.0"
 
 [[deps.DataStructures]]
 deps = ["Compat", "InteractiveUtils", "OrderedCollections"]
@@ -605,6 +616,11 @@ deps = ["Artifacts", "Gettext_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Libic
 git-tree-sha1 = "d3b3624125c1474292d0d8ed0f65554ac37ddb23"
 uuid = "7746bdde-850d-59dc-9ae8-88ece973131d"
 version = "2.74.0+2"
+
+[[deps.Glob]]
+git-tree-sha1 = "97285bbd5230dd766e9ef6749b80fc617126d496"
+uuid = "c27321d9-0574-5035-807b-f59d2c89b15c"
+version = "1.3.1"
 
 [[deps.Graphics]]
 deps = ["Colors", "LinearAlgebra", "NaNMath"]
@@ -1491,6 +1507,12 @@ deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "68db32dff12bb6127bac73c209881191bf0efbb7"
 uuid = "f50d1b31-88e8-58de-be2c-1cc44531875f"
 version = "0.3.0+0"
+
+[[deps.RollingFunctions]]
+deps = ["LinearAlgebra", "Statistics", "StatsBase", "Test"]
+git-tree-sha1 = "cdf9158377f81470b1b73c630d0853a3ec0c7445"
+uuid = "b0e4dd01-7b14-53d8-9b45-175a3e362653"
+version = "0.6.2"
 
 [[deps.Roots]]
 deps = ["ChainRulesCore", "CommonSolve", "Printf", "Setfield"]

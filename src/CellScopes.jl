@@ -46,6 +46,10 @@ using CSVFiles
 using GZip
 using Augmentor
 using Grep
+using LinearAlgebra
+using Glob
+using RollingFunctions
+using DataFramesMeta
 
 include("scrna/objects.jl")
 include("spatial/sp_objects.jl")
