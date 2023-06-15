@@ -174,6 +174,7 @@ function run_tsne(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, Xenium
     Random.seed!(seed_use)
     pca_mat = sc_obj.dimReduction.pca.cell_embedding
     pca_mat = pca_mat[:, dims_use]
+    reduce_dims = maximum(dims_use) - minimum(dims_use) + 1
     embedding = tsne(pca_mat, ndim, reduce_dims, max_iter, perplexit ; pca_init = pca_init)
     key = "tSNE"
     tsne_obj = tSNEObject(embedding, key, ndim, reduce_dims, max_iter, perplexit)
@@ -193,6 +194,7 @@ function run_umap(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, Xenium
     embedding = embedding'
     key = "UMAP"
     metric_use = string(metric)
+    reduce_dims = maximum(dims_use) - minimum(dims_use) + 1
     umap_obj = UMAPObject(embedding, key, ndim, reduce_dims, n_neighbors, metric_use, min_dist, knns)
     sc_obj.dimReduction.umap = umap_obj
     return sc_obj
