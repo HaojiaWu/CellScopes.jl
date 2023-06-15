@@ -54,6 +54,7 @@ using GeneticsMakie
 
 include("scrna/objects.jl")
 include("spatial/sp_objects.jl")
+include("scatac/atac_objects.jl")
 include("properties.jl")
 include("scrna/processing.jl")
 include("scrna/utils.jl")
@@ -63,7 +64,6 @@ include("spatial/sp_plots.jl")
 include("spatial/sp_utils.jl")
 include("spatial/sp_analysis.jl")
 include("spatial/sp_processing.jl")
-include("scatac/atac_objects.jl")
 include("scatac/atac_processing.jl")
 
 end
