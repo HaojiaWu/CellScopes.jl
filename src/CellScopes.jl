@@ -1,4 +1,4 @@
-#__precompile__()
+__precompile__()
 
 module CellScopes
 
@@ -63,6 +63,7 @@ include("spatial/sp_plots.jl")
 include("spatial/sp_utils.jl")
 include("spatial/sp_analysis.jl")
 include("spatial/sp_processing.jl")
-
+include("scatac/atac_objects.jl")
+include("scatac/atac_processing.jl")
 
 end
