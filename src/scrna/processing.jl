@@ -170,10 +170,10 @@ function run_clustering(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, 
     end
 end
 
-function run_tsne(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject}; ndim::Int64 = 2, reduce_dims::Int64 = 10, max_iter::Int64 = 2000, perplexit::Real = 30.0, pca_init::Bool = true,  seed_use::Int64 = 1234)
+function run_tsne(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject}; ndim::Int64 = 2, dims_use = 1:10, max_iter::Int64 = 2000, perplexit::Real = 30.0, pca_init::Bool = true,  seed_use::Int64 = 1234)
     Random.seed!(seed_use)
     pca_mat = sc_obj.dimReduction.pca.cell_embedding
-    pca_mat = pca_mat[:, 1:reduce_dims]
+    pca_mat = pca_mat[:, dims_use]
     embedding = tsne(pca_mat, ndim, reduce_dims, max_iter, perplexit ; pca_init = pca_init)
     key = "tSNE"
     tsne_obj = tSNEObject(embedding, key, ndim, reduce_dims, max_iter, perplexit)
@@ -181,10 +181,10 @@ function run_tsne(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, Xenium
     return sc_obj
 end
 
-function run_umap(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject}; ndim::Int64 = 2, reduce_dims::Int64 = 10, n_neighbors::Int64 = 30, n_epochs=300, init = :spectral, metric = CosineDist(), min_dist::Real = 0.4, seed_use::Int64 = 1234)
+function run_umap(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject}; ndim::Int64 = 2, dims_use = 1:10, n_neighbors::Int64 = 30, n_epochs=300, init = :spectral, metric = CosineDist(), min_dist::Real = 0.4, seed_use::Int64 = 1234)
     Random.seed!(seed_use)
     pca_mat = sc_obj.dimReduction.pca.cell_embedding
-    pca_mat = pca_mat[:, 1:reduce_dims]
+    pca_mat = pca_mat[:, dims_use]
     pca_mat = transpose(pca_mat)
     pca_mat = convert(SparseArrays.SparseMatrixCSC{Float64, Int64}, pca_mat)
     umap_data = UMAP_(pca_mat, ndim; n_neighbors=n_neighbors , min_dist = min_dist, metric = metric, n_epochs = n_epochs, init=init)
