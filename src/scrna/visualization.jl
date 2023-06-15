@@ -32,7 +32,7 @@ function dim_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, Xenium
             xgridvisible = false,ygridvisible = false);
         ax3 = MK.Axis(fig[1,1]; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
             xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
-            xgridvisible = false,ygridvisible = false, framecolor=:white)
+            xgridvisible = false,ygridvisible = false, backgroundcolor=:white)
         if isa(cell_order, Nothing)
             cell_anno=unique(dim_data[!,anno])
         else
@@ -52,7 +52,7 @@ function dim_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, Xenium
                     color=:white, strokewidth=0, markersize=2*legend_size, label=i)
                 MK.scatter!(ax3, x_ax , y_ax; strokecolor=stroke_color, 
                     color=string.(colors[1]), strokewidth=0, markersize=marker_size, label=i)
-                MK.Legend(fig[1, 2], ax1, framecolor=:white, labelsize=legend_fontsize)
+                MK.Legend(fig[1, 2], ax1, backgroundcolor=:white, labelsize=legend_fontsize)
             else
                 MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
                     color=string.(colors[1]), strokewidth=0, markersize=marker_size)
