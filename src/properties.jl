@@ -21,6 +21,29 @@ function Base.show(io::IO, sc_obj::scRNAObject)
     [println("- ", string(i)) for i in fieldnames(typeof(sc_obj))]
 end
 
+function Base.show(io::IO, sc_obj::scATACObject)
+    println(io, "scATACObject in CellScopes.jl")
+    println("Peaks x Cells = ", length(sc_obj.rawCount.gene_name), " x ", length(sc_obj.rawCount.cell_name))
+    println("Available data:")
+    all_field = fieldnames(scATACObject)
+    reduce_field = fieldnames(ReductionObject)
+    for i in all_field
+        if isdefined(sc_obj, i)
+            matchtype(getfield(sc_obj, i))
+        end
+    end
+
+    if isdefined(sc_obj, :dimReduction)
+        for i in reduce_field
+            if isdefined(sc_obj.dimReduction, i)
+                matchtype(getfield(sc_obj.dimReduction, i))
+            end 
+        end
+    end
+    println("All fields:")
+    [println("- ", string(i)) for i in fieldnames(typeof(sc_obj))]
+end
+
 function Base.show(io::IO, count::AbstractCount)
     println(io, string(typeof(count)))
     println("Genes x Cells = ", length(count.gene_name), " x ", length(count.cell_name))

@@ -92,7 +92,7 @@ function run_pca(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumO
     return sc_obj
 end
 
-function run_clustering_atlas(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject}; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
+function run_clustering_atlas(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject}; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
     if isdefined(sc_obj.dimReduction, :umap)
         indices = sc_obj.dimReduction.umap.knn_data
     else
@@ -127,7 +127,7 @@ function run_clustering_atlas(sc_obj::Union{scRNAObject, VisiumObject, CartanaOb
     return sc_obj
 end
 
-function run_clustering_small(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject}; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
+function run_clustering_small(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject}; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
     knn_data = [collect(i) for i in eachrow(sc_obj.dimReduction.pca.cell_embedding)]
     graph = nndescent(knn_data, n_neighbors, metric)
     indices, dist_mat = knn_matrices(graph);
@@ -159,7 +159,7 @@ function run_clustering_small(sc_obj::Union{scRNAObject, VisiumObject, CartanaOb
     return sc_obj
 end
 
-function run_clustering(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject}; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
+function run_clustering(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject}; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
     n = size(sc_obj.rawCount.count_mtx, 2)
     if n < 10000
         obj = run_clustering_small(sc_obj; n_neighbors=n_neighbors, metric=metric, res= res, seed_use=seed_use)
@@ -170,7 +170,7 @@ function run_clustering(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, 
     end
 end
 
-function run_tsne(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject}; ndim::Int64 = 2, reduce_dims::Int64 = 10, max_iter::Int64 = 2000, perplexit::Real = 30.0, pca_init::Bool = true,  seed_use::Int64 = 1234)
+function run_tsne(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject}; ndim::Int64 = 2, reduce_dims::Int64 = 10, max_iter::Int64 = 2000, perplexit::Real = 30.0, pca_init::Bool = true,  seed_use::Int64 = 1234)
     Random.seed!(seed_use)
     pca_mat = sc_obj.dimReduction.pca.cell_embedding
     pca_mat = pca_mat[:, 1:reduce_dims]
@@ -181,7 +181,7 @@ function run_tsne(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, Xenium
     return sc_obj
 end
 
-function run_umap(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject}; ndim::Int64 = 2, reduce_dims::Int64 = 10, n_neighbors::Int64 = 30, n_epochs=300, init = :spectral, metric = CosineDist(), min_dist::Real = 0.4, seed_use::Int64 = 1234)
+function run_umap(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject}; ndim::Int64 = 2, reduce_dims::Int64 = 10, n_neighbors::Int64 = 30, n_epochs=300, init = :spectral, metric = CosineDist(), min_dist::Real = 0.4, seed_use::Int64 = 1234)
     Random.seed!(seed_use)
     pca_mat = sc_obj.dimReduction.pca.cell_embedding
     pca_mat = pca_mat[:, 1:reduce_dims]
@@ -198,7 +198,7 @@ function run_umap(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, Xenium
     return sc_obj
 end
 
-function find_markers(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject}; cluster_1::Union{String, Nothing}=nothing, cluster_2::Union{String, Nothing}=nothing, 
+function find_markers(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject}; cluster_1::Union{String, Nothing}=nothing, cluster_2::Union{String, Nothing}=nothing, 
     anno::Union{String, Symbol}="cluster", expr_cutoff=0.0, min_pct=0.1, p_cutoff = 0.05, only_pos = true)
     if isa(cluster_1, Nothing)
         error("Please provide the name of the cell cluster for which you wish to obtain the differential genes. The \"cluster_1\" parameter cannot be left blank.")
@@ -240,7 +240,7 @@ function find_markers(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, Xe
     return test_result
 end
 
-function find_all_markers(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject}; anno::Union{String, Symbol}="cluster", expr_cutoff=0.0, min_pct=0.1, p_cutoff = 0.05, only_pos = true)
+function find_all_markers(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject}; anno::Union{String, Symbol}="cluster", expr_cutoff=0.0, min_pct=0.1, p_cutoff = 0.05, only_pos = true)
     if isa(anno, String)
         anno = Symbol(anno)
     end

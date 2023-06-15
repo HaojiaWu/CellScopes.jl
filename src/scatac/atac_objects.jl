@@ -45,7 +45,7 @@ mutable struct scATACObject <: AbstractATAC
     end
 end
 
-mutable struct GeneActivityObject <: AbstractATAC
+mutable struct GeneActivityObject <: AbstractCount
     peak_anno::Union{DataFrame, Nothing}
     count_mtx::Union{AbstractMatrix{<:Real}, Nothing}
     cell_name::Union{Vector{String}, Nothing}
