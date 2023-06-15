@@ -152,3 +152,24 @@ function read_xenium(xenium_dir::String; prefix = "xenium", min_gene::Int64 = 0,
     spObj.spmetaData.molecule.cluster = string.(spObj.spmetaData.molecule.cluster)
     return spObj
 end
+
+function read_atac(atac_path::String; 
+    min_gene::Real = 0.0, 
+    min_cell::Real = 0.0
+)
+    peak_loc = atac_path * "/filtered_peak_bc_matrix/peaks.bed"
+    cell_file = atac_path * "/filtered_peak_bc_matrix/barcodes.tsv"
+    count_file = atac_path * "/filtered_peak_bc_matrix/matrix.mtx"
+    peaks = DataFrame(CSVFiles.load(CSVFiles.File(format"TSV", peak_loc); header_exists=false))
+    peak_names = string.(peaks.Column1) .* "_" .* string.(peaks.Column2) .* "_" .* string.(peaks.Column3)
+    cells = DataFrame(CSVFiles.load(CSVFiles.File(format"TSV", cell_file); header_exists=false))
+    cells = cells.Column1
+    counts = MatrixMarket.mmread(count_file);
+    gene_kept = (vec ∘ collect)(rowSum(counts).> min_cell)
+    peak_names = peak_names[gene_kept]
+    cell_kept = (vec ∘ collect)(colSum(counts) .> min_gene)
+    cells = cells[cell_kept]
+    counts = counts[gene_kept, cell_kept]
+    rawcount = RawCountObject(counts, cells, peak_names)
+    return rawcount
+end

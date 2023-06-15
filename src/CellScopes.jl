@@ -50,6 +50,7 @@ using LinearAlgebra
 using Glob
 using RollingFunctions
 using DataFramesMeta
+using GeneticsMakie
 
 include("scrna/objects.jl")
 include("spatial/sp_objects.jl")
