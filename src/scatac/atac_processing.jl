@@ -68,3 +68,30 @@ function run_svd(atac_obj::scATACObject;  method=:svd, pratio = 1, maxoutdim = 1
     return atac_obj
 end
 
+function gene_activity(atac_obj,atac_path; normalize = true)
+    counts = atac_obj.rawCount.count_mtx
+    cells = atac_obj.rawCount.cell_name
+    peak_names = atac_obj.rawCount.gene_name
+    peak_anno_file = atac_path * "peak_annotation.tsv"
+    peak_anno = DataFrame(CSVFiles.load(CSVFiles.File(format"TSV", peak_anno_file);header_exists=true))
+    rename!(peak_anno, "end" => "stop")
+    peak_anno.peak_names = string.(peak_anno.chrom) .* "_" .* string.(peak_anno.start) .* "_" .* string.(peak_anno.stop)
+    counts = DataFrame(Matrix(counts), :auto)
+    rename!(counts, cells)
+    peak_names = atac_obj.rawCount.gene_name
+    counts.peaks = peak_names
+    counts = DataFrames.stack(counts, 1:(size(counts)[2]-1))
+    counts = map_values(counts, :peaks, :gene, peak_anno.peak_names, peak_anno.gene)
+    counts = counts[!, 2:end]
+    gdf = DataFrames.combine(DataFrames.groupby(counts, [:variable, :gene]), :value => sum)
+    gdf2 = unstack(gdf, :gene, :variable, :value_sum)
+    count_mat = Matrix(gdf2[!, 2:end])
+    count_mat = convert(Matrix{Int64}, count_mat)
+    if normalize
+        count_mat = normalize_object(count_mat)
+    end
+    genes = gdf2.gene
+    cells = names(gdf2)[2:end]
+    activity_obj = GeneActivityObject(peak_anno, count_mat, cells, genes)
+    return activity_obj
+end
