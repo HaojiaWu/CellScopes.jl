@@ -63,7 +63,7 @@ function dim_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, Xenium
                 anno_df2=filter(anno => ==(i), dim_data)
                 x_ax = anno_df2[!, x_col]
                 y_ax = anno_df2[!, y_col]
-                MK.text!(i, position = (mean(x_ax) - label_offset[1], mean(y_ax) - label_offset[2]),align = (:center, :center),font = "Noto Sans Regular",textsize = label_size,color = label_color)
+                MK.text!(i, position = (mean(x_ax) - label_offset[1], mean(y_ax) - label_offset[2]),align = (:center, :center),font = "Noto Sans Regular",fontsize = label_size,color = label_color)
             end
         end
         MK.current_figure()
