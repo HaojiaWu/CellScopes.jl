@@ -52,7 +52,7 @@ function dim_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, Xenium
                     color=:white, strokewidth=0, markersize=2*legend_size, label=i)
                 MK.scatter!(ax3, x_ax , y_ax; strokecolor=stroke_color, 
                     color=string.(colors[1]), strokewidth=0, markersize=marker_size, label=i)
-                MK.Legend(fig[1, 2], ax1, backgroundcolor=:white, labelsize=legend_fontsize)
+                MK.Legend(fig[1, 2], ax1, framecolor=:white, labelsize=legend_fontsize)
             else
                 MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
                     color=string.(colors[1]), strokewidth=0, markersize=marker_size)
