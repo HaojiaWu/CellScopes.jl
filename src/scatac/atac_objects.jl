@@ -1,6 +1,14 @@
 
 abstract type AbstractATAC <: AbstractCellScope end
 
+mutable struct GeneActivityObject <: AbstractCount
+    peak_anno::Union{DataFrame, Nothing}
+    count_mtx::Union{AbstractMatrix{<:Real}, Nothing}
+    cell_name::Union{Vector{String}, Nothing}
+    gene_name::Union{Vector{String}, Nothing}
+    GeneActivityObject(peak_anno, count_mtx, cell_name, gene_name) = new(peak_anno, count_mtx, cell_name, gene_name)
+end
+
 mutable struct scATACObject <: AbstractATAC
     rawCount::Union{RawCountObject, Nothing}
     normCount::Union{NormCountObject, Nothing}
@@ -44,12 +52,4 @@ mutable struct scATACObject <: AbstractATAC
         scATAC_obj.metaData = meta_data
         return scATAC_obj
     end
-end
-
-mutable struct GeneActivityObject <: AbstractCount
-    peak_anno::Union{DataFrame, Nothing}
-    count_mtx::Union{AbstractMatrix{<:Real}, Nothing}
-    cell_name::Union{Vector{String}, Nothing}
-    gene_name::Union{Vector{String}, Nothing}
-    GeneActivityObject(peak_anno, count_mtx, cell_name, gene_name) = new(peak_anno, count_mtx, cell_name, gene_name)
 end
