@@ -20,6 +20,7 @@ mutable struct scATACObject <: AbstractATAC
     peakData::Union{DataFrame, Nothing}
     fragmentData::Union{DataFrame, Nothing}
     activityData::Union{GeneActivityObject, Nothing}
+    genecodeData::Union{DataFrame, Nothing}
     undefinedData::Union{UndefinedObject, Nothing}
     function scATACObject(raw_count::RawCountObject; 
             meta_data::Union{DataFrame, Nothing} = nothing,

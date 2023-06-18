@@ -107,3 +107,90 @@ function gene_activity_plot(atac_obj::scATACObject, genes; dim_type::String = "u
         end
         MK.current_figure()
 end
+
+function coverage_plot(atac_obj::scATACObject, gene; downsample_rate=0.1)
+    genecode = atac_obj.genecodeData
+    chr, start, stop = GeneticsMakie.findgene(gene, gencode)
+    meta = atac_obj.metaData
+    cells = meta.Cell_id
+    fragments = atac_obj.fragmentData
+    fragments = map_values(fragments, :Column4, :cluster, meta.Cell_id, meta.cluster)
+    gene_select = subset(fragments, :Column1 => ByRow(==("chr" * chr)), :Column2 => ByRow(>=(start)), :Column3 => ByRow(<=(stop)))
+    start = start+1
+    rename!(gene_select, ["chr", "start", "stop", "cell", "count", "ident"])
+    cut_df = DataFrame(
+        :position => [gene_select.start; gene_select.stop] .- start,
+        :cell => [gene_select.cell; gene_select.cell]
+    )
+    cut_df = filter(:position => x -> 0 < x <= (stop - start), cut_df)
+    cell_vector = collect(1:length(meta.Cell_id))
+    df2 = DataFrame(:cell => meta.Cell_id, :cell_id => cell_vector)
+    df3 = filter(:cell => ∈(Set(cut_df.cell)), df2)
+    cut_df = map_values(cut_df, :cell, :cell_id, df2.cell, df2.cell_id)
+    peak_vector = collect(1:size(cut_df)[1])
+    cut_matrix = sparse(cut_df.cell_id, cut_df.position,1, length(cells), (stop - (start -1)+1))
+    groups = Dict(meta.Cell_id .=> meta.cluster)
+    all_groups = unique(meta.cluster)
+    ngroup = length(all_groups)
+    npos = size(cut_matrix)[2]
+    group = repeat(all_groups, inner = npos)
+    position1 = repeat(collect(1:npos), outer = ngroup)
+    count_obj = atac_obj.rawCount
+    celltypes = unique(meta.cluster)
+    count_vec = []
+    for i in celltypes
+        meta_sub = filter(:cluster => ==(i), meta)
+        cell1=String.(meta_sub.Cell_id)
+        count_sub = subset_count(count_obj; cells=cell1)
+        row_mean1 = mean(colSum(count_sub.count_mtx))
+        count_vec = [count_vec; row_mean1]
+    end
+    count_vec = float.(count_vec)
+    average_peak = DataFrame(:cluster => celltypes, :count => count_vec)
+    cell_count = StatsBase.countmap(meta.cluster)
+    cell_count = DataFrame(:cluster => collect(keys(cell_count)), :cellcount => collect(values(cell_count)))
+    scale_factors = innerjoin(average_peak,
+        cell_count,
+        on = :cluster
+    )
+    scale_factors.group_scale_factors = scale_factors.count .* scale_factors.cellcount
+    all_clusters = meta.cluster
+    count1 = Array{Float64}(undef, 1 ,npos * ngroup)
+    for i in 1:length(all_groups)
+        grp = all_groups[i]
+        pos_cells = cells[all_clusters .== grp]
+        cell_kept = [cell ∈ pos_cells for cell in cells]
+        totals = colSum(cut_matrix[cell_kept, :])
+        count1[((i - 1) * npos + 1):((i * npos))] = totals
+    end
+    count1 = (vec ∘ collect)(count1)
+    coverage = DataFrame(:group => group, :position => position1, :count => count1)
+    coverage = map_values(coverage, :group, :scale_factor,scale_factors.cluster, scale_factors.group_scale_factors)
+    scale_factor = median(scale_factors.group_scale_factors);
+    coverage.norm_value = coverage.count ./ coverage.scale_factor .* scale_factor
+    coverage = @linq coverage |> 
+        groupby(:group) |> 
+        transform(SumValue = [repeat(["missing"], 99); rolling(sum, :norm_value, 100)])
+    coverage2 = filter(:SumValue => !=("missing"), coverage);
+    coverage2.SumValue = float.(coverage2.SumValue)
+    cover_groups = groupby(coverage2, :group)
+    n_sample = length(cells) * downsample_rate
+    n_sample = trunc(Int, n_sample)
+    down_ct = DataFrame()
+    sample_rows = StatsBase.sample(1:nrow(cover_groups[1]), n_sample, replace=false)
+    for i in 1:length(celltypes)
+        grp1 = cover_groups[i]
+        grp1 = grp1[sample_rows, :]
+        down_ct = [down_ct; grp1]
+    end
+    x_title= gene * ":" * " " * "chr" * chr * "_" * string(start) * "_" * string(stop) 
+    p = down_ct |> @vlplot(:area,
+        x={"position:q", title= x_title, axis={grid=false}},
+        y={"SumValue:q", title="", axis={grid=false}},
+        row={:group, header={labelFontSize=16, title=nothing}},
+        spacing=1,
+        color=:group,
+        height=25, width=400
+        )
+    p
+end

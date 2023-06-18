@@ -68,7 +68,7 @@ function run_svd(atac_obj::scATACObject;  method=:svd, pratio = 1, maxoutdim = 1
     return atac_obj
 end
 
-function gene_activity(atac_obj; normalize = true)
+function compute_gene_activity(atac_obj; normalize = true)
     counts = atac_obj.rawCount.count_mtx
     cells = atac_obj.rawCount.cell_name
     peak_names = atac_obj.rawCount.gene_name
@@ -91,5 +91,6 @@ function gene_activity(atac_obj; normalize = true)
     genes = gdf2.gene
     cells = names(gdf2)[2:end]
     activity_obj = GeneActivityObject(peak_anno, count_mat, cells, genes)
-    return activity_obj
+    atac_obj.activityData = activity_obj
+    return atac_obj
 end
