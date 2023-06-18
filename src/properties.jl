@@ -33,11 +33,11 @@ function Base.show(io::IO, sc_obj::scATACObject)
         end
     end
 
-    if isdefined(sc_obj, "peakData")
+    if isdefined(sc_obj, :peakData)
         println("- Peak data")
     end
 
-    if isdefined(sc_obj, "fragmentData")
+    if isdefined(sc_obj, :fragmentData)
         println("- Fragment data")
     end
 

@@ -175,17 +175,26 @@ function read_atac_count(atac_path::String;
 end
 
 function read_atac(atac_path; min_gene=0.0, min_cell=0.0)
+    println("This step reads all information directly from cellranger-atac output for downstream analysis. \n
+    It may take 10 - 15 mins to complete as certain files (e.g. the fragment file) can be large in size.")
+    println("1/3. Reading peak count data...")
     raw_count = read_atac_count(atac_path; min_gene=min_gene, min_cell=min_cell)
     atac_obj = scATACObject(raw_count)
+    println("1/3 Peak count was loaded!")
+    println("2/3. Reading the peak annotation file...")
     peak_anno_file = atac_path * "/peak_annotation.tsv"
     peak_anno = DataFrame(CSVFiles.load(CSVFiles.File(format"TSV", peak_anno_file);header_exists=true))
     rename!(peak_anno, "end" => "stop")
     peak_anno.peak_names = string.(peak_anno.chrom) .* "_" .* string.(peak_anno.start) .* "_" .* string.(peak_anno.stop)
     cells = colnames(atac_obj)
+    println("2/3 Peak annotation was loaded!")
+    println("3/3. Reading the fragment file...")
     fragment_file = atac_path * "/fragments.tsv.gz"
     fragments = CSV.read(fragment_file, DataFrame; delim = "\t", comment = "#", header =false)
+    println("3/3. Fragments were loaded!")
     fragments = filter(:Column4 => ∈(Set(cells)), fragments)
     atac_obj.peakData = peak_anno
     atac_obj.fragmentData = fragments
+    println("scATACObject was successfully constructed!")
     return atac_obj
 end
