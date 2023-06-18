@@ -153,7 +153,7 @@ function read_xenium(xenium_dir::String; prefix = "xenium", min_gene::Int64 = 0,
     return spObj
 end
 
-function read_atac(atac_path::String; 
+function read_atac_count(atac_path::String; 
     min_gene::Real = 0.0, 
     min_cell::Real = 0.0
 )
@@ -172,4 +172,20 @@ function read_atac(atac_path::String;
     counts = counts[gene_kept, cell_kept]
     rawcount = RawCountObject(counts, cells, peak_names)
     return rawcount
+end
+
+function read_atac(atac_path; min_gene=0.0, min_cell=0.0)
+    raw_count = read_atac_count(atac_path; min_gene=min_gene, min_cell=min_cell)
+    atac_obj = scATACObject(raw_count)
+    peak_anno_file = atac_path * "/peak_annotation.tsv"
+    peak_anno = DataFrame(CSVFiles.load(CSVFiles.File(format"TSV", peak_anno_file);header_exists=true))
+    rename!(peak_anno, "end" => "stop")
+    peak_anno.peak_names = string.(peak_anno.chrom) .* "_" .* string.(peak_anno.start) .* "_" .* string.(peak_anno.stop)
+    cells = colnames(atac_obj)
+    fragment_file = atac_path * "/fragments.tsv.gz"
+    fragments = CSV.read(fragment_file, DataFrame; delim = "\t", comment = "#", header =false)
+    fragments = filter(:Column4 => ∈(Set(cells)), fragments)
+    atac_obj.peakData = peak_anno
+    atac_obj.fragmentData = fragments
+    return atac_obj
 end

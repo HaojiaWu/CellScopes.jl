@@ -18,6 +18,7 @@ mutable struct scATACObject <: AbstractATAC
     dimReduction::Union{ReductionObject, Nothing}
     clustData::Union{ClusteringObject, Nothing}
     peakData::Union{DataFrame, Nothing}
+    fragmentData::Union{DataFrame, Nothing}
     activityData::Union{GeneActivityObject, Nothing}
     undefinedData::Union{UndefinedObject, Nothing}
     function scATACObject(raw_count::RawCountObject; 

@@ -68,13 +68,11 @@ function run_svd(atac_obj::scATACObject;  method=:svd, pratio = 1, maxoutdim = 1
     return atac_obj
 end
 
-function gene_activity(atac_obj,atac_path; normalize = true)
+function gene_activity(atac_obj; normalize = true)
     counts = atac_obj.rawCount.count_mtx
     cells = atac_obj.rawCount.cell_name
     peak_names = atac_obj.rawCount.gene_name
-    peak_anno_file = atac_path * "peak_annotation.tsv"
-    peak_anno = DataFrame(CSVFiles.load(CSVFiles.File(format"TSV", peak_anno_file);header_exists=true))
-    rename!(peak_anno, "end" => "stop")
+    peak_anno = atac_obj.peakData
     peak_anno.peak_names = string.(peak_anno.chrom) .* "_" .* string.(peak_anno.start) .* "_" .* string.(peak_anno.stop)
     counts = DataFrame(Matrix(counts), :auto)
     rename!(counts, cells)

@@ -51,6 +51,7 @@ using Glob
 using RollingFunctions
 using DataFramesMeta
 using GeneticsMakie
+using Arrow
 
 include("scrna/objects.jl")
 include("spatial/sp_objects.jl")
@@ -59,13 +60,12 @@ include("properties.jl")
 include("scrna/processing.jl")
 include("scrna/utils.jl")
 include("scrna/visualization.jl")
-include("scrna/fileio.jl")
+include("fileio.jl")
 include("spatial/sp_plots.jl")
 include("spatial/sp_utils.jl")
 include("spatial/sp_analysis.jl")
 include("spatial/sp_processing.jl")
 include("scatac/atac_processing.jl")
 include("scatac/atac_plots.jl")
-
 
 end

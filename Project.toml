@@ -4,6 +4,7 @@ authors = ["HaojiaWu <haojiawu@wustl.edu>"]
 version = "0.1.0"
 
 [deps]
+Arrow = "69666777-d1a9-59fb-9406-91d4454c9d45"
 Augmentor = "02898b10-1f73-11ea-317c-6393d7073e15"
 Blink = "ad839575-38b3-5650-b840-f874b8c74a25"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
