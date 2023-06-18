@@ -33,6 +33,14 @@ function Base.show(io::IO, sc_obj::scATACObject)
         end
     end
 
+    if isdefined(sc_obj, "peakData")
+        println("- Peak data")
+    end
+
+    if isdefined(sc_obj, "fragmentData")
+        println("- Fragment data")
+    end
+
     if isdefined(sc_obj, :dimReduction)
         for i in reduce_field
             if isdefined(sc_obj.dimReduction, i)
@@ -66,6 +74,10 @@ matchtype(field) = @match field begin
     tsne::tSNEObject => println("- tSNE data")
     umap::UMAPObject => println("- UMAP data")
     cluster::ClusteringObject => println("- Clustering data")
+    activity::GeneActivityObject => println("- Gene activity data")
+    imputation::SpaImputeObj => println("- Imputed data")
+    spMeta::SpaMetaObj => println("- Spatial metadata")
+    spCoord::SpaCoordObj => println("- Spatial coordiantes")
     uns::UndefinedObject => println("- Undefined slot")
 end
 
