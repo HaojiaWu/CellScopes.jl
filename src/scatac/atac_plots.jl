@@ -108,7 +108,7 @@ function gene_activity_plot(atac_obj::scATACObject, genes; dim_type::String = "u
         MK.current_figure()
 end
 
-function coverage_plot(atac_obj::scATACObject, gene; downsample_rate=0.1, max_downsample=3000, smooth=200)
+function coverage_plot(atac_obj::scATACObject, gene; downsample_rate=0.1, max_downsample=3000, smooth=100)
     if isa(atac_obj.fragmentData.genecode, Nothing)
         error("Gene annotation file is missing. Please input the gft file with the add_genecode function!")
     end

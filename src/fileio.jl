@@ -193,7 +193,8 @@ function read_atac(atac_path; min_gene=0.0, min_cell=0.0)
     println("3/3 Fragments were loaded!")
     fragments = filter(:Column4 => ∈(Set(cells)), fragments)
     atac_obj.peakAnno = peak_anno
-    atac_obj.fragmentData.fragment = fragments
+    frag_data = FragmentObject(fragments, nothing)
+    atac_obj.fragmentData = frag_data
     println("scATACObject was successfully constructed!")
     return atac_obj
 end
