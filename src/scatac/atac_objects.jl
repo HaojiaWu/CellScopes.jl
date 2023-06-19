@@ -9,6 +9,12 @@ mutable struct GeneActivityObject <: AbstractCount
     GeneActivityObject(peak_anno, count_mtx, cell_name, gene_name) = new(peak_anno, count_mtx, cell_name, gene_name)
 end
 
+mutable struct FragmentObject <: AbstractATAC
+    fragment::Union{DataFrame, Nothing}
+    genecode::Union{DataFrame, Nothing}
+    FragmentObject(fragment_data, gene_code) = new(fragment_data, gene_code)
+end
+
 mutable struct scATACObject <: AbstractATAC
     rawCount::Union{RawCountObject, Nothing}
     normCount::Union{NormCountObject, Nothing}
@@ -17,10 +23,9 @@ mutable struct scATACObject <: AbstractATAC
     varPeak::Union{VariableGeneObject, Nothing}
     dimReduction::Union{ReductionObject, Nothing}
     clustData::Union{ClusteringObject, Nothing}
-    peakData::Union{DataFrame, Nothing}
-    fragmentData::Union{DataFrame, Nothing}
+    peakAnno::Union{DataFrame, Nothing}
+    fragmentData::Union{FragmentObject, Nothing}
     activityData::Union{GeneActivityObject, Nothing}
-    genecodeData::Union{DataFrame, Nothing}
     undefinedData::Union{UndefinedObject, Nothing}
     function scATACObject(raw_count::RawCountObject; 
             meta_data::Union{DataFrame, Nothing} = nothing,

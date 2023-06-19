@@ -109,11 +109,15 @@ function gene_activity_plot(atac_obj::scATACObject, genes; dim_type::String = "u
 end
 
 function coverage_plot(atac_obj::scATACObject, gene; downsample_rate=0.1, max_downsample=3000, smooth=200)
-    genecode = atac_obj.genecodeData
-    chr, start, stop = GeneticsMakie.findgene(gene, genecode)
+    if isa(atac_obj.fragmentData.genecode, Nothing)
+        error("Gene annotation file is missing. Please input the gft file with the add_genecode function!")
+    end
+    genecode = atac_obj.fragmentData.genecode
+    gene_loc = get_gene_location(atac_obj, gene)
+    chr, start, stop = gene_loc
     meta = atac_obj.metaData
     cells = meta.Cell_id
-    fragments = atac_obj.fragmentData
+    fragments = atac_obj.fragmentData.fragment
     fragments = map_values(fragments, :Column4, :cluster, meta.Cell_id, meta.cluster)
     gene_select = subset(fragments, :Column1 => ByRow(==("chr" * chr)), :Column2 => ByRow(>=(start)), :Column3 => ByRow(<=(stop)))
     start = start+1

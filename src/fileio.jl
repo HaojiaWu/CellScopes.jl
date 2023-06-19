@@ -192,8 +192,8 @@ function read_atac(atac_path; min_gene=0.0, min_cell=0.0)
     fragments = CSV.read(fragment_file, DataFrame; delim = "\t", comment = "#", header =false)
     println("3/3 Fragments were loaded!")
     fragments = filter(:Column4 => ∈(Set(cells)), fragments)
-    atac_obj.peakData = peak_anno
-    atac_obj.fragmentData = fragments
+    atac_obj.peakAnno = peak_anno
+    atac_obj.fragmentData.fragment = fragments
     println("scATACObject was successfully constructed!")
     return atac_obj
 end

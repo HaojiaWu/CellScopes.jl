@@ -33,12 +33,8 @@ function Base.show(io::IO, sc_obj::scATACObject)
         end
     end
 
-    if isdefined(sc_obj, :peakData)
+    if isdefined(sc_obj, :peakAnno)
         println("- Peak data")
-    end
-
-    if isdefined(sc_obj, :fragmentData)
-        println("- Fragment data")
     end
 
     if isdefined(sc_obj, :dimReduction)
@@ -47,10 +43,6 @@ function Base.show(io::IO, sc_obj::scATACObject)
                 matchtype(getfield(sc_obj.dimReduction, i))
             end 
         end
-    end
-
-    if isdefined(sc_obj, :genecodeData)
-        println("- Genecode data")
     end
 
     println("All fields:")
@@ -83,6 +75,7 @@ matchtype(field) = @match field begin
     imputation::SpaImputeObj => println("- Imputed data")
     spMeta::SpaMetaObj => println("- Spatial metadata")
     spCoord::SpaCoordObj => println("- Spatial coordiantes")
+    fragment::FragmentObject => println("- Fragment Data")
     uns::UndefinedObject => println("- Undefined slot")
 end
 
