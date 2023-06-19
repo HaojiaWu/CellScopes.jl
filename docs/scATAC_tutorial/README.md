@@ -65,13 +65,11 @@ atac_obj = cs.run_clustering(atac_obj; res=0.0015)
 ```
 
 ## 2 Data visualization
-Inspired by Seurat and Scanpy, we utilize various methods to visualize cell annotations and gene expression. 
-### 2.1 Visualize cell annotaiton.
-a. Dim plot on PCA
+ We leverage existing visualization methods designed for scRNA-seq data to effectively visualize scATAC-seq data. For example, the ```dim_plot``` function can be employed to visualize cell clusters in a similar manner as it is used for single-cell RNA-seq data.
 ```julia
-cs.dim_plot(pbmc; dim_type = "pca", marker_size = 4)
+cs.dim_plot(atac_obj; dim_type = "umap", marker_size = 4)
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/pca.png" width="600"> <br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/atac_clusters.png" width="600"> <br>
 
 b. Dim plot on tSNE
 ```julia
@@ -136,68 +134,3 @@ height = 500,alpha=0.5, col_use = :tab10)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/violin.png" width="600"> <br>
 
-## 3. Tutorial: MCA 400K cells
-```CellScopes.jl``` can analyze atlas-scale single cell data as well. Below are some example codes to complete the analysis of the [MCA dataset](https://figshare.com/articles/MCA_DGE_Data/5435866) which contains ~400K cells. This takes about 50 minutes in a linux server with 128GB RAM and 16 cores.
-
-```julia
-import CellScopes as cs
-using MatrixMarket, CSV, DataFrames
-using SparseArrays
-```
-
-```julia
-counts = MatrixMarket.mmread("mca_mtx/matrix.mtx");
-cells = CSV.File("mca_mtx/barcodes.tsv", header = false) |> DataFrame
-cells = string.(cells.Column1)
-genes = CSV.File("mca_mtx/genes.tsv", header = false) |> DataFrame
-genes = string.(genes.Column2);
-@time gene_kept = (vec ∘ collect)(cs.rowSum(counts).> 0.0);
-genes = genes[gene_kept];
-```
-*1.811749 seconds (2.46 M allocations: 131.292 MiB, 37.24% compilation time)*
-```julia
-@time cell_kept = (vec ∘ collect)(cs.colSum(counts) .> 0.0)
-cells = cells[cell_kept];
-```
-*0.180891 seconds (18.55 k allocations: 4.606 MiB, 3.59% compilation time)*
-```julia
-@time counts = counts[gene_kept, cell_kept];
-```
-*4.641869 seconds (631.47 k allocations: 3.878 GiB, 28.75% gc time, 7.56% compilation time)*
-```julia
-@time rawcount = cs.RawCountObject(counts, cells, genes);
-```
-*0.011193 seconds (5.12 k allocations: 290.205 KiB, 99.64% compilation time)*
-```julia
-@time mca = cs.scRNAObject(rawcount)
-```
-*4.828527 seconds (1.61 M allocations: 3.954 GiB, 6.74% gc time, 16.00% compilation time)*
-```julia
-@time mca = cs.normalize_object(mca; scale_factor = 10000)
-```
-*15.791931 seconds (3.82 M allocations: 11.933 GiB, 20.05% gc time, 2.43% compilation time)*
-```julia
-@time mca = cs.find_variable_genes(mca)
-```
-*217.251548 seconds (21.15 M allocations: 126.109 GiB, 4.52% gc time, 2.32% compilation time)*
-```julia
-@time mca = cs.scale_object(mca; features = mca.varGene.var_gene)
-```
-*147.311905 seconds (4.10 M allocations: 97.858 GiB, 8.31% gc time, 1.23% compilation time)*
-```julia
-@time mca = cs.run_pca(mca; maxoutdim = 30)
-```
-*236.710203 seconds (4.22 M allocations: 24.603 GiB, 0.52% gc time, 0.74% compilation time)*
-```julia
-@time mca = cs.run_umap(mca; reduce_dims = 30, min_dist = 0.6, n_neighbors=30, n_epochs=100)
-```
-*1075.675636 seconds (63.08 M allocations: 23.239 GiB, 1.64% gc time, 0.37% compilation time)*
-```julia
-@time mca = cs.run_clustering(mca; res=0.0001,n_neighbors=30) # To-do list: runtime optimization
-```
-*590.371976 seconds (40.33 M allocations: 1.199 TiB, 0.43% gc time, 0.13% compilation time)*
-
-```julia
-cs.dim_plot(mca; marker_size =1, do_label=false, do_legend=false)
-```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/umap2.png" width="600"> <br>
