@@ -1,6 +1,6 @@
 # Tutorial for scATAC-seq analysis with CellScopes.jl
 
-The following tutorial illustrates a standard analysis for scATAC-seq data. The current version only supports the data output produced by 10x cellranger-atac. As it continues to evolve, ```CellScopes.jl``` will support more single-cell chromatin modalities. The scATAC analysis below was inspired heavily by the [Signac package](https://stuartlab.org/signac/) from Stuart's lab.
+The following tutorial illustrates a standard analysis for scATAC-seq data. The current version only supports the data output produced by 10x cellranger-atac. As the package continues to evolve, ```CellScopes.jl``` will support more single-cell chromatin modalities. The scATAC analysis below was inspired heavily by the [Signac package](https://stuartlab.org/signac/) from Stuart's lab.
 
 ## 1 Tutorial: Mouse kidney 12K cells
 This tutorial uses a mouse kidney dataset for demo purposes. To test the scATAC-seq functionalies in ```CellScopes.jl``` using your own working environment, please download an example data from the [10x website](https://www.10xgenomics.com/resources/datasets?query=&page=1&configure%5BhitsPerPage%5D=50&configure%5BmaxValuesPerFacet%5D=1000). 
