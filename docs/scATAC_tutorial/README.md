@@ -86,20 +86,19 @@ We calculate the gene activity by summing the fragments intersecting the gene bo
 ```julia
 atac_obj = cs.compute_gene_activity(atac_obj)
 ```
-After the ```GeneActivityObject``` is constrcuted, we can visualize the gene activity very easily using the ```gene_activity_plot``` function.
+After the ```GeneActivityObject``` is constructed, we can visualize the gene activity very easily using the ```gene_activity_plot``` function.
 ```julia
 cs.gene_activity_plot(atac_obj, ["Nphs2", "Lrp2","Umod", "Slc12a3","Aqp2", "Pecam1"]; 
     color_keys = ["azure2","coral1","darkred"], order = false)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/gene_activity.png" width="800"> <br>
 
-e. Violin plot
+## 4 Coverage plot
+We reimplemented the CoveragePlot function in Signac using pure Julia codes. In brief, 
 ```julia
-from = ["1","5","4","3","8","2","7","6"]
-to = ["c1","c2","c3","c4","c5","c6","c7","c8"]
-pbmc.metaData = cs.mapvalues(pbmc.metaData, :cluster, :cluster2, from, to);
-cs.violin_plot(pbmc, ["GZMB","GZMA", "CD3D","CD68","CD79A"]; group_by="cluster2",
-height = 500,alpha=0.5, col_use = :tab10)
+gtf_file = "/home/haojiawu/tenx_dir/refdata-cellranger-arc-mm10-2020-A-2.0.0/genes/genes.gtf.gz"
+atac_obj = cs.add_genecode(atac_obj, gtf_file)
+cs.coverage_plot(atac_obj, "Nphs2"; downsample_rate=0.1)
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/violin.png" width="600"> <br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/coverage.png" width="600"> <br>
 
