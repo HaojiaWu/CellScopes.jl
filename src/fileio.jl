@@ -154,7 +154,7 @@ function read_xenium(xenium_dir::String; prefix = "xenium", min_gene::Int64 = 0,
 end
 
 function read_atac_count(atac_path::String; 
-    min_gene::Real = 0.0, 
+    min_peak::Real = 0.0, 
     min_cell::Real = 0.0
 )
     peak_loc = atac_path * "/filtered_peak_bc_matrix/peaks.bed"
@@ -167,17 +167,17 @@ function read_atac_count(atac_path::String;
     counts = MatrixMarket.mmread(count_file);
     gene_kept = (vec ∘ collect)(rowSum(counts).> min_cell)
     peak_names = peak_names[gene_kept]
-    cell_kept = (vec ∘ collect)(colSum(counts) .> min_gene)
+    cell_kept = (vec ∘ collect)(colSum(counts) .> min_peak)
     cells = cells[cell_kept]
     counts = counts[gene_kept, cell_kept]
     rawcount = RawCountObject(counts, cells, peak_names)
     return rawcount
 end
 
-function read_atac(atac_path; min_gene=0.0, min_cell=0.0)
+function read_atac(atac_path; min_peak=0.0, min_cell=0.0)
     println("This step reads all information directly from cellranger-atac output for downstream analysis. It may take 10 - 15 mins to complete as certain files (e.g. the fragment file) can be large in size.")
     println("1/3 Reading peak count data...")
-    raw_count = read_atac_count(atac_path; min_gene=min_gene, min_cell=min_cell)
+    raw_count = read_atac_count(atac_path; min_gene=min_peak, min_cell=min_cell)
     atac_obj = scATACObject(raw_count)
     println("1/3 Peak count was loaded!")
     println("2/3 Reading the peak annotation file...")

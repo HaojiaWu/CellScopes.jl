@@ -75,7 +75,7 @@ matchtype(field) = @match field begin
     imputation::SpaImputeObj => println("- Imputed data")
     spMeta::SpaMetaObj => println("- Spatial metadata")
     spCoord::SpaCoordObj => println("- Spatial coordiantes")
-    fragment::FragmentObject => println("- Fragment Data")
+    fragment::FragmentObject => println("- Fragment data")
     uns::UndefinedObject => println("- Undefined slot")
 end
 

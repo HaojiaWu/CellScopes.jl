@@ -108,7 +108,9 @@ function gene_activity_plot(atac_obj::scATACObject, genes; dim_type::String = "u
         MK.current_figure()
 end
 
-function coverage_plot(atac_obj::scATACObject, gene; downsample_rate=0.1, max_downsample=3000, smooth=100)
+function coverage_plot(atac_obj::scATACObject, gene; 
+    cell_anno::Union{String, Symbol}="cluster",downsample_rate=0.1, 
+    max_downsample=3000, smooth=100, fig_height=25, fig_width=400)
     if isa(atac_obj.fragmentData.genecode, Nothing)
         error("Gene annotation file is missing. Please input the gft file with the add_genecode function!")
     end
@@ -118,7 +120,7 @@ function coverage_plot(atac_obj::scATACObject, gene; downsample_rate=0.1, max_do
     meta = atac_obj.metaData
     cells = meta.Cell_id
     fragments = atac_obj.fragmentData.fragment
-    fragments = map_values(fragments, :Column4, :cluster, meta.Cell_id, meta.cluster)
+    fragments = map_values(fragments, :Column4, :cluster, meta.Cell_id, meta[!, cell_anno])
     gene_select = subset(fragments, :Column1 => ByRow(==("chr" * chr)), :Column2 => ByRow(>=(start)), :Column3 => ByRow(<=(stop)))
     start = start+1
     rename!(gene_select, ["chr", "start", "stop", "cell", "count", "ident"])
@@ -133,17 +135,17 @@ function coverage_plot(atac_obj::scATACObject, gene; downsample_rate=0.1, max_do
     cut_df = map_values(cut_df, :cell, :cell_id, df2.cell, df2.cell_id)
     peak_vector = collect(1:size(cut_df)[1])
     cut_matrix = sparse(cut_df.cell_id, cut_df.position,1, length(cells), (stop - (start -1)+1))
-    groups = Dict(meta.Cell_id .=> meta.cluster)
-    all_groups = unique(meta.cluster)
+    groups = Dict(meta.Cell_id .=> meta[!, cell_anno])
+    all_groups = unique(meta[!, cell_anno])
     ngroup = length(all_groups)
     npos = size(cut_matrix)[2]
     group = repeat(all_groups, inner = npos)
     position1 = repeat(collect(1:npos), outer = ngroup)
     count_obj = atac_obj.rawCount
-    celltypes = unique(meta.cluster)
+    celltypes = all_groups
     count_vec = []
     for i in celltypes
-        meta_sub = filter(:cluster => ==(i), meta)
+        meta_sub = filter(cell_anno => ==(i), meta)
         cell1=String.(meta_sub.Cell_id)
         count_sub = subset_count(count_obj; cells=cell1)
         row_mean1 = mean(colSum(count_sub.count_mtx))
@@ -151,14 +153,14 @@ function coverage_plot(atac_obj::scATACObject, gene; downsample_rate=0.1, max_do
     end
     count_vec = float.(count_vec)
     average_peak = DataFrame(:cluster => celltypes, :count => count_vec)
-    cell_count = StatsBase.countmap(meta.cluster)
+    cell_count = StatsBase.countmap(meta[!, cell_anno])
     cell_count = DataFrame(:cluster => collect(keys(cell_count)), :cellcount => collect(values(cell_count)))
     scale_factors = innerjoin(average_peak,
         cell_count,
         on = :cluster
     )
     scale_factors.group_scale_factors = scale_factors.count .* scale_factors.cellcount
-    all_clusters = meta.cluster
+    all_clusters = meta[!, cell_anno]
     count1 = Array{Float64}(undef, 1 ,npos * ngroup)
     for i in 1:length(all_groups)
         grp = all_groups[i]
@@ -195,7 +197,7 @@ function coverage_plot(atac_obj::scATACObject, gene; downsample_rate=0.1, max_do
         row={:group, header={labelFontSize=16, title=nothing}},
         spacing=1,
         color=:group,
-        height=25, width=400
+        height=fig_height, width=fig_width
         )
     p
 end
