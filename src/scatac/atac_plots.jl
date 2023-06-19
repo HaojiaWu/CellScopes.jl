@@ -108,9 +108,9 @@ function gene_activity_plot(atac_obj::scATACObject, genes; dim_type::String = "u
         MK.current_figure()
 end
 
-function coverage_plot(atac_obj::scATACObject, gene; downsample_rate=0.1)
+function coverage_plot(atac_obj::scATACObject, gene; downsample_rate=0.1, max_downsample=3000, smooth=200)
     genecode = atac_obj.genecodeData
-    chr, start, stop = GeneticsMakie.findgene(gene, gencode)
+    chr, start, stop = GeneticsMakie.findgene(gene, genecode)
     meta = atac_obj.metaData
     cells = meta.Cell_id
     fragments = atac_obj.fragmentData
@@ -170,12 +170,12 @@ function coverage_plot(atac_obj::scATACObject, gene; downsample_rate=0.1)
     coverage.norm_value = coverage.count ./ coverage.scale_factor .* scale_factor
     coverage = @linq coverage |> 
         groupby(:group) |> 
-        transform(SumValue = [repeat(["missing"], 99); rolling(sum, :norm_value, 100)])
+        transform(SumValue = [repeat(["missing"], smooth-1); rolling(sum, :norm_value, smooth)])
     coverage2 = filter(:SumValue => !=("missing"), coverage);
     coverage2.SumValue = float.(coverage2.SumValue)
     cover_groups = groupby(coverage2, :group)
     n_sample = length(cells) * downsample_rate
-    n_sample = trunc(Int, n_sample)
+    n_sample = trunc(Int, max(max_downsample, n_sample))
     down_ct = DataFrame()
     sample_rows = StatsBase.sample(1:nrow(cover_groups[1]), n_sample, replace=false)
     for i in 1:length(celltypes)
