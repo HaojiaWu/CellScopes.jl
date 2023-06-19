@@ -94,7 +94,7 @@ cs.gene_activity_plot(atac_obj, ["Nphs2", "Lrp2","Umod", "Slc12a3","Aqp2", "Peca
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/gene_activity.png" width="800"> <br>
 
 ## 4 Coverage plot
-We reimplemented the CoveragePlot function in Signac using pure Julia codes. In brief, 
+We reimplemented the CoveragePlot function in Signac using pure Julia codes. In brief, fragments along a genomic region (e.g. gene body) was averaged within a group and normalized by the cell number and read counts in each group. For visiualize, counts were downsampled by setting the ```downsample_rate``` parameter and smoothed by a rolling function with a user defined window size (default is 100).
 ```julia
 gtf_file = "/home/haojiawu/tenx_dir/refdata-cellranger-arc-mm10-2020-A-2.0.0/genes/genes.gtf.gz"
 atac_obj = cs.add_genecode(atac_obj, gtf_file)
