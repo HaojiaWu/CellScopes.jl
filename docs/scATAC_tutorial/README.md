@@ -6,7 +6,7 @@ The following tutorial illustrates a standard analysis for scATAC-seq data. The 
 This tutorial uses a mouse kidney dataset for demo purposes. To test the scATAC-seq functionalies in ```CellScopes.jl``` using your own working environment, please download an example data from the [10x website](https://www.10xgenomics.com/resources/datasets?query=&page=1&configure%5BhitsPerPage%5D=50&configure%5BmaxValuesPerFacet%5D=1000). 
 
 ### 1.1 Load data
-We provided an easy-to-use function ```read_atac``` to directly read the cellrange-atac output into Julia and construct a ```scATACObject```. ```scATACObject``` is a novel data structure in ```CellScopes.jl``` designed for storing the original and processed data to facilitate the downstream analysis. The only parameter required to construct a ```scATACObject``` is the path to the cellranger-atac output. Similar to the single cell RNA-seq analysis, you can also set the min_peak and min_cell parameters to filter cell cells and peaks, respectively.
+We provided an easy-to-use function ```read_atac``` to directly read the cellrange-atac output into Julia and construct a ```scATACObject```. ```scATACObject``` is a novel data structure in ```CellScopes.jl``` designed for storing the original and processed data to facilitate the downstream analysis. The only parameter required to construct a ```scATACObject``` is the path to the cellranger-atac output. Similar to the single cell RNA-seq analysis, you can also set the min_peak and min_cell parameters to filter the cells and peaks, respectively.
 
 ```julia
 import CellScopes as cs
