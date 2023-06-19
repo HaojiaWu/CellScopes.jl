@@ -64,39 +64,22 @@ atac_obj = cs.run_umap(atac_obj; dims_use=2:20, min_dist=0.2)
 atac_obj = cs.run_clustering(atac_obj; res=0.0015)
 ```
 
-## 2 Data visualization
+## 2 Basic data visualization
+### 2.1 Cell visualization
  We leverage existing visualization methods designed for scRNA-seq data to effectively visualize scATAC-seq data. For example, the ```dim_plot``` function can be employed to visualize cell clusters in a similar manner as it is used for single-cell RNA-seq data.
 ```julia
 cs.dim_plot(atac_obj; dim_type = "umap", marker_size = 4)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/atac_clusters.png" width="600"> <br>
 
-b. Dim plot on tSNE
+### 2.2 Peak visualization
+Similar to gene expression visualization in scRNA-seq, TF-IDF normaized peak count can be visualized by the ```feature_plot``` function.
 ```julia
-cs.dim_plot(pbmc; dim_type = "tsne", marker_size = 4)
-```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/tsne.png" width="600"> <br>
-
-c. Dim plot on UMAP
-```julia
-cs.dim_plot(pbmc; dim_type = "umap", marker_size = 4)
-```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/umap.png" width="600"> <br>
-
-d. Dim plot on selected cluster
-```julia
-cs.highlight_cells(pbmc, "6")
-```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/highlight.png" width="500"> <br>
-
-### 2.2 Visualize gene expression.
-a. Feature plot
-```julia
-cs.feature_plot(pbmc, ["CST3","IL32","CD79A"]; 
+cs.feature_plot(atac_obj, ["chr9_2999952_3000894"]; 
     order=false, marker_size = 4, 
-    count_type ="norm", color_keys=("black","indianred1","red"))
+    count_type ="norm", color_keys=("black","yellow","red"))
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/featureplot.png" width="800"> <br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/location_plot.png" width="800"> <br>
 
 b. Feature plot (split by condition)
 ```julia
