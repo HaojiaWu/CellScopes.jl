@@ -79,33 +79,19 @@ cs.feature_plot(atac_obj, ["chr9_2999952_3000894"];
     order=false, marker_size = 4, 
     count_type ="norm", color_keys=("black","yellow","red"))
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/location_plot.png" width="800"> <br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/location_plot.png" width="600"> <br>
 
-b. Feature plot (split by condition)
+## 3 Gene activity
+We calculate the gene activity by summing the fragments intersecting the gene body and promoter region. To create a gene activity matrix, we designed a function called ```compute_gene_activity``` to extract gene coordinates, and count the number of fragments for each cell that map to gene body and promoter region of each gene. We then constructed a ```GeneActivityObject``` to store the activity data for plotting.
 ```julia
-pbmc.metaData.fake_group = repeat(["group1","group2","group3"],900) # Create a fake condition
-cs.feature_plot(pbmc, ["CST3","IL32","CD79A"]; 
-    order=false, marker_size = 7, 
-    count_type ="norm", color_keys=("black","indianred1","red"), split_by="fake_group")
+atac_obj = cs.compute_gene_activity(atac_obj)
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/split_by1.png" width="800"> <br>
-
-c. Dot plot 
+After the ```GeneActivityObject``` is constrcuted, we can visualize the gene activity very easily using the ```gene_activity_plot``` function.
 ```julia
-cs.dot_plot(pbmc, ["GZMB","GZMA", "CD3D","CD68","CD79A"], "cluster";
-               count_type="norm",height=300, width=150,  expr_cutoff = 1, 
-                cell_order=["1","5","4","3","8","2","7","6"])
+cs.gene_activity_plot(atac_obj, ["Nphs2", "Lrp2","Umod", "Slc12a3","Aqp2", "Pecam1"]; 
+    color_keys = ["azure2","coral1","darkred"], order = false)
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/dotgraph.png" width="300"> <br>
-
-d. Dot plot (split by condition)
-```julia
-cs.dot_plot(pbmc, ["GZMB","GZMA", "CD3D","CD68","CD79A"], 
-                "cluster"; split_by="fake_group",
-                count_type="norm",height=300, width=150,  expr_cutoff = 1, 
-                cell_order=["1","5","4","3","8","2","7","6"])
-```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/split_by2.png" width="600"> <br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/gene_activity.png" width="800"> <br>
 
 e. Violin plot
 ```julia
