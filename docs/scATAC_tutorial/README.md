@@ -1,32 +1,47 @@
-# Tutorial for scRNA-seq analysis with CellScopes.jl
+# Tutorial for scATAC-seq analysis with CellScopes.jl
 
-The following tutorials guide you through using ```CellScopes.jl``` to analyze scRNA-seq data from a sample of 2,700 cells, and show you how to scale the analysis up to 400,000 cells. 
+The following tutorial illustrates a standard analysis for scATAC-seq data. The current version only supports the data output produced by 10x cellranger-atac. As it continues to evolve, ```CellScopes.jl``` will support more single-cell chromatin modalities. The scATAC analysis below was inspired heavily by the [Signac package](https://stuartlab.org/signac/) from Stuart's lab.
 
-## 1 Tutorial: PBMC 3K
-This tutorial uses the pbmc3k dataset from 10x Genomics, which has been previously used by [Seurat](https://satijalab.org/seurat/articles/pbmc3k_tutorial.html) and [Scanpy](https://scanpy-tutorials.readthedocs.io/en/latest/pbmc3k.html) for demo purpose. This will read in the data and create a RawCountObject that can be used as input for ```CellScopes.jl```. All codes from this tutorial are run on Julia REPL.
-### 1.1 Download the pbmc3k data
-```julia
-;wget https://cf.10xgenomics.com/samples/cell/pbmc3k/pbmc3k_filtered_gene_bc_matrices.tar.gz
-;tar xvf pbmc3k_filtered_gene_bc_matrices.tar.gz
-```
+## 1 Tutorial: Mouse kidney 12K cells
+This tutorial uses a mouse kidney dataset for demo purposes. To test the scATAC-seq functionalies in ```CellScopes.jl``` using your own working environment, please download an example data from the [10x website](https://www.10xgenomics.com/resources/datasets?query=&page=1&configure%5BhitsPerPage%5D=50&configure%5BmaxValuesPerFacet%5D=1000). 
 
-### 1.2 Read the data
-The cells and genes can be filtered by setting the parameters ```min_gene``` and ```min_cell```, respectively.
+### 1.1 Load data
+We provided an easy-to-use function ```read_atac``` to directly read the cellrange-atac output into Julia and construct a ```scATACObject```. ```scATACObject``` is a novel data structure in ```CellScopes.jl``` designed for storing the original and processed data to facilitate the downstream analysis. The only parameter required to construct a ```scATACObject``` is the path to the cellranger-atac output. Similar to the single cell RNA-seq analysis, you can also set the min_peak and min_cell parameters to filter cell cells and peaks, respectively.
+
 ```julia
 import CellScopes as cs
-raw_counts = cs.read_10x("filtered_gene_bc_matrices/hg19"; min_gene = 3);
+atac_path = "/mnt/sdd/multiomics/atac_raw/m12hr_run/outs/"
+@time atac_obj = cs.read_atac(atac_path; min_peak=2500)
 ```
-This should create an object type called ```RawCountObject```.
+This should read the peak count, peak annotation, and fragment file into Julia and construct a complete ```scATACObject```. Note that it will take about a while to complete this step since some files are big in size. The messages below shows that a ```scATACObject``` has been successfully constracted.
 ```julia
-raw_counts
-#=
-CellScopes.RawCountObject
-Genes x Cells = 13100 x 2700
-Available fields:
-- count_mtx
-- cell_name
-- gene_name
-=#
+This step reads all information directly from cellranger-atac output for downstream analysis. It may take 10 - 15 mins to complete as certain files (e.g. the fragment file) can be large in size.
+1/3 Reading peak count data...
+1/3 Peak count was loaded!
+2/3 Reading the peak annotation file...
+2/3 Peak annotation was loaded!
+3/3 Reading the fragment file...
+3/3 Fragments were loaded!
+scATACObject was successfully constructed!
+542.737890 seconds (1.27 G allocations: 78.840 GiB, 2.45% gc time, 10.05% compilation time: 19% of which was recompilation)
+scATACObject in CellScopes.jl
+Peaks x Cells = 128626 x 12620
+Available data:
+- Raw count
+- Fragment data
+- Peak data
+All fields:
+- rawCount
+- normCount
+- scaleCount
+- metaData
+- varPeak
+- dimReduction
+- clustData
+- peakAnno
+- fragmentData
+- activityData
+- undefinedData
 ```
 ### 1.3 Create a scRNAObject
 We then create a ```scRNAObject``` using the count object above. The ```scRNAObject``` serves as a container to store all the data needed for and generated from the downstream analysis. The cells and genes can be further filtered by setting the parameters ```min_gene``` and ```min_cell```, respectively.
