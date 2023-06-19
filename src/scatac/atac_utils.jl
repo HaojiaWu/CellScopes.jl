@@ -4,4 +4,5 @@ function add_genecode(atac_obj, gtf_path)
     GeneticsMakie.parsegtf!(gencode)
     select!(gencode, :seqnames, :feature, :start, :end, :strand, :gene_id, :gene_name, :gene_type, :transcript_id)
     atac_obj.genecodeData = gencode
+    return atac_obj
 end

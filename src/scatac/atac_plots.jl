@@ -183,6 +183,7 @@ function coverage_plot(atac_obj::scATACObject, gene; downsample_rate=0.1)
         grp1 = grp1[sample_rows, :]
         down_ct = [down_ct; grp1]
     end
+    down_ct.position .= down_ct.position .+ start
     x_title= gene * ":" * " " * "chr" * chr * "_" * string(start) * "_" * string(stop) 
     p = down_ct |> @vlplot(:area,
         x={"position:q", title= x_title, axis={grid=false}},
