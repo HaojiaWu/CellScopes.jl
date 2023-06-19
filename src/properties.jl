@@ -48,6 +48,11 @@ function Base.show(io::IO, sc_obj::scATACObject)
             end 
         end
     end
+
+    if isdefined(sc_obj, :genecodeData)
+        println("- Genecode data")
+    end
+
     println("All fields:")
     [println("- ", string(i)) for i in fieldnames(typeof(sc_obj))]
 end
