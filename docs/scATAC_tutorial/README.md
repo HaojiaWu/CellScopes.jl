@@ -50,7 +50,7 @@ atac_obj = cs.run_tf_idf(atac_obj)
 ```
 
 ### 1.3 Find top features
-We use a similar approach implemented in the ```FindTopFeatures``` function in Signac to identify the top peaks. Users can set the min_cutoff parameters to choose the n% features to be selected as top features. For example, "q35" means 35% of the top peaks to be selected for dimensional reduction analysis. 
+We use a similar approach implemented in the ```FindTopFeatures``` function in Signac to identify the top peaks. Users can set the min_cutoff parameters to define n% features as top features. For example, "q35" means 35% of the top peaks to be selected for dimensional reduction analysis. 
 
 ```julia
 atac_obj = cs.find_top_features(atac_obj; min_cutoff="q35")
