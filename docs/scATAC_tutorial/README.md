@@ -56,8 +56,8 @@ We use a similar approach implemented in the ```FindTopFeatures``` function in S
 atac_obj = cs.find_top_features(atac_obj; min_cutoff="q35")
 ```
 
-### 1.4 Dimensional reduction
-Next, we perform linear demansional reduction using latent semantic indexing (LSI) approach in Signac (TF-IDF + SVD are knowns as LSI). We then embed the cells into low dimensional space using the UMAP methods as described in scRNA-seq and used the same graph-based approach to partition the cell distnace matrix into cell clusters.
+### 1.4 Dimensional reduction and clustering
+Next, we perform linear demansional reduction using latent semantic indexing (LSI) approach in Signac (TF-IDF + SVD are knowns as LSI). We then embed the cells into low dimensional space using the UMAP methods as described in scRNA-seq and used the same graph-based approach to partition the cell distance matrix into cell clusters.
 ```julia
 atac_obj = cs.run_svd(atac_obj; method=:svd, pratio=0.99, maxoutdim=20)
 atac_obj = cs.run_umap(atac_obj; dims_use=2:20, min_dist=0.2)
