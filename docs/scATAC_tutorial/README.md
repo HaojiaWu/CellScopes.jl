@@ -6,14 +6,14 @@ The following tutorial illustrates a standard analysis for scATAC-seq data. The 
 This tutorial uses a mouse kidney dataset for demo purposes. To test the scATAC-seq functionalies in ```CellScopes.jl``` using your own working environment, please download an example data from the [10x website](https://www.10xgenomics.com/resources/datasets?query=&page=1&configure%5BhitsPerPage%5D=50&configure%5BmaxValuesPerFacet%5D=1000). 
 
 ### 1.1 Load data
-We provided an easy-to-use function ```read_atac``` to directly read the cellrange-atac output into Julia and construct a ```scATACObject```. ```scATACObject``` is a novel data structure in ```CellScopes.jl``` designed for storing the original and processed data to facilitate the downstream analysis. The only parameter required to construct a ```scATACObject``` is the path to the cellranger-atac output. Similar to the single cell RNA-seq analysis, you can also set the min_peak and min_cell parameters to filter the cells and peaks, respectively.
+We provided an easy-to-use function ```read_atac``` to directly read the cellrange-atac output into Julia and construct a ```scATACObject```. ```scATACObject``` is a novel data structure in ```CellScopes.jl``` designed for storing the original and processed scATAC data to facilitate the downstream analysis. The only parameter required to construct a ```scATACObject``` is the path to the cellranger-atac output. Similar to the single cell RNA-seq analysis, you can also set the min_peak and min_cell parameters to filter the cells and peaks, respectively.
 
 ```julia
 import CellScopes as cs
 atac_path = "/mnt/sdd/multiomics/atac_raw/m12hr_run/outs/"
 @time atac_obj = cs.read_atac(atac_path; min_peak=2500)
 ```
-This should read the peak count, peak annotation, and fragment file into Julia and construct a complete ```scATACObject```. Note that it will take a while to complete this step since some files are big in size. The messages below shows that a ```scATACObject``` has been successfully constructed.
+This should read the peak count, peak annotation, and fragment file into Julia and construct a complete ```scATACObject```. Note that it will take a while to complete this step since some files are big in size. The messages below show that a ```scATACObject``` has been successfully constructed.
 ```julia
 This step reads all information directly from cellranger-atac output for downstream analysis. It may take 10 - 15 mins to complete as certain files (e.g. the fragment file) can be large in size.
 1/3 Reading peak count data...
