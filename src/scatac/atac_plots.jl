@@ -108,9 +108,9 @@ function gene_activity_plot(atac_obj::scATACObject, genes; dim_type::String = "u
         MK.current_figure()
 end
 
-function coverage_plot(atac_obj::scATACObject, gene; 
+function coverage_plot(atac_obj::scATACObject, gene::String; 
     cell_anno::Union{String, Symbol}="cluster",downsample_rate=0.1, 
-    max_downsample=3000, smooth=100, fig_height=25, fig_width=400)
+    max_downsample=3000, smooth=100, fig_height=25, fig_width=400, do_plot=true)
     if isa(atac_obj.fragmentData.genecode, Nothing)
         error("Gene annotation file is missing. Please input the gft file with the add_genecode function!")
     end
@@ -191,13 +191,42 @@ function coverage_plot(atac_obj::scATACObject, gene;
     end
     down_ct.position .= down_ct.position .+ start
     x_title= gene * ":" * " " * "chr" * chr * "_" * string(start) * "_" * string(stop) 
-    p = down_ct |> @vlplot(:area,
-        x={"position:q", title= x_title, axis={grid=false}},
-        y={"SumValue:q", title="", axis={grid=false}},
-        row={:group, header={labelFontSize=16, title=nothing}},
-        spacing=1,
-        color=:group,
-        height=fig_height, width=fig_width
-        )
+    if do_plot
+        p = down_ct |> @vlplot(:area,
+            x={"position:q", title= x_title, axis={grid=false}},
+            y={"SumValue:q", title="", axis={grid=false}},
+            row={:group, header={labelFontSize=16, title=nothing}},
+            spacing=1,
+            color=:group,
+            height=fig_height, width=fig_width
+            )
+        p
+    else
+        return down_ct
+    end
+end
+
+
+function coverage_plot(atac_obj::scATACObject, gene_list::Union{Vector{String}, Tuple{String}}; 
+    cell_anno::Union{String, Symbol}="cluster",downsample_rate=0.1, 
+    max_downsample=3000, smooth=100, fig_height=25, fig_width=400)
+
+    all_df=DataFrame()
+    for i in 1:length(gene_list)
+        gene = gene_list[i]
+        gene_expr = coverage_plot(atac_obj, gene; cell_anno=cell_anno,downsample_rate=downsample_rate, 
+            max_downsample=max_downsample, smooth=smooth, do_plot=false)
+        gene_expr.gene .= gene
+        all_df=[all_df; gene_expr]
+    end
+    p = all_df |> @vlplot(:area,
+    x={"position:q", title= x_title, axis={grid=false}},
+    y={"SumValue:q", title="", axis={grid=false}},
+    row={:group, header={labelFontSize=16, title=nothing}},
+    column={:gene, header={labelFontSize=16, title=nothing}},
+    spacing=1,
+    color=:group,
+    height=fig_height, width=fig_width
+    )
     p
 end
