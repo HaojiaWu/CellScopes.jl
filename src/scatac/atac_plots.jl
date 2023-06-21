@@ -207,7 +207,7 @@ function coverage_plot(atac_obj::scATACObject, gene::String;
 end
 
 
-function coverage_plot2(atac_obj::scATACObject, gene_list::Union{Vector{String}, Tuple{String}}; 
+function coverage_plot(atac_obj::scATACObject, gene_list::Union{Vector{String}, Tuple{String}}; 
     cell_anno::Union{String, Symbol}="cluster",downsample_rate=0.1, 
     max_downsample=3000, smooth=100, fig_height=25, fig_width=400)
 
@@ -220,8 +220,8 @@ function coverage_plot2(atac_obj::scATACObject, gene_list::Union{Vector{String},
         all_df=[all_df; gene_expr]
     end
     p = all_df |> @vlplot(:area,
-    x={"position:q",  axis={grid=false}},
-    y={"SumValue:q", title="", axis={grid=false}},
+    x={"position:q", scale = {zero = false}, axis={grid=false}},
+    y={"SumValue:q", scale = {zero = false}, title="", axis={grid=false}},
     row={:group, header={labelFontSize=16, title=nothing}},
     column={:gene, header={labelFontSize=16, title=nothing}},
     spacing=1,
