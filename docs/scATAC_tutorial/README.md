@@ -2,7 +2,7 @@
 
 The following tutorial illustrates a standard analysis for scATAC-seq data. The current version only supports the data output produced by 10x cellranger-atac. As the package continues to evolve, ```CellScopes.jl``` will support more single-cell chromatin modalities. The scATAC analysis below was inspired heavily by the [Signac package](https://stuartlab.org/signac/) from Stuart's lab.
 
-## 1 Tutorial: Mouse kidney 12K cells
+## 1. Tutorial: Mouse kidney 12K cells
 This tutorial uses a mouse kidney dataset for demo purposes. To test the scATAC-seq functionalies in ```CellScopes.jl``` using your own working environment, please download an example data from the [10x website](https://www.10xgenomics.com/resources/datasets?query=&page=1&configure%5BhitsPerPage%5D=50&configure%5BmaxValuesPerFacet%5D=1000). 
 
 ### 1.1 Load data
@@ -64,7 +64,7 @@ atac_obj = cs.run_umap(atac_obj; dims_use=2:20, min_dist=0.2)
 atac_obj = cs.run_clustering(atac_obj; res=0.0015)
 ```
 
-## 2 Basic data visualization
+## 2. Basic data visualization
 ### 2.1 Cell visualization
  We leverage existing visualization methods designed for scRNA-seq data to effectively visualize scATAC-seq data. For example, the ```dim_plot``` function can be employed to visualize cell clusters in a similar manner as it is used for single-cell RNA-seq data.
 ```julia
@@ -81,7 +81,7 @@ cs.feature_plot(atac_obj, ["chr9_2999952_3000894"];
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/location_plot.png" width="600"> <br>
 
-## 3 Gene activity
+## 3. Gene activity
 We calculate the gene activity by summing the fragments intersecting the gene body and promoter region. To create a gene activity matrix, we designed a function called ```compute_gene_activity``` to extract gene coordinates, and count the number of fragments for each cell that map to gene body and promoter region of each gene. We then constructed a ```GeneActivityObject``` to store the activity data for plotting.
 ```julia
 atac_obj = cs.compute_gene_activity(atac_obj)
@@ -93,7 +93,7 @@ cs.gene_activity_plot(atac_obj, ["Nphs2", "Lrp2","Umod", "Slc12a3","Aqp2", "Peca
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/gene_activity.png" width="800"> <br>
 
-## 4 Coverage plot
+## 4. Coverage plot
 We reimplemented the CoveragePlot function in Signac using pure Julia codes. In brief, fragments along a genomic region (e.g. gene body) was averaged within a group and normalized by the cell number and read counts in each group. For visiualization, counts were downsampled by setting the ```downsample_rate``` parameter and smoothed by a rolling function with a user defined window size (default is 100).
 ```julia
 gtf_file = "/home/haojiawu/tenx_dir/refdata-cellranger-arc-mm10-2020-A-2.0.0/genes/genes.gtf.gz"
