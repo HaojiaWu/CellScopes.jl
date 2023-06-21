@@ -226,7 +226,7 @@ function coverage_plot(atac_obj::scATACObject, gene_list::Union{Vector{String}, 
     column={:gene, header={labelFontSize=16, title=nothing}},
     spacing=1,
     color=:group,
-    resolve = {axis = {x= "independent", y = "independent"}},
+    resolve = {scale = {x= "independent", y = "independent"}},
     height=fig_height, width=fig_width
     )
     p
