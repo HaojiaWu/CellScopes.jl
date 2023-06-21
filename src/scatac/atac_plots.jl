@@ -220,7 +220,7 @@ function coverage_plot(atac_obj::scATACObject, gene_list::Union{Vector{String}, 
         all_df=[all_df; gene_expr]
     end
     p = all_df |> @vlplot(:area,
-    x={"position:q", title= x_title, axis={grid=false}},
+    x={"position:q",  axis={grid=false}},
     y={"SumValue:q", title="", axis={grid=false}},
     row={:group, header={labelFontSize=16, title=nothing}},
     column={:gene, header={labelFontSize=16, title=nothing}},
