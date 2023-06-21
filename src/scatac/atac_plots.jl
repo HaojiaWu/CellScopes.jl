@@ -207,7 +207,7 @@ function coverage_plot(atac_obj::scATACObject, gene::String;
 end
 
 
-function coverage_plot(atac_obj::scATACObject, gene_list::Union{Vector{String}, Tuple{String}}; 
+function coverage_plot2(atac_obj::scATACObject, gene_list::Union{Vector{String}, Tuple{String}}; 
     cell_anno::Union{String, Symbol}="cluster",downsample_rate=0.1, 
     max_downsample=3000, smooth=100, fig_height=25, fig_width=400)
 
