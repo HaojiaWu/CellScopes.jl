@@ -10,7 +10,7 @@ We provided an easy-to-use function ```read_atac``` to directly read the cellran
 
 ```julia
 import CellScopes as cs
-atac_path = "/mnt/sdd/multiomics/atac_raw/m12hr_run/outs/"
+atac_path = "/mnt/sdd/atac_raw/m12hr_run/outs/"
 @time atac_obj = cs.read_atac(atac_path; min_peak=2500)
 ```
 This should read the peak count, peak annotation, and fragment file into Julia and construct a complete ```scATACObject```. Note that it will take a while to complete this step since some files are big in size. The messages below show that a ```scATACObject``` has been successfully constructed.
