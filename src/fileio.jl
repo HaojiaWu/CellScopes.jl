@@ -251,8 +251,9 @@ function read_merfish(merfish_dir::String; prefix = "merfish", min_gene = 0, min
     counts = CSV.read(count_file, DataFrame;  types=Dict(1=>String))
     counts = filter(:Column1 => ∈(Set(cells)),  counts)
     genes = names(counts)[2:end]
-    counts = counts[!, 2:end]'
+    counts = counts[!, 2:end]
     counts = convert(SparseMatrixCSC{Int64, Int64},Matrix(counts))
+    counts = counts'
     count_molecules = CSV.read(count_file, DataFrame)
     gene_rm = Grep.grep("Blank", genes)
     raw_count = RawCountObject(counts, cells, genes)
