@@ -199,12 +199,12 @@ function read_atac(atac_path; min_peak=0.0, min_cell=0.0)
     return atac_obj
 end
 
-function read_merfish(merfish_dir::String; prefix = "", min_gene = 0, min_cell = 0)
+function read_merfish(merfish_dir::String; prefix = "merfish", min_gene = 0, min_cell = 0)
     cell_meta = merfish_dir * "/cell_metadata.csv"
     transcript_meta = merfish_dir * "/detected_transcript.csv"
     count_file = merfish_dir * "/cell_by_gene.csv"
     println("Reading cell polygons data...")
-    cell_boundary_path = merfish_path * "/" * "cell_boundaries/"
+    cell_boundary_path = merfish_dir * "/" * "cell_boundaries/"
     all_file = Glob.glob("*.hdf5", cell_boundary_path)
     first_char = length(cell_boundary_path) + length("feature_data_") + 1
     seg = DataFrame()
