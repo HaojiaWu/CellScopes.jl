@@ -2,7 +2,7 @@
 
 julia_version = "1.8.5"
 manifest_format = "2.0"
-project_hash = "453a5131401be02edadd5c4ba3b44aa3cce8e507"
+project_hash = "9d99678349ed8f96be30c5ba78189f9bf862ef7c"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra"]
@@ -791,6 +791,18 @@ git-tree-sha1 = "53bb909d1151e57e2484c3d1b53e19552b887fb2"
 uuid = "42e2da0e-8278-4e71-bc24-59509adca0fe"
 version = "1.0.2"
 
+[[deps.HDF5]]
+deps = ["Compat", "HDF5_jll", "Libdl", "Mmap", "Random", "Requires", "UUIDs"]
+git-tree-sha1 = "c73fdc3d9da7700691848b78c61841274076932a"
+uuid = "f67ccb44-e63f-5c2f-98bd-6dc0ccc4ba2f"
+version = "0.16.15"
+
+[[deps.HDF5_jll]]
+deps = ["Artifacts", "JLLWrappers", "LibCURL_jll", "Libdl", "OpenSSL_jll", "Pkg", "Zlib_jll"]
+git-tree-sha1 = "4cc2bb72df6ff40b055295fdef6d92955f9dede8"
+uuid = "0234f1f7-429e-5d53-9886-15a909be8d59"
+version = "1.12.2+2"
+
 [[deps.HTTP]]
 deps = ["Base64", "CodecZlib", "ConcurrentUtilities", "Dates", "Logging", "LoggingExtras", "MbedTLS", "NetworkOptions", "OpenSSL", "Random", "SimpleBufferStream", "Sockets", "URIs", "UUIDs"]
 git-tree-sha1 = "5e77dbf117412d4f164a464d610ee6050cc75272"
@@ -887,10 +899,10 @@ uuid = "6218d12a-5da1-5696-b52f-db25d2ecc6d1"
 version = "1.2.1"
 
 [[deps.ImageMagick_jll]]
-deps = ["Artifacts", "Ghostscript_jll", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Libtiff_jll", "Pkg", "Zlib_jll", "libpng_jll"]
-git-tree-sha1 = "124626988534986113cfd876e3093e4a03890f58"
+deps = ["Artifacts", "Ghostscript_jll", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Libtiff_jll", "OpenJpeg_jll", "Pkg", "Zlib_jll", "libpng_jll"]
+git-tree-sha1 = "7607ad4100c75908a79ff31fabb792cd37711d70"
 uuid = "c73af94c-d91f-53ed-93a7-00f77d67a9d7"
-version = "6.9.12+3"
+version = "6.9.12+4"
 
 [[deps.ImageMetadata]]
 deps = ["AxisArrays", "ColorVectorSpace", "ImageAxes", "ImageCore", "IndirectArrays"]
@@ -1206,6 +1218,12 @@ version = "2.36.0+0"
 deps = ["Libdl", "libblastrampoline_jll"]
 uuid = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 
+[[deps.LittleCMS_jll]]
+deps = ["Artifacts", "JLLWrappers", "JpegTurbo_jll", "Libdl", "Libtiff_jll", "Pkg"]
+git-tree-sha1 = "110897e7db2d6836be22c18bffd9422218ee6284"
+uuid = "d3a379c0-f9a3-5b72-a4c0-6bf4d2e8af0f"
+version = "2.12.0+0"
+
 [[deps.Loess]]
 deps = ["Distances", "LinearAlgebra", "Statistics", "StatsAPI"]
 git-tree-sha1 = "9c6b2a4c99e7e153f3cf22e10bf40a71c7a3c6a9"
@@ -1461,6 +1479,12 @@ version = "1.3.5+1"
 deps = ["Artifacts", "CompilerSupportLibraries_jll", "Libdl"]
 uuid = "4536629a-c528-5b80-bd46-f80d51c5b363"
 version = "0.3.20+0"
+
+[[deps.OpenJpeg_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "Libtiff_jll", "LittleCMS_jll", "Pkg", "libpng_jll"]
+git-tree-sha1 = "76374b6e7f632c130e78100b166e5a48464256f8"
+uuid = "643b3616-a352-519d-856d-80112ee9badc"
+version = "2.4.0+0"
 
 [[deps.OpenLibm_jll]]
 deps = ["Artifacts", "Libdl"]

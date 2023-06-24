@@ -52,6 +52,7 @@ using RollingFunctions
 using DataFramesMeta
 using GeneticsMakie
 using Arrow
+using HDF5
 
 include("scrna/objects.jl")
 include("spatial/sp_objects.jl")

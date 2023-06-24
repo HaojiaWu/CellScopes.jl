@@ -259,3 +259,70 @@ function add_impdata(impute_obj::SpaImputeObj, imp_type::String, imp_data::SpaCo
         end
         return impute_obj
 end
+
+mutable struct MerfishObject <: AbstractImagingObj
+    rawCount::Union{RawCountObject, Nothing}
+    normCount::Union{NormCountObject, Nothing}
+    scaleCount::Union{ScaleCountObject, Nothing}
+    metaData::Union{DataFrame, Nothing}
+    spmetaData::Union{SpaMetaObj, Nothing}
+    varGene::Union{VariableGeneObject, Nothing}
+    dimReduction::Union{ReductionObject, Nothing}
+    clustData::Union{ClusteringObject, Nothing}
+    polyCount::Union{RawCountObject, Nothing}
+    polynormCount::Union{NormCountObject, Nothing}
+    coordData::Union{SpaCoordObj, Nothing}
+    imputeData::Union{SpaImputeObj, Nothing}
+    imageData::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}}
+    polygonData::Array{Array{Float64, 2}, 1}
+
+    function MerfishObject(molecule_data::DataFrame, cell_data::DataFrame, counts::RawCountObject, poly_data::Array{Array{Float64, 2}, 1}; 
+        prefix::Union{String, Nothing}=nothing, postfix::Union{String, Nothing}=nothing, meta_data::Union{DataFrame, Nothing} = nothing,
+        min_gene::Int64=0, min_cell::Int64=0, x_col::Union{String, Symbol} = "x", 
+        y_col::Union{String, Symbol} = "y", cell_col::Union{String, Symbol} = "cell")
+        if prefix !== nothing
+            println("Adding prefix " * prefix * " to all cells...")
+            counts.cell_name = prefix * "_" .* counts.cell_name
+            molecule_data[!, cell_col] = prefix * "_" .* molecule_data[!, cell_col]
+            cell_data[!, cell_col] = prefix * "_" .* cell_data[!, cell_col]
+        end
+        if postfix !== nothing
+            println("Adding postfix " * postfix * " to all cells...")
+            counts.cell_name = counts.cell_name .* "_" .* postfix
+            molecule_data[!, cell_col] = molecule_data[!, cell_col] .* "_" .* postfix
+            cell_data[!, cell_col] = cell_data[!, cell_col] .* "_" .* postfix
+        end
+        count_mat = counts.count_mtx
+        gene_name = counts.gene_name
+        cell_name = counts.cell_name
+        gene_kept = (vec ∘ collect)(rowSum(count_mat).>= min_cell)
+        gene_name = gene_name[gene_kept]
+        cell_kept = (vec ∘ collect)(colSum(count_mat) .>= min_gene)
+        cell_name = cell_name[cell_kept]
+        count_mat = count_mat[gene_kept, cell_kept]
+        if isa(meta_data, Nothing)
+            nFeatures = vec(colSum(count_mat))
+            nGenes = vec(sum(x->x>0, count_mat, dims=1))
+            meta_data = DataFrame(Cell_id = cell_name, nFeatures=nFeatures, nGenes = nGenes)
+        end
+        counts = RawCountObject(count_mat, cell_name, gene_name)
+        cell_check = check_vec(cell_name, cell_data[!, cell_col])
+        cell_data = cell_data[cell_check, :]
+        mol_check = check_vec(cell_name, molecule_data[!, cell_col])
+        molecule_data = molecule_data[mol_check, :]
+        spObj = new(counts)
+        polygon_df = DataFrame(polygon_number = 1:length(poly_data), mapped_cell = cell_data.cell)
+        meta = SpaMetaObj(cell_data, molecule_data, polygon_df)
+        spObj.spmetaData = meta
+        cell_coord = cell_data[!, [x_col, y_col]]
+        mol_coord = molecule_data[!, [x_col, y_col]]
+        coord = SpaCoordObj(cell_coord, mol_coord, nothing, nothing)
+        spObj.coordData = coord
+        spObj.metaData = meta_data
+        spObj.polygonData = poly_data
+        spObj = normalize_object(spObj)
+        spObj.polynormCount = spObj.normCount
+        return spObj
+        println("MerfishObject was successfully created!")
+    end
+end
