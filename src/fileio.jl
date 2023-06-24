@@ -203,7 +203,10 @@ function read_merfish(merfish_dir::String; prefix = "merfish", min_gene = 0, min
     cell_meta = merfish_dir * "/cell_metadata.csv"
     transcript_meta = merfish_dir * "/detected_transcript.csv"
     count_file = merfish_dir * "/cell_by_gene.csv"
-    println("Reading cell polygons data...")
+    println("1.Loading transcript file...")
+    count_molecules = CSV.read(transcript_meta, DataFrame)
+    println("1.Transcript file loaded...")
+    println("2.Reading cell polygons data...")
     cell_boundary_path = merfish_dir * "/" * "cell_boundaries/"
     all_file = Glob.glob("*.hdf5", cell_boundary_path)
     first_char = length(cell_boundary_path) + length("feature_data_") + 1
@@ -230,12 +233,12 @@ function read_merfish(merfish_dir::String; prefix = "merfish", min_gene = 0, min
         close(fid)
         next!(p)
     end
-    println("Cell polygons loaded!")
+    println("2.Cell polygons loaded!")
     grouped = groupby(seg, :cell)
     cell_ids = unique(seg.cell)
     poly = Vector{Matrix{Float64}}(undef, length(cell_ids))
     n = length(cell_ids)
-    println("Formatting cell polygons...")
+    println("3.Formatting cell polygons...")
     p = Progress(n, dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, color=:blue)
     for idx in 1:length(cell_ids)
         cell_data = grouped[idx]
@@ -243,7 +246,7 @@ function read_merfish(merfish_dir::String; prefix = "merfish", min_gene = 0, min
         poly[idx] = cell_1
         next!(p)
     end
-    println("Cell polygons formatted!")
+    println("3.Cell polygons formatted!")
     cells = unique(seg.cell)
     count_cells = CSV.read(cell_meta, DataFrame; types=Dict(1=>String))
     rename!(count_cells, :Column1 => :cell, :center_x => :x, :center_y => :y)
@@ -254,13 +257,12 @@ function read_merfish(merfish_dir::String; prefix = "merfish", min_gene = 0, min
     counts = counts[!, 2:end]
     counts = convert(SparseMatrixCSC{Int64, Int64},Matrix(counts))
     counts = counts'
-    count_molecules = CSV.read(count_file, DataFrame)
     gene_rm = Grep.grep("Blank", genes)
     raw_count = RawCountObject(counts, cells, genes)
     genes2 = setdiff(genes, gene_rm)
-    println("Filtering cells and genes...")
+    println("4.Filtering cells and genes...")
     raw_count = subset_count(raw_count; genes=genes2)
-    println("Cells and genes filtered!")
+    println("4.Cells and genes filtered!")
     count_molecules = filter(:gene => ∈(Set(genes2)), count_molecules)
     spObj = MerfishObject(count_molecules, count_cells, raw_count, poly;
             prefix = prefix, min_gene = min_gene, min_cell = min_gene)
