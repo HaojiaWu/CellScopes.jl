@@ -244,7 +244,7 @@ function read_merfish(merfish_dir::String; prefix = "merfish", min_gene = 0, min
         next!(p)
     end
     println("Cell polygons formatted!")
-    cells = seg.cell
+    cells = unique(seg.cell)
     count_cells = CSV.read(cell_meta, DataFrame; types=Dict(1=>String))
     rename!(count_cells, :Column1 => :cell, :center_x => :x, :center_y => :y)
     count_cells = filter(:cell => ∈(Set(cells)),  count_cells)
