@@ -260,9 +260,6 @@ function read_merfish(merfish_dir::String; prefix = "merfish", min_gene = 0, min
     gene_rm = Grep.grep("Blank", genes)
     raw_count = RawCountObject(counts, cells, genes)
     genes2 = setdiff(genes, gene_rm)
-    println("4.Filtering cells and genes...")
-    raw_count = subset_count(raw_count; genes=genes2)
-    println("4.Cells and genes filtered!")
     count_molecules = filter(:gene => ∈(Set(genes2)), count_molecules)
     spObj = MerfishObject(count_molecules, count_cells, raw_count, poly;
             prefix = prefix, min_gene = min_gene, min_cell = min_gene)
