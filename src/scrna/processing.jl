@@ -127,7 +127,7 @@ function run_clustering_atlas(sc_obj::Union{scRNAObject, VisiumObject, CartanaOb
     return sc_obj
 end
 
-function run_clustering_small(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject,MerfishObject}; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
+function run_clustering_small(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject, MerfishObject}; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
     knn_data = [collect(i) for i in eachrow(sc_obj.dimReduction.pca.cell_embedding)]
     graph = nndescent(knn_data, n_neighbors, metric)
     indices, dist_mat = knn_matrices(graph);
@@ -159,7 +159,7 @@ function run_clustering_small(sc_obj::Union{scRNAObject, VisiumObject, CartanaOb
     return sc_obj
 end
 
-function run_clustering(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject,MerfishObject}; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
+function run_clustering(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject, MerfishObject}; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
     n = size(sc_obj.rawCount.count_mtx, 2)
     if n < 10000
         obj = run_clustering_small(sc_obj; n_neighbors=n_neighbors, metric=metric, res= res, seed_use=seed_use)
@@ -170,7 +170,7 @@ function run_clustering(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, 
     end
 end
 
-function run_tsne(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject,MerfishObject}; ndim::Int64 = 2, dims_use = 1:10, max_iter::Int64 = 2000, perplexit::Real = 30.0, pca_init::Bool = true,  seed_use::Int64 = 1234)
+function run_tsne(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject, MerfishObject}; ndim::Int64 = 2, dims_use = 1:10, max_iter::Int64 = 2000, perplexit::Real = 30.0, pca_init::Bool = true,  seed_use::Int64 = 1234)
     Random.seed!(seed_use)
     pca_mat = sc_obj.dimReduction.pca.cell_embedding
     pca_mat = pca_mat[:, dims_use]

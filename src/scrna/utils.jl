@@ -1,8 +1,8 @@
 colSum(mtx::AbstractMatrix{<:Real}) = sum(mtx, dims=1)
 rowSum(mtx::AbstractMatrix{<:Real}) = sum(mtx, dims=2)
-rownames(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject}) = sc_obj.rawCount.gene_name
+rownames(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, MerfishObject}) = sc_obj.rawCount.gene_name
 rownames(sc_obj::scATACObject) = sc_obj.rawCount.peak_name
-colnames(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject}) = sc_obj.rawCount.cell_name
+colnames(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject, MerfishObject}) = sc_obj.rawCount.cell_name
 rownames(ct_mat::AbstractCount) = ct_mat.gene_name
 colnames(ct_mat::AbstractCount) = ct_mat.cell_name
 
@@ -75,7 +75,7 @@ function subset_count(ct_obj::T;
     return new_obj
 end
 
-function extract_cluster_count(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject}, cl; count_type = "norm", anno = Union{String, Symbol}="cluster")
+function extract_cluster_count(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, MerfishObject}, cl; count_type = "norm", anno = Union{String, Symbol}="cluster")
     df = sc_obj.clustData.clustering
     if isa(anno, String)
         anno = Symbol(anno)
@@ -139,12 +139,12 @@ function jitter(x)
     end
 end
 
-function variable_genes(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject})
+function variable_genes(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, MerfishObject})
     vargenes = pbmc.varGene.var_gene
     return vargenes
 end
 
-function update_object(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject})
+function update_object(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, MerfishObject})
     cells = colnames(sp_obj)
     genes = rownames(sp_obj)
     all_cells = sp_obj.metaData.Cell_id
@@ -178,7 +178,7 @@ function update_object(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject, X
             sp_obj.clustData.adj_mat = sp_obj.clustData.adj_mat[check_cell, check_cell]
         end
     end
-    if isa(sp_obj, Union{CartanaObject, XeniumObject})
+    if isa(sp_obj, Union{CartanaObject, XeniumObject, MerfishObject})
         println("Updating spatial data...")
         sp_obj.spmetaData.cell = filter(:cell => ∈(cell_set), sp_obj.spmetaData.cell)
         sp_obj.spmetaData.molecule = filter(:cell => ∈(cell_set), sp_obj.spmetaData.molecule)
@@ -239,13 +239,13 @@ function update_object(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject, X
     return sp_obj
 end
 
-function subset_object(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject}; cells = nothing, genes = nothing)
+function subset_object(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, MerfishObject}; cells = nothing, genes = nothing)
     sp_obj.rawCount = subset_count(sp_obj.rawCount; genes = genes, cells = cells)
     sp_obj = update_object(sp_obj)
     return sp_obj
 end
 
-function check_dim(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject}, field_name::Union{Symbol, String})
+function check_dim(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, MerfishObject}, field_name::Union{Symbol, String})
     if isa(field_name, String)
        field_name = Symbol(field_name)
     end
@@ -254,7 +254,7 @@ function check_dim(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject, Xeniu
     return check_length
    end
    
-function update_count(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject}, ct_name::Union{Symbol, String})
+function update_count(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, MerfishObject}, ct_name::Union{Symbol, String})
     cell_id = colnames(sp_obj)
     gene_id = rownames(sp_obj)
     if isa(ct_name, String)
