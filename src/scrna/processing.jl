@@ -101,9 +101,9 @@ function run_clustering_atlas(sc_obj::Union{scRNAObject, VisiumObject, CartanaOb
         indices, dist_mat = knn_matrices(graph)
     end
     n = size(indices, 2)
-    adj_mat = Array{Int64}(undef, n, n)
-    @simd for i in 1:n
-        @simd for j in 1:size(indices, 1)
+    adj_mat = Array{Int16}(undef, n, n)
+    for i in 1:n
+        for j in 1:size(indices, 1)
             adj_mat[indices[j, i], i] = 1
             adj_mat[i, indices[j, i]] = 1
         end
