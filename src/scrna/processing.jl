@@ -39,7 +39,7 @@ function scale_object(ct_obj::NormCountObject; features::Union{Vector{String}, N
     return scale_obj
 end
 
-function scale_object(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject}; features::Union{Vector{String}, Nothing}=nothing, scale_max = 10.0, do_scale::Bool = true, do_center::Bool = true)
+function scale_object(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject,MerfishObject}; features::Union{Vector{String}, Nothing}=nothing, scale_max = 10.0, do_scale::Bool = true, do_center::Bool = true)
     scale_obj = scale_object(sc_obj.normCount; features = features, scale_max=scale_max, do_scale=do_scale, do_center=do_center)
     sc_obj.scaleCount = scale_obj
     return sc_obj
