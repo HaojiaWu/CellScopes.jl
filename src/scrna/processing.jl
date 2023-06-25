@@ -159,7 +159,7 @@ function run_clustering_small(sc_obj::Union{scRNAObject, VisiumObject, CartanaOb
     return sc_obj
 end
 
-function run_clustering(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject}; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
+function run_clustering(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject,MerfishObject}; n_neighbors=30, metric=CosineDist(), res= 0.06, seed_use=1234)
     n = size(sc_obj.rawCount.count_mtx, 2)
     if n < 10000
         obj = run_clustering_small(sc_obj; n_neighbors=n_neighbors, metric=metric, res= res, seed_use=seed_use)
