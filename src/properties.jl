@@ -84,6 +84,8 @@ function Base.show(io::IO, sp_obj::Union{CartanaObject, VisiumObject, XeniumObje
         println(io, "CartanaObject in CellScopes.jl")
     elseif isa(sp_obj, XeniumObject)
         println(io, "XeniumObject in CellScopes.jl")
+    elseif isa(sp_obj, MerfishObject)
+        println(io, "MerfishObject in CellScopes.jl")
     else
         println(io, "VisiumObject in CellScopes.jl")
     end
