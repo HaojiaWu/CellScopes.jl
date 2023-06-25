@@ -41,7 +41,7 @@ function reorder(df::DataFrame,
     return df
 end
 
-function compute_pearson_cor(sp::Union{CartanaObject, XeniumObject}, cluster1::Union{Symbol, String}, cluster2::Union{Symbol, String}; color_scheme::String="lightgreyred",reverse_color::Bool=false)
+function compute_pearson_cor(sp::Union{CartanaObject, XeniumObject,MerfishObject}, cluster1::Union{Symbol, String}, cluster2::Union{Symbol, String}; color_scheme::String="lightgreyred",reverse_color::Bool=false)
     df=sp.spmetaData.cell
     celltypes1=unique(df[!,cluster1])
     celltypes2=unique(df[!,cluster2])
@@ -78,7 +78,7 @@ function scan_cells(x, y, center_x, center_y, radius)
     sqrt((x - center_x)^2 + (y - center_y)^2)< radius
 end
 
-function compare_cell_distances(sp::Union{CartanaObject, XeniumObject}, col::Union{String, Symbol}, target_cell::String, 
+function compare_cell_distances(sp::Union{CartanaObject, XeniumObject,MerfishObject}, col::Union{String, Symbol}, target_cell::String, 
     cell1::String, cell2::String, radius::Union{Int64, Float64})
     coord_cells=sp.spmetaData.cell
     if isa(col, String)
@@ -231,7 +231,7 @@ function slope2deg(slope::Float64)
     return degree
 end
 
-function subset_fov(sp::Union{CartanaObject, XeniumObject}, fov::Vector{Int64}, n_fields_x::Int64, n_fields_y::Int64)
+function subset_fov(sp::Union{CartanaObject, XeniumObject,MerfishObject}, fov::Vector{Int64}, n_fields_x::Int64, n_fields_y::Int64)
     df=sp.spmetaData.cell
     pts, centroids = split_field(df, n_fields_x, n_fields_y)
     pts_sub=pts[fov]
@@ -274,7 +274,7 @@ function compute_new_coord(df, pt, center; span=150)
     return depth, angle
 end
 
-function compute_kidney_coordinates(sp::Union{CartanaObject, XeniumObject}, center)
+function compute_kidney_coordinates(sp::Union{CartanaObject, XeniumObject,MerfishObject}, center)
     df = sp.spmetaData.cell
     kid_depth=[]
     kid_angle=[]
@@ -398,7 +398,7 @@ function visium_unit_radius(spot_num)
     return r_unit
 end
 
-function visium_deconvolution(vs::VisiumObject, sp::Union{CartanaObject, XeniumObject}, spot_r::Union{Int64, Float64};
+function visium_deconvolution(vs::VisiumObject, sp::Union{CartanaObject, XeniumObject,MerfishObject}, spot_r::Union{Int64, Float64};
     vscell_col = "cell" , spcluster_col="celltype", vs_x = "new_x", vs_y = "new_y", 
     sp_x = "new_x", sp_y = "new_y")
     vs_cells = deepcopy(vs.cells)
@@ -444,7 +444,7 @@ function split_spatial(n_bin::Int64)
     return all_segs
 end
 
-function bin_gene_spatial(sp::Union{CartanaObject, XeniumObject}, n_bin::Int64; 
+function bin_gene_spatial(sp::Union{CartanaObject, XeniumObject,MerfishObject}, n_bin::Int64; 
     celltype::Union{String, Int64, Nothing}=nothing,
     assay_use = "measured", imp_type = "SpaGE", genes = nothing)
     cells=deepcopy(sp.spmetaData.cell)
