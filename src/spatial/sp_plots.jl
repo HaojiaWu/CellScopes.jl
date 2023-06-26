@@ -572,7 +572,7 @@ function sp_dim_plot(sp::Union{CartanaObject, VisiumObject,XeniumObject,MerfishO
         xgridvisible = false,ygridvisible = false);
     ax3 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
         xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
-        xgridvisible = false,ygridvisible = false, backgroundcolor=:white)
+        xgridvisible = false,ygridvisible = false)
     if isa(cell_order, Nothing)
         cell_anno=unique(anno_df[!,anno])
     else
