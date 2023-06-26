@@ -201,7 +201,7 @@ end
 
 function read_merfish(merfish_dir::String; prefix = "merfish", min_gene = 0, min_cell = 0)
     cell_meta = merfish_dir * "/cell_metadata.csv"
-    transcript_meta = merfish_dir * "/detected_transcript.csv"
+    transcript_meta = merfish_dir * "/detected_transcripts.csv"
     count_file = merfish_dir * "/cell_by_gene.csv"
     println("1.Loading transcript file...")
     count_molecules = CSV.read(transcript_meta, DataFrame)
@@ -254,13 +254,14 @@ function read_merfish(merfish_dir::String; prefix = "merfish", min_gene = 0, min
     counts = CSV.read(count_file, DataFrame;  types=Dict(1=>String))
     counts = filter(:Column1 => ∈(Set(cells)),  counts)
     genes = names(counts)[2:end]
+    gene_rm = Grep.grep("Blank", genes)
+    genes2 = setdiff(genes, gene_rm)
+    counts = counts[!, genes2]
     counts = counts[!, 2:end]
     counts = convert(SparseMatrixCSC{Int64, Int64},Matrix(counts))
     counts = counts'
-    gene_rm = Grep.grep("Blank", genes)
-    raw_count = RawCountObject(counts, cells, genes)
-    #genes2 = setdiff(genes, gene_rm)
-    #count_molecules = filter(:gene => ∈(Set(genes2)), count_molecules)
+    raw_count = RawCountObject(counts, cells, genes2)
+    count_molecules = filter(:gene => ∈(Set(genes2)), count_molecules)
     spObj = MerfishObject(count_molecules, count_cells, raw_count, poly;
             prefix = prefix, min_gene = min_gene, min_cell = min_gene)
     return spObj
