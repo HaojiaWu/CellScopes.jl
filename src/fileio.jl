@@ -258,7 +258,6 @@ function read_merfish(merfish_dir::String; prefix = "merfish", min_gene = 0, min
     gene_rm = Grep.grep("Blank", genes)
     genes2 = setdiff(genes, gene_rm)
     counts = counts[!, genes2]
-    counts = counts[!, 2:end]
     counts = convert(SparseMatrixCSC{Int64, Int64},Matrix(counts))
     counts = counts'
     raw_count = RawCountObject(counts, cells, genes2)
