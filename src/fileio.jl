@@ -267,3 +267,20 @@ function read_merfish(merfish_dir::String; prefix = "merfish", min_gene = 0, min
     return spObj
 
 end
+
+function read_slideseq(bead_coord_file, count_file; min_gene::Real = 0.0, min_cell::Real = 0.0)
+    loc = CSV.read(bead_coord_file, DataFrame; delim=",")
+    rename!(loc, ["cell","x","y"])
+    counts = CSV.read(count_file, DataFrame; delim="\t")
+    gene_name = counts.GENE
+    cell_name = string.(names(counts)[2:end])
+    counts = counts[!, 2:end]
+    counts = convert(SparseMatrixCSC{Int64, Int64},Matrix(counts))
+    raw_count = RawCountObject(counts, cell_name, gene_name)
+    slide = SlideseqObject(raw_count; min_gene=min_gene, min_cell=min_cell)
+    slide.spmetaData = loc
+    return slide
+end
+
+
+
