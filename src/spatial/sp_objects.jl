@@ -322,3 +322,51 @@ mutable struct MerfishObject <: AbstractImagingObj
         println("MerfishObject was successfully created!")
     end
 end
+
+mutable struct SlideseqObject <: AbstractSequencingObj
+    rawCount::Union{RawCountObject, Nothing}
+    normCount::Union{NormCountObject, Nothing}
+    scaleCount::Union{ScaleCountObject, Nothing}
+    metaData::Union{DataFrame, Nothing}
+    spmetaData::Union{DataFrame, Nothing}
+    varGene::Union{VariableGeneObject, Nothing}
+    dimReduction::Union{ReductionObject, Nothing}
+    clustData::Union{ClusteringObject, Nothing}
+    function SlideseqObject(raw_count::RawCountObject; 
+            meta_data::Union{DataFrame, Nothing} = nothing,
+            sp_meta::Union{DataFrame, Nothing} = nothing,
+            min_gene::Int64 = 0,
+            min_cell::Int64 = 0,
+            prefix::Union{String, Nothing} = nothing,
+            postfix::Union{String, Nothing} = nothing)
+        count_mat = raw_count.count_mtx
+        genes = raw_count.gene_name
+        cells = raw_count.cell_name
+        gene_kept = (vec ∘ collect)(rowSum(count_mat).> min_cell)
+        genes = genes[gene_kept]
+        cell_kept = (vec ∘ collect)(colSum(count_mat) .> min_gene)
+        cells = cells[cell_kept]
+        count_mat = count_mat[gene_kept, cell_kept]
+        if prefix !== nothing
+            println("Adding prefix " * prefix * " to all cells...")
+            cellnames = prefix * "_" .* raw_count.cell_name
+        end
+        if postfix !== nothing
+            println("Adding postfix " * postfix * " to all cells...")
+            cellnames = raw_count.cell_name .* "_" .* postfix
+        end
+        if isa(meta_data, Nothing)
+            nFeatures = vec(colSum(count_mat))
+            nGenes = vec(sum(x->x>0, count_mat, dims=1))
+            meta_data = DataFrame(Cell_id = cells, nFeatures=nFeatures, nGenes = nGenes)
+        end
+        count_obj = RawCountObject(count_mat, cells, genes)
+        slideseq_obj = new(count_obj)
+        if sp_meta !== nothing
+            slideseq_obj.spmetaData = sp_meta
+        end
+        slideseq_obj.metaData = meta_data
+        return slideseq_obj
+        println("SlideseqObject was successfully created!")
+    end
+end
