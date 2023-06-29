@@ -1,7 +1,7 @@
 function read_10x(tenx_dir::String; 
     version::String="v2", 
-    min_gene::Real = 0.0, 
-    min_cell::Real = 0.0
+    min_gene::Int64 = 0, 
+    min_cell::Int64 = 0
 )
     if version === "v2"
         counts = MatrixMarket.mmread(tenx_dir * "/matrix.mtx")
@@ -42,8 +42,8 @@ function load(;filename::String = "cs_obj.jld2")
 end
 
 function read_visium(visium_dir::String; 
-    min_gene::Real = 0.0, 
-    min_cell::Real = 0.0
+    min_gene::Int64 = 0, 
+    min_cell::Int64 = 0
 )
     # locate all files
     highres_image_file = visium_dir * "/spatial/tissue_hires_image.png"
@@ -154,8 +154,8 @@ function read_xenium(xenium_dir::String; prefix = "xenium", min_gene::Int64 = 0,
 end
 
 function read_atac_count(atac_path::String; 
-    min_peak::Real = 0.0, 
-    min_cell::Real = 0.0
+    min_peak::Int64 = 0, 
+    min_cell::Int64 = 0
 )
     peak_loc = atac_path * "/filtered_peak_bc_matrix/peaks.bed"
     cell_file = atac_path * "/filtered_peak_bc_matrix/barcodes.tsv"
@@ -174,7 +174,7 @@ function read_atac_count(atac_path::String;
     return rawcount
 end
 
-function read_atac(atac_path; min_peak=0.0, min_cell=0.0)
+function read_atac(atac_path; min_peak=::Int64=0, min_cell::Int64=0)
     println("This step reads all information directly from cellranger-atac output for downstream analysis. It may take 10 - 15 mins to complete as certain files (e.g. the fragment file) can be large in size.")
     println("1/3 Reading peak count data...")
     raw_count = read_atac_count(atac_path; min_peak=min_peak, min_cell=min_cell)
@@ -199,7 +199,7 @@ function read_atac(atac_path; min_peak=0.0, min_cell=0.0)
     return atac_obj
 end
 
-function read_merfish(merfish_dir::String; prefix = "merfish", min_gene = 0, min_cell = 0)
+function read_merfish(merfish_dir::String; prefix = "merfish", min_gene::Int64 = 0, min_cell::Int64 = 0)
     cell_meta = merfish_dir * "/cell_metadata.csv"
     transcript_meta = merfish_dir * "/detected_transcripts.csv"
     count_file = merfish_dir * "/cell_by_gene.csv"
@@ -268,7 +268,7 @@ function read_merfish(merfish_dir::String; prefix = "merfish", min_gene = 0, min
 
 end
 
-function read_slideseq(bead_coord_file, count_file; min_gene::Real = 0.0, min_cell::Real = 0.0)
+function read_slideseq(bead_coord_file, count_file; min_gene::Int64 = 0, min_cell::Int64 = 0)
     loc = CSV.read(bead_coord_file, DataFrame; delim=",")
     rename!(loc, ["cell","x","y"])
     counts = CSV.read(count_file, DataFrame; delim="\t")
