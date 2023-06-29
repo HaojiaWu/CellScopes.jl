@@ -79,7 +79,7 @@ matchtype(field) = @match field begin
     uns::UndefinedObject => println("- Undefined slot")
 end
 
-function Base.show(io::IO, sp_obj::Union{CartanaObject, VisiumObject, XeniumObject, MerfishObject})
+function Base.show(io::IO, sp_obj::Union{CartanaObject, VisiumObject, XeniumObject, MerfishObject, SlideseqObject})
     if isa(sp_obj, CartanaObject)
         println(io, "CartanaObject in CellScopes.jl")
     elseif isa(sp_obj, XeniumObject)

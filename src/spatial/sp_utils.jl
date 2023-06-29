@@ -398,7 +398,7 @@ function visium_unit_radius(spot_num)
     return r_unit
 end
 
-function visium_deconvolution(vs::VisiumObject, sp::Union{CartanaObject, XeniumObject,MerfishObject}, spot_r::Union{Int64, Float64};
+function visium_deconvolution(vs::Union{VisiumObject, SlideseqObject}, sp::Union{CartanaObject, XeniumObject,MerfishObject}, spot_r::Union{Int64, Float64};
     vscell_col = "cell" , spcluster_col="celltype", vs_x = "new_x", vs_y = "new_y", 
     sp_x = "new_x", sp_y = "new_y")
     vs_cells = deepcopy(vs.cells)
