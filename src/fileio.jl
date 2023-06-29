@@ -174,7 +174,7 @@ function read_atac_count(atac_path::String;
     return rawcount
 end
 
-function read_atac(atac_path; min_peak=::Int64=0, min_cell::Int64=0)
+function read_atac(atac_path; min_peak::Int64=0, min_cell::Int64=0)
     println("This step reads all information directly from cellranger-atac output for downstream analysis. It may take 10 - 15 mins to complete as certain files (e.g. the fragment file) can be large in size.")
     println("1/3 Reading peak count data...")
     raw_count = read_atac_count(atac_path; min_peak=min_peak, min_cell=min_cell)
