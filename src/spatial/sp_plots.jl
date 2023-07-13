@@ -619,7 +619,7 @@ function sp_dim_plot(sp::Union{CartanaObject, VisiumObject,XeniumObject,MerfishO
             anno_df2 = filter(anno => ==(i), anno_df)
             x_ax = anno_df2[!, x_col]
             y_ax = anno_df2[!, y_col]
-            MK.text!(i, position = (mean(x_ax) - label_offset[1], mean(y_ax) - label_offset[2]),align = (:center, :center),font = "Noto Sans Regular",textsize = label_size,color = label_color)
+            MK.text!(i, position = (mean(x_ax) - label_offset[1], mean(y_ax) - label_offset[2]),align = (:center, :center),font = "Noto Sans Regular",fontsize = label_size,color = label_color)
         end
     end
     MK.xlims!(ax1, x_lims)
@@ -872,7 +872,7 @@ function plot_fov(sp::Union{CartanaObject,XeniumObject,MerfishObject}, n_fields_
         font_style="Noto Sans Regular"
     end
     MK.poly!([p for p in pts]; color = bg_color, strokecolor = :black, strokewidth = 3)
-    MK.text!(string.(1:length(centroids)),position = centroids,align = (:center, :center),font = font_style,textsize = label_size,color = label_color)
+    MK.text!(string.(1:length(centroids)),position = centroids,align = (:center, :center),font = font_style,fontsize = label_size,color = label_color)
     MK.xlims!(MK.current_axis(), x_lims)
     MK.ylims!(MK.current_axis(), y_lims)
     MK.current_figure()
@@ -891,7 +891,7 @@ function plot_point(sp::Union{CartanaObject, VisiumObject, XeniumObject,MerfishO
                 xgridvisible = false,ygridvisible = false);
     MK.scatter!(df.x,df.y; strokecolor="black", color=:gray98, strokewidth=0.5,label="")
     MK.scatter!([pt[1]],[pt[2]]; strokecolor="black", color=pt_color, strokewidth=0.5,label="",markersize=marker_size)    
-    MK.text!(label,position = pt2,align = (:center, :bottom),textsize = text_size,color = text_color)
+    MK.text!(label,position = pt2,align = (:center, :bottom),fontsize = text_size,color = text_color)
     MK.xlims!(MK.current_axis(), x_lims)
     MK.ylims!(MK.current_axis(), y_lims)
     MK.current_figure()
