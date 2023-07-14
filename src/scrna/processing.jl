@@ -15,6 +15,9 @@ end
 function normalize_object(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, MerfishObject, SlideseqObject}; scale_factor = 10000, norm_method = "logarithm", pseudocount = 1)
     norm_obj = normalize_object(sc_obj.rawCount; scale_factor = scale_factor, norm_method = norm_method, pseudocount = pseudocount)
     sc_obj.normCount = norm_obj
+    if isa(sc_obj, Union{MerfishObject, CartanaObject, XeniumObject})
+        replace!(sc_obj.normCount.count_mtx, NaN=>0)
+    end
     return sc_obj
 end
 
@@ -124,6 +127,10 @@ function run_clustering_atlas(sc_obj::Union{scRNAObject, VisiumObject, CartanaOb
     cluster_obj = ClusteringObject(df, metric_type, adj_mat, result, res)
     sc_obj.clustData = cluster_obj
     sc_obj.metaData.cluster = df.cluster
+    if isa(sc_obj, Union{MerfishObject, CartanaObject, XeniumObject})
+        sc_obj.spmetaData.cell.cluster = df.cluster
+        sc_obj.spmetaData.polygon.cluster = df.cluster
+    end
     return sc_obj
 end
 
@@ -156,6 +163,10 @@ function run_clustering_small(sc_obj::Union{scRNAObject, VisiumObject, CartanaOb
     cluster_obj = ClusteringObject(df, metric_type, adj_mat, result, res)
     sc_obj.clustData = cluster_obj
     sc_obj.metaData.cluster = df.cluster
+    if isa(sc_obj, Union{MerfishObject, CartanaObject, XeniumObject})
+        sc_obj.spmetaData.cell.cluster = df.cluster
+        sc_obj.spmetaData.polygon.cluster = df.cluster
+    end
     return sc_obj
 end
 

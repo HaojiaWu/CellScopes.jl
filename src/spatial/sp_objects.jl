@@ -318,6 +318,7 @@ mutable struct MerfishObject <: AbstractImagingObj
         spObj.polygonData = poly_data
         spObj = normalize_object(spObj)
         spObj.polynormCount = spObj.normCount
+        replace!(spObj.polynormCount.count_mtx, NaN=>0)
         return spObj
         println("MerfishObject was successfully created!")
     end
