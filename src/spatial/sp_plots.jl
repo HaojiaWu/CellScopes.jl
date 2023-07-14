@@ -542,6 +542,9 @@ function sp_dim_plot(sp::Union{CartanaObject, VisiumObject,XeniumObject,MerfishO
         end
         anno_df[!, x_col] =  anno_df[!, x_col] .* scale_factor
         anno_df[!, y_col] =  anno_df[!, y_col] .* scale_factor
+    elseif isa(sp, SlideseqObject)
+        anno_df = deepcopy(sp.spmetaData)
+        anno_df[!, anno] = string.(sp.metaData[!, anno])
     else
         anno_df=deepcopy(sp.spmetaData.cell)
         anno_df[!, anno] = string.(anno_df[!, anno])
