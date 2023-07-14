@@ -278,8 +278,7 @@ function read_slideseq(bead_coord_file, count_file; min_gene::Int64 = 0, min_cel
     counts = counts[!, 2:end]
     counts = convert(SparseMatrixCSC{Int64, Int64},Matrix(counts))
     raw_count = RawCountObject(counts, cell_name, gene_name)
-    slide = SlideseqObject(raw_count; min_gene=min_gene, min_cell=min_cell)
-    slide.spmetaData = loc
+    slide = SlideseqObject(raw_count; sp_meta=loc, min_gene=min_gene, min_cell=min_cell)
     return slide
 end
 
