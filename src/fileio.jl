@@ -252,7 +252,8 @@ function read_merfish(merfish_dir::String; prefix = "merfish", min_gene::Int64 =
     rename!(count_cells, :Column1 => :cell, :center_x => :x, :center_y => :y)
     count_cells = filter(:cell => ∈(Set(cells)),  count_cells)
     counts = CSV.read(count_file, DataFrame;  types=Dict(1=>String))
-    counts = filter(:cell => ∈(Set(cells)),  counts)
+    counts = counts[indexin(cells, counts.cell),:]
+    count_cells = count_cells[indexin(cells, count_cells.cell),:]
     cells = counts.cell
     genes = names(counts)[2:end]
     gene_rm = Grep.grep("Blank", genes)
