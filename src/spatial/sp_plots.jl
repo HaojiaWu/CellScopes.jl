@@ -124,6 +124,8 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject, XeniumObject,Mer
             end
             coord_cell[!, x_col] =  coord_cell[!, x_col] .* scale_factor
             coord_cell[!, y_col] =  coord_cell[!, y_col] .* scale_factor
+        elseif isa(sp, SlideseqObject)
+            coord_cell=deepcopy(sp.spmetaData)
         else
             coord_cell=deepcopy(sp.spmetaData.cell)
         end
