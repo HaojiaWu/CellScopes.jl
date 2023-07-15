@@ -224,7 +224,7 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject, XeniumObject,Mer
         end
         MK.current_figure()
     elseif layer === "transcripts"
-            if isa(sp, VisiumObject)
+            if isa(sp, Union{VisiumObject, SlideseqObject})
                 error("Visium object doesn't support transcript plot.")
             end
             coord_molecules=deepcopy(sp.spmetaData.molecule)
