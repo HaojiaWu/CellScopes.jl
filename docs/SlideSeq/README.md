@@ -8,8 +8,9 @@ To read the slide-seq data in Julia, just need to feed CellScopes with the gene 
 ```julia
 import CellScopes as cs
 slide = cs.read_slideseq("Puck_200115_08_bead_locations.csv", "Puck_200115_08.digital_expression.txt.gz"; min_gene=100, min_cell = 3)```
-This should create an data type called ```SlideObject```.
 ```
+```
+This should create an data type called ```SlideObject```.
 SlideseqObject in CellScopes.jl
 Genes x Cells = 19979 x 41674
 Available data:
