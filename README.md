@@ -23,6 +23,9 @@ c. 10x Visium: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/visium_t
 <br>
 d. 10x Xenium: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/xenium_tutorial
 <br>
+e. MERFISH: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/MERFISH_tutorial
+<br>
+f. Slide-seq: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/SlideSeq
 
 ## 3. Analysis of imaging-based spatial transcriptomic data (dRNA HybISS by Cartana)
 The tutorial below used the spatial data from CARTANA for demo but basically it can process any FISH-based methods (such as Xenium and MERFISH) after slight data formatting. If you find ```CellScopes.jl``` useful to your research, please cite our paper or this github page. Below is the overall design for the spatial data analysis with ```CellScopes.jl```. <br>
