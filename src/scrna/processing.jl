@@ -129,7 +129,14 @@ function run_clustering_atlas(sc_obj::Union{scRNAObject, VisiumObject, CartanaOb
     sc_obj.metaData.cluster = df.cluster
     if isa(sc_obj, Union{MerfishObject, CartanaObject, XeniumObject})
         sc_obj.spmetaData.cell.cluster = df.cluster
-        sc_obj.spmetaData.polygon.cluster = df.cluster
+        if size(sc_obj.metaData)[1] == size(sc_obj.spmetaData.polygon)[1]
+            sc_obj.spmetaData.polygon.cluster = df.cluster
+        else
+            meta_filtered = filter(:Cell_id => ∈(Set(sc_obj.spmetaData.polygon.mapped_cell)), sc_obj.metaData)
+            from = meta_filtered.Cell_id
+            to = meta_filtered.cluster
+            sc_obj.spmetaData.polygon = map_values(sc_obj.spmetaData.polygon, :mapped_cell, :cluster,from, to)
+        end
     end
     return sc_obj
 end
@@ -165,7 +172,14 @@ function run_clustering_small(sc_obj::Union{scRNAObject, VisiumObject, CartanaOb
     sc_obj.metaData.cluster = df.cluster
     if isa(sc_obj, Union{MerfishObject, CartanaObject, XeniumObject})
         sc_obj.spmetaData.cell.cluster = df.cluster
-        sc_obj.spmetaData.polygon.cluster = df.cluster
+        if size(sc_obj.metaData)[1] == size(sc_obj.spmetaData.polygon)[1]
+            sc_obj.spmetaData.polygon.cluster = df.cluster
+        else
+            meta_filtered = filter(:Cell_id => ∈(Set(sc_obj.spmetaData.polygon.mapped_cell)), sc_obj.metaData)
+            from = meta_filtered.Cell_id
+            to = meta_filtered.cluster
+            sc_obj.spmetaData.polygon = map_values(sc_obj.spmetaData.polygon, :mapped_cell, :cluster,from, to)
+        end
     end
     return sc_obj
 end
