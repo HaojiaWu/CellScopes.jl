@@ -105,7 +105,7 @@ min_pixels_per_cell = 15
 grid_step = scale / min_pixels_per_cell
 bandwidth= scale / 10
 polygons = B.boundary_polygons(molecules, molecules.cell, grid_step=grid_step, bandwidth=bandwidth)
-kidney.polygons = polygons
+kidney.polygonData = polygons
 ```
 Then the gene expression can be mapped to the cell polygons by approximation based on the Elucidean distance between the original cell coordinate and the center of the ploygons. This can be done with the ```polygons_cell_mapping``` function.
 ```julia
