@@ -15,8 +15,8 @@ function polygons_cell_mapping(sp::Union{CartanaObject, XeniumObject}; anno::Uni
     center_df.X=X
     center_df.Y=Y
     cell_coord=sp.spmetaData.cell
-    poly_mtx = Matrix(center_df[:,2:3])
-    ref_mtx = Matrix(cell_coord[:,2:3])
+    poly_mtx = Matrix(center_df[!,2:3])
+    ref_mtx = Matrix(cell_coord[:,["x","y"]])
     ref_coord=[]
     for i in eachrow(ref_mtx)
         ref_coord=push!(ref_coord,i)
