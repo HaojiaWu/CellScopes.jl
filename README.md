@@ -28,6 +28,9 @@ On this markdown page, we will demonstrate how to use ```CellScopes.jl``` to ana
 ***f. MERFISH***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/MERFISH_tutorial
 <br>
 ***g. Slide-seq***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/SlideSeq
+<br>
+***h. seqFISH***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/seqfish_tutorial
+<br>
 
 ## 3. Analysis of imaging-based spatial transcriptomic data (dRNA HybISS by Cartana)
 The tutorial below used the spatial data from CARTANA for demo but basically it can process any FISH-based methods (such as Xenium and MERFISH) after slight data formatting. If you find ```CellScopes.jl``` useful to your research, please cite our paper or this github page. Below is the overall design for the spatial data analysis with ```CellScopes.jl```. <br>
