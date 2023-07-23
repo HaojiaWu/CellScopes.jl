@@ -122,7 +122,7 @@ colors =[ "mediumorchid4","darkseagreen1", "palegreen1","blue", "lightsalmon", "
 
 cs.dim_plot(embryo1; dim_type = "umap", marker_size = 4, anno_color= anno_color)
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/seqfish_umap2" width="600"> 
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/seqfish_umap2.png" width="600"> 
 
 ##### b. Visualize the cell annotation on tissue.
 ```julia
