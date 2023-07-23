@@ -27,7 +27,7 @@ On this markdown page, we will demonstrate how to use ```CellScopes.jl``` to ana
 <br>
 ***f. MERFISH***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/MERFISH_tutorial
 <br>
-***g. Slide-seq***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/SlideSeq
+***g. Slide-seq***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/SlideSeq_tutorial
 <br>
 ***h. seqFISH***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/seqfish_tutorial
 <br>
