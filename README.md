@@ -31,7 +31,7 @@ On this markdown page, we will demonstrate how to use ```CellScopes.jl``` to ana
 <br>
 ***h. seqFISH***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/seqfish_tutorial
 <br>
-***h. STARmap***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/starmap_tutorial
+***i. STARmap***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/starmap_tutorial
 <br>
 
 ## 3. Analysis of imaging-based spatial transcriptomic data (dRNA HybISS by Cartana)
