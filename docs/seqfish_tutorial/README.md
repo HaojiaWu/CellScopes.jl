@@ -1,7 +1,7 @@
 # Analysis and visualization of seqFISH data with CellScopes.jl
 [seqFISH (Sequential Fluorescence In Situ Hybridization)](https://spatial.caltech.edu/seqfish/) is an advanced microscopy technique used to visualize the spatial arrangement of individual mRNA molecules within cells. This tutorial walks you through how to use ```CellScopes``` to analyze [a embryo seqFISH dataset](https://www.nature.com/articles/s41587-021-01006-2).
 
-## 1. Read input files and create a seqFISH object
+### 1. Read input files and create a seqFISH object
 The seqFISH data were provided as R object format (https://content.cruk.cam.ac.uk/jmlab/SpatialMouseAtlas2020/) so we need a proprecessing step in R to create the transcript, cell, and gene-by-cell count files. Here is the example R script to process the original files and save as csv formats.
 
 ```R
@@ -19,10 +19,10 @@ counts <- data.frame(as.matrix(counts))
 write.csv(counts, "counts.csv")
 ```
 
-## 2. Read input files and create a seqFISH object
+### 2. Read input files and create a seqFISH object
 At this point, we can transition back to Julia to continue processing the input files in the appropriate format that CellScopes can further process. The seqFISH data contain three embryo dataset. We only use one of them (embryo1) in this tutorial.
 
-### a. Read all files and reformat them. Note that only "embryo1" was used for downstream analysis.
+#### a. Read all files and reformat them. Note that only "embryo1" was used for downstream analysis.
 ```julia
 import CellScopes as cs
 using DataFrames, CSV, SparseArrays
@@ -43,7 +43,7 @@ em1_transcript = cs.map_values(em1_transcript, :uniqueID, :cell, em1_cell.unique
 em1_cell=em1_cell[!, [["cell","x","y"]; setdiff(names(em1_cell), ["cell","x","y"])]]
 em1_transcript=em1_transcript[!, [["cell","x","y"]; setdiff(names(em1_transcript), ["cell","x","y"])]];
 ```
-### b. Create a seqFISH object
+#### b. Create a seqFISH object
 
 ```julia
 gene_name = em1_counts.Column1
@@ -83,99 +83,92 @@ All fields:
 - polygonData
 ```
 
-### 2. Normalization, dimension reduction and cell clustering
-We then perform data normalization, dimension reduction and cell clustering on the Object using the general functions developed for all data types. Since MERSCOPE output does not include cell clutering and umap dimensional reduction, we generate these results using internal function in ```CellScopes```.
+### 3. Normalization, dimension reduction and cell clustering
+The seqFISH object can be further processed using the general functions in ```CellScopes``` for normalization, PCA, cell clustering and low dimentional cell projection.
 ```julia
-merfish = cs.normalize_object(merfish)
-merfish = cs.scale_object(merfish)
-merfish = cs.find_variable_genes(merfish; nFeatures=500)
-merfish = cs.run_pca(merfish;  method=:svd, pratio = 0.9, maxoutdim = 20)
-merfish = cs.run_umap(merfish; min_dist=0.4, n_neighbors=20)
-merfish = cs.run_clustering(merfish; res=0.00005)
+embryo1 = cs.normalize_object(embryo1)
+embryo1 = cs.scale_object(embryo1)
+embryo1 = cs.find_variable_genes(embryo1; nFeatures=351)
+embryo1 = cs.run_pca(embryo1;  method=:svd, pratio = 0.9, maxoutdim = 20)
+embryo1 = cs.run_umap(embryo1; min_dist=0.4, n_neighbors=20)
+embryo1 = cs.run_clustering(embryo1; res=0.005);
 ```
 
-### 3. Visiualization
-We provide a set of functions to help visualize the cell and gene expression on the dimension reduction space and the spatial space.
+### 4. Create cell polygons for visualization
+We use Baysor(https://github.com/kharchenkolab/Baysor) to draw cell boundary polygons to mimic cell segmentation. We then map the polygons to the closest cells based on the Euclidean distance. Finally, we create a gene-by-polygon count matrix for gene visualization purpose.
+```julia
+import Baysor as B
+em1_transcript.cell = parse.(Int64, em1_transcript.cell)
+polygons = B.boundary_polygons(
+    em1_transcript, em1_transcript.cell, grid_step=0.1, bandwidth=0.2
+)
+embryo1.polygonData = polygons;
+embryo1 = cs.polygons_cell_mapping(embryo1)
+embryo1 = cs.generate_polygon_counts(embryo1)
+```
 
-#### 3.1 Cell annotation
+### 5. Visiualization
+
+#### 5.1 Cell annotation
 
 ##### a. Visualize the cell annotation on umap.
-Note that some outlier data points were usually seen in the MERFISH data. We set the axis limit to trim away these outlier points (usually only several points so not affect the overall results). We are working on including a similar clipping approach (e.g. clip.range parameter) from [Seurat](https://satijalab.org/seurat/articles/spatial_vignette_2.html) in the normalization step to solve the outlier datapoint issue in umap.
+
 ```julia
-cs.dim_plot(merfish; dim_type = "umap", marker_size = 4, 
-    x_lims = (-15, 14), y_lims = (-14, 14))
+colors =[ "mediumorchid4","darkseagreen1", "palegreen1","blue", "lightsalmon", "lightyellow1", 
+     "slategray4", "yellow3", "darkseagreen1", "olivedrab2", "green", "slateblue1", 
+    "#978bf0", "black", "#a7d64e", "#788c3b", "#57e24c", "dodgerblue", 
+    "purple", "#db3c18", "cyan", "#f87197", "#ff0087", "#42ebd1", "#28997e", "pink", 
+     "red", "fuchsia", "yellow","deepskyblue3", "#aa2afa"];
+
+cs.dim_plot(embryo1; dim_type = "umap", marker_size = 4, anno_color= anno_color)
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/merfish_umap.png" width="600"> 
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/seqfish_umap2" width="600"> 
 
 ##### b. Visualize the cell annotation on tissue.
 ```julia
-colors =["blue", "red","magenta", "seagreen", "deepskyblue3", 
-    "green2", "purple","darkgoldenrod1", "cyan", "dodgerblue"]
-celltypes = string.(unique(merfish.metaData.cluster))
+celltypes = string.(unique(embryo1.metaData.cluster))
 anno_color=Dict(celltypes .=> colors)
-cs.sp_dim_plot(merfish, "cluster"; anno_color = anno_color,
-    do_label = false,marker_size = 5, 
-    canvas_size = (2500, 2000), do_legend=false
+
+cs.sp_dim_plot(embryo1, "cluster"; anno_color = anno_color,
+    do_label = false,marker_size = 7, do_legend=false
     )
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/merfish_tissue.png" width="600"> 
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/seqfish_sp.png" width="600"> 
 
-##### c. Select a field of view to visualize the cell annotation
-```julia
-cs.plot_fov(merfish, 20, 20)
-```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/merfish_fov.png" width="600"> 
-
-The grid plot above allows us to choose the specific region of interest for visualization. For instance, we can crop the view to focus on the hippocampus, as shown in the example below.
+##### c. Visualize cell boundary in tissue
 
 ```julia
-crop_fov = cs.subset_fov(merfish, [188, 189, 208, 209],20,20)
-x1 = minimum(crop_fov.x)
-x2 = maximum(crop_fov.x)
-y1 = minimum(crop_fov.y)
-y2 = maximum(crop_fov.y)
-cs.sp_dim_plot(merfish, "cluster"; anno_color = anno_color,
-    do_label = false,marker_size = 4, x_lims = (x1, x2),
-    y_lims = (y1, y2),
-    canvas_size = (500, 400), do_legend=false
-    )
+cs.plot_cell_polygons(embryo1, "cluster";  cell_colors= colors,
+    stroke_color="gray70", stroke_width=0.5, 
+    width=800, height=900)
 ```
 
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/merfish_crop2.png" width="600"> 
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/seqfish_cellpoly.png" width="600"> 
 
-The function below is for visualizing the cell type annotation directly on cell polygons.
-<br>
-```julia
-cs.plot_cell_polygons(merfish, "cluster"; cell_colors=colors, stroke_color="gray40",
-    x_lims=(x1, x2), y_lims = (y1, y2),stroke_width=0.5,
-    width = 500, height = 400)
-```
-
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/merfish_crop1.png" width="600"> 
-
-#### 3.2 Gene expression visiualization
+#### 5.2 Gene expression visiualization
 Plot genes on whole tissue:
 
 ```julia
-cs.sp_feature_plot(merfish, ["COL1A1", "CDH1"]; 
-    color_keys=["gray94", "lemonchiffon", "red"], 
-    height=800, width=1000, marker_size = 4)
+cs.sp_feature_plot(embryo1, ["Pou3f1","Popdc2", "Six3"]; 
+    color_keys=["gray94", "lemonchiffon", "red","darkred"], marker_size=4
+)
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/merfish_gene_whole.png" width="600"> 
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/seqfish_geneplot.png" width="600"> 
 
-Plot genes on the selected region:
+Plot genes on cell polygons:
 
 ```julia
-cs.plot_gene_polygons(merfish, ["COL1A1", "CDH1"]; x_lims = (x1, x2),y_lims = (y1, y2),
-    width = 500, height = 400, color_keys=["gray94", "lemonchiffon", "red","darkred"])
+cs.plot_gene_polygons(embryo1, ["Popdc2"];
+    width = 800, height = 1000, 
+    color_keys=["midnightblue", "green", "orange","red"])
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/merfish_gene_polygon.png" width="600"> 
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/seqfish_gene.png" width="600"> 
 
-#### 3.3 Save the object
+#### 5.3 Save the object
 
-To save all data in the ```MerfishObject```, simply run:
+To save all data in the ```seqFISHObject```, simply run:
 
 ```julia
-cs.save(merfish; filename="merfish.jld2")
+cs.save(embryo1;filename="embryo1.jld2")
 ```
 
