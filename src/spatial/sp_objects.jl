@@ -389,7 +389,7 @@ mutable struct starMapObject <: AbstractImagingObj
     imputeData::Union{SpaImputeObj, Nothing}
     polygonData::Array{Array{Float64, 2}, 1}
 
-    function starMapObject(molecule_data::DataFrame, cell_data::DataFrame, counts::RawCountObject, poly_data::Array{Array{Float64, 2}, 1}; 
+    function starMapObject(molecule_data::DataFrame, cell_data::DataFrame, counts::RawCountObject; 
         prefix::Union{String, Nothing}=nothing, postfix::Union{String, Nothing}=nothing, meta_data::Union{DataFrame, Nothing} = nothing,
         min_gene::Int64=0, min_cell::Int64=0, x_col::Union{String, Symbol} = "x", 
         y_col::Union{String, Symbol} = "y", cell_col::Union{String, Symbol} = "cell")
@@ -452,7 +452,7 @@ mutable struct seqFishObject <: AbstractImagingObj
     imputeData::Union{SpaImputeObj, Nothing}
     polygonData::Array{Array{Float64, 2}, 1}
 
-    function seqFishObject(molecule_data::DataFrame, cell_data::DataFrame, counts::RawCountObject, poly_data::Array{Array{Float64, 2}, 1}; 
+    function seqFishObject(molecule_data::DataFrame, cell_data::DataFrame, counts::RawCountObject; 
         prefix::Union{String, Nothing}=nothing, postfix::Union{String, Nothing}=nothing, meta_data::Union{DataFrame, Nothing} = nothing,
         min_gene::Int64=0, min_cell::Int64=0, x_col::Union{String, Symbol} = "x", 
         y_col::Union{String, Symbol} = "y", cell_col::Union{String, Symbol} = "cell")

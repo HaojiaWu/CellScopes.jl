@@ -208,7 +208,7 @@ function run_spaGE(sp::Union{CartanaObject, XeniumObject,MerfishObject, starMapO
     return sp
 end
 
-function run_gimVI(sp::Union{CartanaObject, XeniumObject, starMapObject, seqFishObject, MerfishObject}, data_path::String)
+function run_gimVI(sp::Union{CartanaObject, XeniumObject, starMapObject, seqFishObject, MerfishObject, starMapObject, seqFishObject}, data_path::String)
     py"""
     import os
     import numpy as np
