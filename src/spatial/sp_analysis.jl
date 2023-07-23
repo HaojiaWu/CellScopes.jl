@@ -51,7 +51,7 @@ function run_SpaGCN(sp::AbstractSpaObj, count_path::String, python_path::String;
             return sp
 end
 
-function run_tangram(sp::Union{CartanaObject, XeniumObject,MerfishObject}, data_path::String)
+function run_tangram(sp::Union{CartanaObject, XeniumObject,MerfishObject, starMapObject, seqFishObject}, data_path::String)
     py"""
     import os
     import numpy as np
@@ -132,7 +132,7 @@ function run_tangram(sp::Union{CartanaObject, XeniumObject,MerfishObject}, data_
     return sp
 end
 
-function run_spaGE(sp::Union{CartanaObject, XeniumObject,MerfishObject}, data_path::String, spaGE_path::String; npv::Int64=30)
+function run_spaGE(sp::Union{CartanaObject, XeniumObject,MerfishObject, starMapObject, seqFishObject}, data_path::String, spaGE_path::String; npv::Int64=30)
     pushfirst!(PyVector(pyimport("sys")."path"), spaGE_path)
     py"""
     import os
@@ -208,7 +208,7 @@ function run_spaGE(sp::Union{CartanaObject, XeniumObject,MerfishObject}, data_pa
     return sp
 end
 
-function run_gimVI(sp::Union{CartanaObject, XeniumObject}, data_path::String)
+function run_gimVI(sp::Union{CartanaObject, XeniumObject, starMapObject, seqFishObject, MerfishObject}, data_path::String)
     py"""
     import os
     import numpy as np

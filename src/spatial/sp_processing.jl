@@ -1,4 +1,4 @@
-function polygons_cell_mapping(sp::Union{CartanaObject, XeniumObject}; anno::Union{String, Symbol}="cluster")
+function polygons_cell_mapping(sp::AbstractImagingObj; anno::Union{String, Symbol}="cluster")
     polygons=sp.polygonData
     center_df=DataFrame()
     cell=Int[]
@@ -46,7 +46,7 @@ function polygons_cell_mapping(sp::Union{CartanaObject, XeniumObject}; anno::Uni
     return sp
 end
 
-function generate_polygon_counts(sp::AbstractSpaObj)
+function generate_polygon_counts(sp::AbstractImagingObj)
     coord_molecules = deepcopy(sp.spmetaData.molecule)
     if isa(sp.spmetaData.polygon, Nothing)
         error("Please run polygons_cell_mapping first!")
