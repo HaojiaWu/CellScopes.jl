@@ -96,7 +96,7 @@ function highlight_cells(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject,
     MK.current_figure()
 end
 
-function feature_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject, MerfishObject, SlideseqObject, seqFishObject, starMapObject}, genes; dim_type::String = "umap", count_type = "norm",x_lims=nothing, y_lims=nothing, marker_size=4, order=true,
+function feature_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject, MerfishObject, SlideseqObject, seqFishObject, STARmapObject}, genes; dim_type::String = "umap", count_type = "norm",x_lims=nothing, y_lims=nothing, marker_size=4, order=true,
     color_keys::Union{Vector{String}, Tuple{String,String,String}}=("black","yellow","red"), do_dimname::Bool=false,
         split_by::Union{String, Symbol, Nothing}=nothing, titlesize::Int64 = 24, height::Real = 500, width::Real = 500)
         dim_data, x_col, y_col = get_dim_data(sc_obj.dimReduction, dim_type)
@@ -214,7 +214,7 @@ function feature_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, Xe
         MK.current_figure()
 end
 
-function dot_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject, MerfishObject, SlideseqObject, seqFishObject, starMapObject}, genes::Union{Vector, String},
+function dot_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject, MerfishObject, SlideseqObject, seqFishObject, STARmapObject}, genes::Union{Vector, String},
     cluster::Union{Symbol, String};count_type = "norm" , expr_cutoff::Union{Float64, Int64}=0, split_by::Union{String, Nothing}=nothing,
     x_title="Gene", y_title = "Cell type", cell_order::Union{Vector, String, Nothing}=nothing,
     fontsize::Int64 = 12, color_scheme::String="yelloworangered",reverse_color::Bool=false,
@@ -288,7 +288,7 @@ else
     return p
 end
 
-function violin_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject, MerfishObject, SlideseqObject, seqFishObject, starMapObject}, genes; 
+function violin_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject, scATACObject, MerfishObject, SlideseqObject, seqFishObject, STARmapObject}, genes; 
     count_type::String ="norm", group_by::String = "cluster", 
     pt_size::Real =0.5, line_width::Real = 0, alpha::Real=1,
     height::Real = 800, width::Real = 500, do_legend::Bool = false,

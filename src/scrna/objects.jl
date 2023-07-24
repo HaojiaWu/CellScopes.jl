@@ -136,18 +136,14 @@ mutable struct scRNAObject <: AbstractSingleCell
     undefinedData::Union{UndefinedObject, Nothing}
     function scRNAObject(raw_count::RawCountObject; 
             meta_data::Union{DataFrame, Nothing} = nothing,
-            #min_gene::Int64 = 0,
-            #min_cell::Int64 = 0,
+            min_gene::Int64 = 0,
+            min_cell::Int64 = 0,
             prefix::Union{String, Nothing} = nothing,
             postfix::Union{String, Nothing} = nothing)
         count_mat = raw_count.count_mtx
         genes = raw_count.gene_name
         cells = raw_count.cell_name
-        #gene_kept = (vec ∘ collect)(rowSum(count_mat).> min_cell)
-        #genes = genes[gene_kept]
-        #cell_kept = (vec ∘ collect)(colSum(count_mat) .> min_gene)
-        #cells = cells[cell_kept]
-        #count_mat = count_mat[gene_kept, cell_kept]
+        count_mat, genes, cells = subset_matrix(count_mat, genes, cells, min_gene, min_cell)
         if isa(meta_data, Nothing)
             nFeatures = vec(colSum(count_mat))
             nGenes = vec(sum(x->x>0, count_mat, dims=1))

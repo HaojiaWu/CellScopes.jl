@@ -87,14 +87,10 @@ mutable struct CartanaObject <: AbstractImagingObj
             molecule_data[!, cell_col] = molecule_data[!, cell_col] .* "_" .* postfix
             cell_data[!, cell_col] = cell_data[!, cell_col] .* "_" .* postfix
         end
-        count_mat = counts.count_mtx
-        gene_name = counts.gene_name
-        cell_name = counts.cell_name
-        gene_kept = (vec ∘ collect)(rowSum(count_mat).>= min_cell)
-        gene_name = gene_name[gene_kept]
-        cell_kept = (vec ∘ collect)(colSum(count_mat) .>= min_gene)
-        cell_name = cell_name[cell_kept]
-        count_mat = count_mat[gene_kept, cell_kept]
+        count_mat = raw_count.count_mtx
+        genes = raw_count.gene_name
+        cells = raw_count.cell_name
+        count_mat, genes, cells = subset_matrix(count_mat, genes, cells, min_gene, min_cell)
         if isa(meta_data, Nothing)
             nFeatures = vec(colSum(count_mat))
             nGenes = vec(sum(x->x>0, count_mat, dims=1))
@@ -151,14 +147,10 @@ mutable struct XeniumObject <: AbstractImagingObj
             molecule_data[!, cell_col] = molecule_data[!, cell_col] .* "_" .* postfix
             cell_data[!, cell_col] = cell_data[!, cell_col] .* "_" .* postfix
         end
-        count_mat = counts.count_mtx
-        gene_name = counts.gene_name
-        cell_name = counts.cell_name
-        gene_kept = (vec ∘ collect)(rowSum(count_mat).>= min_cell)
-        gene_name = gene_name[gene_kept]
-        cell_kept = (vec ∘ collect)(colSum(count_mat) .>= min_gene)
-        cell_name = cell_name[cell_kept]
-        count_mat = count_mat[gene_kept, cell_kept]
+        count_mat = raw_count.count_mtx
+        genes = raw_count.gene_name
+        cells = raw_count.cell_name
+        count_mat, genes, cells = subset_matrix(count_mat, genes, cells, min_gene, min_cell)
         if isa(meta_data, Nothing)
             nFeatures = vec(colSum(count_mat))
             nGenes = vec(sum(x->x>0, count_mat, dims=1))
@@ -218,11 +210,7 @@ mutable struct VisiumObject <: AbstractSequencingObj
         count_mat = raw_count.count_mtx
         genes = raw_count.gene_name
         cells = raw_count.cell_name
-        gene_kept = (vec ∘ collect)(rowSum(count_mat).> min_cell)
-        genes = genes[gene_kept]
-        cell_kept = (vec ∘ collect)(colSum(count_mat) .> min_gene)
-        cells = cells[cell_kept]
-        count_mat = count_mat[gene_kept, cell_kept]
+        count_mat, genes, cells = subset_matrix(count_mat, genes, cells, min_gene, min_cell)
         if prefix !== nothing
             println("Adding prefix " * prefix * " to all cells...")
             cellnames = prefix * "_" .* raw_count.cell_name
@@ -291,14 +279,10 @@ mutable struct MerfishObject <: AbstractImagingObj
             counts.cell_name = counts.cell_name .* "_" .* postfix
             cell_data[!, cell_col] = cell_data[!, cell_col] .* "_" .* postfix
         end
-        count_mat = counts.count_mtx
-        gene_name = counts.gene_name
-        cell_name = counts.cell_name
-        gene_kept = (vec ∘ collect)(rowSum(count_mat).>= min_cell)
-        gene_name = gene_name[gene_kept]
-        cell_kept = (vec ∘ collect)(colSum(count_mat) .>= min_gene)
-        cell_name = cell_name[cell_kept]
-        count_mat = count_mat[gene_kept, cell_kept]
+        count_mat = raw_count.count_mtx
+        genes = raw_count.gene_name
+        cells = raw_count.cell_name
+        count_mat, genes, cells = subset_matrix(count_mat, genes, cells, min_gene, min_cell)
         if isa(meta_data, Nothing)
             nFeatures = vec(colSum(count_mat))
             nGenes = vec(sum(x->x>0, count_mat, dims=1))
@@ -344,11 +328,7 @@ mutable struct SlideseqObject <: AbstractSequencingObj
         count_mat = raw_count.count_mtx
         genes = raw_count.gene_name
         cells = raw_count.cell_name
-        gene_kept = (vec ∘ collect)(rowSum(count_mat).> min_cell)
-        genes = genes[gene_kept]
-        cell_kept = (vec ∘ collect)(colSum(count_mat) .> min_gene)
-        cells = cells[cell_kept]
-        count_mat = count_mat[gene_kept, cell_kept]
+        count_mat, genes, cells = subset_matrix(count_mat, genes, cells, min_gene, min_cell)
         if prefix !== nothing
             println("Adding prefix " * prefix * " to all cells...")
             cellnames = prefix * "_" .* raw_count.cell_name
@@ -374,7 +354,7 @@ mutable struct SlideseqObject <: AbstractSequencingObj
     end
 end
 
-mutable struct starMapObject <: AbstractImagingObj
+mutable struct STARmapObject <: AbstractImagingObj
     rawCount::Union{RawCountObject, Nothing}
     normCount::Union{NormCountObject, Nothing}
     scaleCount::Union{ScaleCountObject, Nothing}
@@ -388,7 +368,7 @@ mutable struct starMapObject <: AbstractImagingObj
     coordData::Union{SpaCoordObj, Nothing}
     imputeData::Union{SpaImputeObj, Nothing}
     polygonData::Union{Vector{Matrix{Float64}}, Nothing}
-    function starMapObject(molecule_data::DataFrame, cell_data::DataFrame, counts::RawCountObject; 
+    function STARmapObject(molecule_data::DataFrame, cell_data::DataFrame, counts::RawCountObject; 
         prefix::Union{String, Nothing}=nothing, postfix::Union{String, Nothing}=nothing, meta_data::Union{DataFrame, Nothing} = nothing,
         min_gene::Int64=0, min_cell::Int64=0, x_col::Union{String, Symbol} = "x", 
         y_col::Union{String, Symbol} = "y", cell_col::Union{String, Symbol} = "cell")
@@ -404,14 +384,10 @@ mutable struct starMapObject <: AbstractImagingObj
             molecule_data[!, cell_col] = molecule_data[!, cell_col] .* "_" .* postfix
             cell_data[!, cell_col] = cell_data[!, cell_col] .* "_" .* postfix
         end
-        count_mat = counts.count_mtx
-        gene_name = counts.gene_name
-        cell_name = counts.cell_name
-        gene_kept = (vec ∘ collect)(rowSum(count_mat).>= min_cell)
-        gene_name = gene_name[gene_kept]
-        cell_kept = (vec ∘ collect)(colSum(count_mat) .>= min_gene)
-        cell_name = cell_name[cell_kept]
-        count_mat = count_mat[gene_kept, cell_kept]
+        count_mat = raw_count.count_mtx
+        genes = raw_count.gene_name
+        cells = raw_count.cell_name
+        count_mat, genes, cells = subset_matrix(count_mat, genes, cells, min_gene, min_cell)
         if isa(meta_data, Nothing)
             nFeatures = vec(colSum(count_mat))
             nGenes = vec(sum(x->x>0, count_mat, dims=1))
@@ -432,7 +408,7 @@ mutable struct starMapObject <: AbstractImagingObj
         spObj.metaData = meta_data
         spObj.polygonData = nothing
         return spObj
-        println("starMapObject was successfully created!")
+        println("STARmapObject was successfully created!")
     end
 end
 
@@ -466,14 +442,10 @@ mutable struct seqFishObject <: AbstractImagingObj
             molecule_data[!, cell_col] = molecule_data[!, cell_col] .* "_" .* postfix
             cell_data[!, cell_col] = cell_data[!, cell_col] .* "_" .* postfix
         end
-        count_mat = counts.count_mtx
-        gene_name = counts.gene_name
-        cell_name = counts.cell_name
-        gene_kept = (vec ∘ collect)(rowSum(count_mat).>= min_cell)
-        gene_name = gene_name[gene_kept]
-        cell_kept = (vec ∘ collect)(colSum(count_mat) .>= min_gene)
-        cell_name = cell_name[cell_kept]
-        count_mat = count_mat[gene_kept, cell_kept]
+        count_mat = raw_count.count_mtx
+        genes = raw_count.gene_name
+        cells = raw_count.cell_name
+        count_mat, genes, cells = subset_matrix(count_mat, genes, cells, min_gene, min_cell)
         if isa(meta_data, Nothing)
             nFeatures = vec(colSum(count_mat))
             nGenes = vec(sum(x->x>0, count_mat, dims=1))
