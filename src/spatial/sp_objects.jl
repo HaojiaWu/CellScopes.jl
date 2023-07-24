@@ -87,9 +87,9 @@ mutable struct CartanaObject <: AbstractImagingObj
             molecule_data[!, cell_col] = molecule_data[!, cell_col] .* "_" .* postfix
             cell_data[!, cell_col] = cell_data[!, cell_col] .* "_" .* postfix
         end
-        count_mat = raw_count.count_mtx
-        genes = raw_count.gene_name
-        cells = raw_count.cell_name
+        count_mat = counts.count_mtx
+        genes = counts.gene_name
+        cells = counts.cell_name
         count_mat, genes, cells = subset_matrix(count_mat, genes, cells, min_gene, min_cell)
         if isa(meta_data, Nothing)
             nFeatures = vec(colSum(count_mat))
