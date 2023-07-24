@@ -51,7 +51,7 @@ cell_name = em1_cell.cell
 count_df = em1_counts[!, 2:end]
 count_df = convert(SparseMatrixCSC{Int64, Int64},Matrix(count_df))
 raw_count = cs.RawCountObject(count_df, cell_name, gene_name)
-embryo1 = cs.CartanaObject(em1_transcript, em1_cell, raw_count;
+embryo1 = cs.seqFishObject(em1_transcript, em1_cell, raw_count;
     prefix = "embryo1", min_gene = 0, min_cell = 3)
 ```
 
