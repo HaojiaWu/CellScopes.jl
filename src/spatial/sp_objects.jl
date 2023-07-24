@@ -88,9 +88,9 @@ mutable struct CartanaObject <: AbstractImagingObj
             cell_data[!, cell_col] = cell_data[!, cell_col] .* "_" .* postfix
         end
         count_mat = counts.count_mtx
-        genes = counts.gene_name
-        cells = counts.cell_name
-        count_mat, genes, cells = subset_matrix(count_mat, genes, cells, min_gene, min_cell)
+        gene_name = counts.gene_name
+        cell_name = counts.cell_name
+        count_mat, gene_name, cell_name = subset_matrix(count_mat, gene_name, cell_name, min_gene, min_cell)
         if isa(meta_data, Nothing)
             nFeatures = vec(colSum(count_mat))
             nGenes = vec(sum(x->x>0, count_mat, dims=1))
@@ -148,9 +148,9 @@ mutable struct XeniumObject <: AbstractImagingObj
             cell_data[!, cell_col] = cell_data[!, cell_col] .* "_" .* postfix
         end
         count_mat = raw_count.count_mtx
-        genes = raw_count.gene_name
-        cells = raw_count.cell_name
-        count_mat, genes, cells = subset_matrix(count_mat, genes, cells, min_gene, min_cell)
+        gene_name = raw_count.gene_name
+        cell_name = raw_count.cell_name
+        count_mat, gene_name, cell_name = subset_matrix(count_mat, gene_name, cell_name, min_gene, min_cell)
         if isa(meta_data, Nothing)
             nFeatures = vec(colSum(count_mat))
             nGenes = vec(sum(x->x>0, count_mat, dims=1))
@@ -280,9 +280,9 @@ mutable struct MerfishObject <: AbstractImagingObj
             cell_data[!, cell_col] = cell_data[!, cell_col] .* "_" .* postfix
         end
         count_mat = raw_count.count_mtx
-        genes = raw_count.gene_name
-        cells = raw_count.cell_name
-        count_mat, genes, cells = subset_matrix(count_mat, genes, cells, min_gene, min_cell)
+        gene_name = raw_count.gene_name
+        cell_name = raw_count.cell_name
+        count_mat, gene_name, cell_name = subset_matrix(count_mat, gene_name, cell_name, min_gene, min_cell)
         if isa(meta_data, Nothing)
             nFeatures = vec(colSum(count_mat))
             nGenes = vec(sum(x->x>0, count_mat, dims=1))
@@ -385,9 +385,9 @@ mutable struct STARmapObject <: AbstractImagingObj
             cell_data[!, cell_col] = cell_data[!, cell_col] .* "_" .* postfix
         end
         count_mat = raw_count.count_mtx
-        genes = raw_count.gene_name
-        cells = raw_count.cell_name
-        count_mat, genes, cells = subset_matrix(count_mat, genes, cells, min_gene, min_cell)
+        gene_name = raw_count.gene_name
+        cell_name = raw_count.cell_name
+        count_mat, gene_name, cell_name = subset_matrix(count_mat, gene_name, cell_name, min_gene, min_cell)
         if isa(meta_data, Nothing)
             nFeatures = vec(colSum(count_mat))
             nGenes = vec(sum(x->x>0, count_mat, dims=1))
@@ -443,9 +443,9 @@ mutable struct seqFishObject <: AbstractImagingObj
             cell_data[!, cell_col] = cell_data[!, cell_col] .* "_" .* postfix
         end
         count_mat = raw_count.count_mtx
-        genes = raw_count.gene_name
-        cells = raw_count.cell_name
-        count_mat, genes, cells = subset_matrix(count_mat, genes, cells, min_gene, min_cell)
+        gene_name = raw_count.gene_name
+        cell_name = raw_count.cell_name
+        count_mat, gene_name, cell_name = subset_matrix(count_mat, gene_name, cell_name, min_gene, min_cell)
         if isa(meta_data, Nothing)
             nFeatures = vec(colSum(count_mat))
             nGenes = vec(sum(x->x>0, count_mat, dims=1))
