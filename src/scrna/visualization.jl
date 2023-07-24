@@ -1,4 +1,4 @@
-function dim_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject,scATACObject, MerfishObject, SlideseqObject, seqFishObject, starMapObject}; anno::Union{Symbol, String}="cluster", dim_type::String="umap",
+function dim_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, XeniumObject,scATACObject, MerfishObject, SlideseqObject, seqFishObject, STARmapObject}; anno::Union{Symbol, String}="cluster", dim_type::String="umap",
     anno_color::Union{Nothing, Dict} = nothing, cell_order::Union{Vector{String}, Nothing}=nothing,
     x_lims=nothing, y_lims=nothing,canvas_size=(600,500),stroke_width=0.5,stroke_color=:transparent, 
         marker_size=2, label_size=20, label_color="black", label_offset=(0,0), do_label=true, do_legend=true,
