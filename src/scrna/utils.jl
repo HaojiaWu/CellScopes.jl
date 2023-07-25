@@ -279,7 +279,8 @@ function check_vec(vec1, vec2)
    end
 end
 
-function subset_matrix(count_mat, gene_name, cell_name, min_cell, min_gene)
+#= too slow
+function subset_matrix(count_mat, gene_name, cell_name, min_gene, min_cell)
     row_sum = sum(count_mat, dims=2)
     col_sum = sum(count_mat, dims=1)  
     gene_kept = vec(row_sum .>= min_cell)
@@ -287,5 +288,17 @@ function subset_matrix(count_mat, gene_name, cell_name, min_cell, min_gene)
     gene_name = gene_name[gene_kept]
     cell_name = cell_name[cell_kept]
     count_mat = count_mat[gene_kept, cell_kept]
+    return count_mat, gene_name, cell_name
+end
+=#
+
+function subset_matrix(count_mat, gene_name, cell_name, min_gene, min_cell)
+    row_sum = sum(count_mat, dims=2)
+    col_sum = sum(count_mat, dims=1)
+    gene_kept = findall(x -> x >= min_cell, row_sum[:])
+    cell_kept = findall(x -> x >= min_gene, col_sum[:])
+    gene_name = gene_name[gene_kept]
+    cell_name = cell_name[cell_kept]
+    count_mat = @view count_mat[gene_kept, cell_kept]
     return count_mat, gene_name, cell_name
 end
