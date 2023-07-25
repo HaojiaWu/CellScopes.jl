@@ -270,6 +270,7 @@ function update_count(sp_obj::Union{scRNAObject, VisiumObject, CartanaObject, Xe
     return sp_obj
 end
 
+#= too slow
 function check_vec(vec1, vec2)
     diff_elm = setdiff(vec2, vec1)
    if length(diff_elm) == 0
@@ -277,6 +278,12 @@ function check_vec(vec1, vec2)
    else
        gene_keep = [x ∈ diff_elm ? false : true for x in vec2]
    end
+end
+=#
+
+function check_vec(vec1, vec2)
+    vec1_set = Set(vec1)
+    return [x in vec1_set for x in vec2]
 end
 
 #= too slow
