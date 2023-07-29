@@ -602,7 +602,7 @@ function sp_dim_plot(sp::Union{CartanaObject, VisiumObject,XeniumObject,MerfishO
         colors = unique(anno_df2.new_color)
         if do_legend
             MK.scatter!(ax2, x_ax , y_ax; strokecolor=stroke_color, visible=false,
-                color=:white, strokewidth=0, markersize=2*legend_size, label=i)
+                color=colors[1], strokewidth=0, markersize=2*legend_size, label=i)
             MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
                 color=colors[1], strokewidth=0, markersize=marker_size, label=i)
         else
