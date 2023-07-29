@@ -2,7 +2,7 @@ function dim_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, Xenium
     anno_color::Union{Nothing, Dict} = nothing, cell_order::Union{Vector{String}, Nothing}=nothing,
     x_lims=nothing, y_lims=nothing,canvas_size=(600,500),stroke_width=0.5,stroke_color=:transparent, 
         marker_size=2, label_size=20, label_color="black", label_offset=(0,0), do_label=true, do_legend=true,
-        legend_size = 10, legend_fontsize = 16)   
+        legend_size = 10, legend_fontsize = 16, legend_ncol=1)   
         dim_data,x_col, y_col = get_dim_data(sc_obj.dimReduction, dim_type)
         meta_data = sc_obj.metaData
         if isa(x_lims, Nothing)
@@ -30,9 +30,6 @@ function dim_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, Xenium
         ax2 = MK.Axis(fig[1,1]; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
             xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
             xgridvisible = false,ygridvisible = false);
-        ax3 = MK.Axis(fig[1,1]; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
-            xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
-            xgridvisible = false,ygridvisible = false, backgroundcolor=:white)
         if isa(cell_order, Nothing)
             cell_anno=unique(dim_data[!,anno])
         else
@@ -46,17 +43,17 @@ function dim_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, Xenium
             y_ax = anno_df2[!, y_col]
             colors = unique(anno_df2.new_color)
             if do_legend
-                MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
-                    color=string.(colors[1]), strokewidth=0, markersize=legend_size, label=i)
-                MK.scatter!(ax2, x_ax , y_ax; strokecolor=stroke_color, 
+                 MK.scatter!(ax2, x_ax , y_ax; strokecolor=stroke_color, visible=false,
                     color=:white, strokewidth=0, markersize=2*legend_size, label=i)
-                MK.scatter!(ax3, x_ax , y_ax; strokecolor=stroke_color, 
+                MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
                     color=string.(colors[1]), strokewidth=0, markersize=marker_size, label=i)
-                MK.Legend(fig[1, 2], ax1, framecolor=:white, labelsize=legend_fontsize)
             else
                 MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
                     color=string.(colors[1]), strokewidth=0, markersize=marker_size)
             end
+        end
+        if do_legend
+            MK.Legend(fig[1, 2], ax2, framecolor=:white, labelsize=legend_fontsize, nbanks=legend_ncol)
         end
         if do_label
             for i in cell_anno

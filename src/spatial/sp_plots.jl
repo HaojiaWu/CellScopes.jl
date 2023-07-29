@@ -518,7 +518,7 @@ function sp_dim_plot(sp::Union{CartanaObject, VisiumObject,XeniumObject,MerfishO
     anno_color::Union{Nothing, Dict} = nothing, x_col::String = "x", y_col::String = "y", cell_order::Union{Vector{String}, Nothing}=nothing,
     x_lims=nothing, y_lims=nothing,canvas_size=(900,1000),stroke_width=0.5,stroke_color=:transparent,  bg_color=:white,
         marker_size=2, label_size=50, label_color="black", label_offset=(0,0), do_label=false, do_legend=true, alpha::Real = 1,
-        legend_size = 10, legend_fontsize = 16,img_res::String = "low",  adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3
+        legend_size = 10, legend_fontsize = 16, legend_ncol = 1,img_res::String = "low",  adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3
     )
     if isa(sp, VisiumObject)
         anno_df = deepcopy(sp.spmetaData)
@@ -526,8 +526,12 @@ function sp_dim_plot(sp::Union{CartanaObject, VisiumObject,XeniumObject,MerfishO
         x_col = Symbol(x_col)
         y_col = Symbol(y_col)
         rename!(anno_df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
-        anno_df[!, x_col] = parse.(Float64, anno_df[!, x_col])
-        anno_df[!, y_col] = parse.(Float64, anno_df[!, y_col])
+        if isa(anno_df[!, x_col], Vector{String})
+            anno_df[!, x_col] = parse.(Float64, anno_df[!, x_col])
+        end
+        if isa(anno_df[!, y_col], Vector{String})
+            anno_df[!, y_col] = parse.(Float64, anno_df[!, y_col])
+        end
         if img_res == "high"
             scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
         elseif img_res == "low"
@@ -575,9 +579,6 @@ function sp_dim_plot(sp::Union{CartanaObject, VisiumObject,XeniumObject,MerfishO
     ax2 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
         xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
         xgridvisible = false,ygridvisible = false);
-    ax3 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
-        xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
-        xgridvisible = false,ygridvisible = false)
     if isa(cell_order, Nothing)
         cell_anno=unique(anno_df[!,anno])
     else
@@ -600,23 +601,17 @@ function sp_dim_plot(sp::Union{CartanaObject, VisiumObject,XeniumObject,MerfishO
         y_ax = anno_df2[!, y_col]
         colors = unique(anno_df2.new_color)
         if do_legend
-            if isa(sp, VisiumObject)
-                MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
-                    color=colors[1], strokewidth=0, 
-                    markersize=marker_size, label=i) 
-            else
-                MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
-                    color=colors[1], strokewidth=0, markersize=legend_size, label=i)
-                MK.scatter!(ax2, x_ax , y_ax; strokecolor=stroke_color, 
-                    color=:white, strokewidth=0, markersize=2*legend_size, label=i)
-                MK.scatter!(ax3, x_ax , y_ax; strokecolor=stroke_color, 
-                    color=colors[1], strokewidth=0, markersize=marker_size, label=i)
-            end
-            MK.Legend(fig[1, 2], ax1, framecolor=:white, labelsize=legend_fontsize)
+            MK.scatter!(ax2, x_ax , y_ax; strokecolor=stroke_color, visible=false,
+                color=:white, strokewidth=0, markersize=2*legend_size, label=i)
+            MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
+                color=colors[1], strokewidth=0, markersize=marker_size, label=i)
         else
             MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
                 color=colors[1], strokewidth=0, markersize=marker_size)
         end
+    end
+    if do_legend
+        MK.Legend(fig[1, 2], ax2, framecolor=:white, labelsize=legend_fontsize, nbanks=legend_ncol)
     end
     if do_label
         for i in cell_anno
@@ -631,8 +626,6 @@ function sp_dim_plot(sp::Union{CartanaObject, VisiumObject,XeniumObject,MerfishO
     MK.ylims!(ax1, y_lims)
     MK.xlims!(ax2, x_lims)
     MK.ylims!(ax2, y_lims)
-    MK.xlims!(ax3, x_lims)
-    MK.ylims!(ax3, y_lims)
     MK.xlims!(MK.current_axis(), x_lims)
     MK.ylims!(MK.current_axis(), y_lims)
     return MK.current_figure()
