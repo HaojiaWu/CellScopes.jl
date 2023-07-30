@@ -198,8 +198,8 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject, XeniumObject,Mer
                 n_col1 = 2i-1
                 n_col2 = 2i
             else
-                n_col1 = 2*(i-3*(n_rows-1))-1
-                n_col2 = 2*(i-3*(n_rows-1))
+                n_col1 = 2*(i-3*(n_row-1))-1
+                n_col2 = 2*(i-3*(n_row-1))
             end
             ax1 = MK.Axis(fig[n_row,n_col1]; backgroundcolor = bg_color, xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
             xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
@@ -295,7 +295,7 @@ function sp_feature_plot(sp::Union{CartanaObject, VisiumObject, XeniumObject,Mer
                     if i < 4
                         n_col = i
                     else
-                        n_col = i-3*(n_rows-1)
+                        n_col = i-3*(n_row-1)
                     end
                     df_plt = DataFrames.transform(coord_molecules, :gene => ByRow(name -> name == gene ? color_keys[3] : color_keys[1]) => :forcolor)
                     df_plt1 = filter(:forcolor => ==(color_keys[1]), df_plt)
@@ -367,8 +367,8 @@ function plot_gene_polygons(sp::Union{CartanaObject,XeniumObject,MerfishObject, 
             n_col1 = 2i-1
             n_col2 = 2i
         else
-            n_col1 = 2*(i-3*(n_rows-1))-1
-            n_col2 = 2*(i-3*(n_rows-1))
+            n_col1 = 2*(i-3*(n_row-1))-1
+            n_col2 = 2*(i-3*(n_row-1))
         end
         ax1 = MK.Axis(fig[n_row,n_col1]; backgroundcolor = bg_color, xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
         xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,

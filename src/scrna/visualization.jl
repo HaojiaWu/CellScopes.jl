@@ -146,8 +146,8 @@ function feature_plot(sc_obj::Union{scRNAObject, VisiumObject, CartanaObject, Xe
                     n_col1 = 2i-1
                     n_col2 = 2i
                 else
-                    n_col1 = 2*(i-3*(n_rows-1))-1
-                    n_col2 = 2*(i-3*(n_rows-1))
+                    n_col1 = 2*(i-3*(n_row-1))-1
+                    n_col2 = 2*(i-3*(n_row-1))
                 end
                 if do_dimname
                     x_label = names(df_plt)[1]

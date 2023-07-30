@@ -302,8 +302,8 @@ end
 function subset_matrix(count_mat, gene_name, cell_name, min_gene, min_cell)
     row_sum = sum(count_mat, dims=2)
     col_sum = sum(count_mat, dims=1)
-    gene_kept = findall(x -> x >= min_cell, row_sum[:])
-    cell_kept = findall(x -> x >= min_gene, col_sum[:])
+    gene_kept = findall(x -> x > min_cell, row_sum[:])
+    cell_kept = findall(x -> x > min_gene, col_sum[:])
     gene_name = gene_name[gene_kept]
     cell_name = cell_name[cell_kept]
     count_mat = @view count_mat[gene_kept, cell_kept]
