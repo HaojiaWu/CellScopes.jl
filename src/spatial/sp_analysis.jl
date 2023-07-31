@@ -132,78 +132,50 @@ function run_tangram(sp::Union{CartanaObject, XeniumObject,MerfishObject, STARma
     return sp
 end
 
-function run_spaGE(sp::Union{CartanaObject, XeniumObject,MerfishObject, STARmapObject, seqFishObject}, data_path::String, spaGE_path::String; npv::Int64=30)
+function run_spaGE(sp::Union{CartanaObject, XeniumObject,MerfishObject, STARmapObject, seqFishObject}, 
+    sc::scRNAObject, spaGE_path::String; gene_list::Union{String, Vector{String}, Nothing}=nothing, npv::Int64=30)
+    if isa(gene_list, String)
+        gene_list = [gene_list]
+    end
+    if isa(gene_list, Nothing)
+        gene_list = sc.rawCount.gene_name
+    end
     pushfirst!(PyVector(pyimport("sys")."path"), spaGE_path)
-    py"""
-    import os
-    print(os.getcwd())
-    os.chdir($spaGE_path)
-    print(os.getcwd())
-    import numpy as np
-    import pandas as pd
-    import loompy
-    import matplotlib.pyplot as plt
-    import scipy.stats as st
-    import SpaGE
-    from scipy.stats import spearmanr
-    import tangram as tg
-    from SpaGE.main import SpaGE
-    import anndata
-    from anndata import AnnData
-    import warnings
-    warnings.filterwarnings('ignore')
-    import glob
-    import scanpy as sc
-    from scvi.external import GIMVI
-    ## functions
-    def Norm_rna(x):
-        return np.log(((x/np.sum(x))*1000000)+1)
-    def Norm_spatial(x):
-            return np.log(((x/np.sum(x))*np.median(cell_count)) + 1)
-    print("preparing single cell data...")
-    sc_count = sc.read_mtx(glob.glob($data_path + '/' + 'sc_matrix*')[0])
-    sc_count = pd.DataFrame.sparse.from_spmatrix(sc_count.X)
-    cell_id = pd.read_csv(glob.glob($data_path + '/' + 'sc_barcode*')[0], header = None)
-    cell_id = cell_id[0].to_list()
-    gene_id1 = pd.read_csv(glob.glob($data_path + '/' + 'sc_gene*')[0], header = None)
-    gene_id1 = gene_id1[0].to_list()
-    sc_count.columns = cell_id
-    sc_count.index = gene_id1
-    gene_count = np.sum(sc_count>0, axis=1)
-    sc_count = sc_count.loc[gene_count >=10, :]
-    sc_count = sc_count.apply(Norm_rna,axis=0)
-    sc_count=sc_count.sparse.to_dense()
-    ## read spatial data
-    print("preparing spatial data...")
-    sp_count = sc.read_mtx(glob.glob($data_path + '/' + 'sp_matrix*')[0])
-    sp_count = pd.DataFrame.sparse.from_spmatrix(sp_count.X)
-    cell_id2 = pd.read_csv(glob.glob($data_path + '/' + 'sp_barcode*')[0], header = None)
-    cell_id2 = cell_id2[0].to_list()
-    gene_id = pd.read_csv(glob.glob($data_path + '/' + 'sp_gene*')[0], header = None)
-    gene_id = gene_id[0].to_list()
-    sp_count.columns = cell_id2
-    sp_count.index = gene_id
-    cell_count = np.sum(sp_count,axis=0)
-    sp_count = sp_count.apply(Norm_spatial,axis=0)
-    sp_count = sp_count.sparse.to_dense()
-    gene_list = sc_count.index.to_list()
-    Imp_Genes = SpaGE(sp_count.T,
-                  sc_count.T,
-                  n_pv=30,
-                  genes_to_predict = gene_list)
-    print("done!")
-    """
-    imp_count = py"Imp_Genes"
-    new_df = pd_to_df(imp_count)
-    gene_list = names(new_df)
-    new_df = convert(SparseMatrixCSC{Float64, Int64},Matrix(new_df)')
-    cell_list = py"cell_id2"
-    cell_list = string.(cell_list)
-    new_counts = SpaCountObj(new_df, cell_list, gene_list)
+    spge = pyimport("SpaGE.main")
+    np = pyimport("numpy")
+    pd = pyimport("pandas")
+    sp_count = deepcopy(sp.rawCount.count_mtx)
+    cell_count = sum(sp_count, dims=1)
+    median_value = median(cell_count)
+    sp_count = hcat([log_norm_spatial(sp_count[:, i], median_value) for i = 1:size(sp_count, 2)]...)
+    sc_count = deepcopy(sc.rawCount.count_mtx)
+    sc_count = hcat([log_norm_cpm(sc_count[:, i]) for i = 1:size(sc_count, 2)]...)
+    sc_cells = sc.rawCount.cell_name
+    sc_count = DataFrame(Matrix(sc_count),:auto)
+    rename!(sc_count, sc_cells)
+    sc_count = pd.DataFrame(Dict(name => sc_count[!, name] for name in names(sc_count)))
+    sc_count = sc_count.set_axis(gene_list)
+    sp_cells = sp.rawCount.cell_name
+    sp_genes = sp.rawCount.gene_name
+    sp_count = DataFrame(Matrix(sp_count),:auto)
+    rename!(sp_count, sp_cells);
+    sp_count = pd.DataFrame(Dict(name => sp_count[!, name] for name in names(sp_count)));
+    sp_count = sp_count.set_axis(sp_genes)
+    imp_genes = spge.SpaGE(sp_count.T,
+        sc_count.T,
+        n_pv=npv,
+        genes_to_predict = gene_list)
+    new_df = pd_to_df(imp_genes)
+    gene_ids = names(new_df)
+    new_df.cell = sp_count.columns.to_list()
+    new_df = new_df[indexin(sp_cells, new_df.cell),:]
+    new_df = new_df[!, gene_ids]
+    imp_counts = convert(SparseMatrixCSC{Float64, Int64},Matrix(new_df)')
+    imp_counts = SpaCountObj(imp_counts, sp_cells, gene_ids)
     if isdefined(sp, :imputeData)
-        sp.imputeData = add_impdata(sp.imputeData, "SpaGE", new_counts)
+        sp.imputeData = add_impdata(sp.imputeData, "SpaGE", imp_counts)
     else
-        sp.imputeData = SpaImputeObj("SpaGE"; imp_data = new_counts)
+        sp.imputeData = SpaImputeObj("SpaGE"; imp_data = imp_counts)
     end
     return sp
 end

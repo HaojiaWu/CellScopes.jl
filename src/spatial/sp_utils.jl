@@ -519,3 +519,11 @@ function gunzip(fname) ## function from https://github.com/JuliaSparse/MatrixMar
     end
     destname
 end
+
+function log_norm_spatial(x, median_value)
+    return log.(((x ./ sum(x)) .* median_value) .+ 1)
+end
+
+function log_norm_cpm(x)
+    return log.(((x ./ sum(x)) .* 1000000) .+ 1)
+end
