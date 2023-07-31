@@ -151,10 +151,11 @@ function run_spaGE(sp::Union{CartanaObject, XeniumObject,MerfishObject, STARmapO
     sc_count = deepcopy(sc.rawCount.count_mtx)
     sc_count = hcat([log_norm_cpm(sc_count[:, i]) for i = 1:size(sc_count, 2)]...)
     sc_cells = sc.rawCount.cell_name
+    sc_genes = sc.rawCount.gene_name
     sc_count = DataFrame(Matrix(sc_count),:auto)
     rename!(sc_count, sc_cells)
     sc_count = pd.DataFrame(Dict(name => sc_count[!, name] for name in names(sc_count)))
-    sc_count = sc_count.set_axis(gene_list)
+    sc_count = sc_count.set_axis(sc_genes)
     sp_cells = sp.rawCount.cell_name
     sp_genes = sp.rawCount.gene_name
     sp_count = DataFrame(Matrix(sp_count),:auto)
