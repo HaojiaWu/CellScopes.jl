@@ -53,6 +53,7 @@ using DataFramesMeta
 using GeneticsMakie
 using Arrow
 using HDF5
+using PyCallUtils
 
 include("scrna/objects.jl")
 include("spatial/sp_objects.jl")

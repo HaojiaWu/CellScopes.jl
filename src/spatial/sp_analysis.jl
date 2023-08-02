@@ -51,85 +51,53 @@ function run_SpaGCN(sp::AbstractSpaObj, count_path::String, python_path::String;
             return sp
 end
 
-function run_tangram(sp::Union{CartanaObject, XeniumObject,MerfishObject, STARmapObject, seqFishObject}, data_path::String)
-    py"""
-    import os
-    import numpy as np
-    import pandas as pd
-    import tangram as tg
-    import anndata
-    import scipy
-    from anndata import AnnData
-    import warnings
-    warnings.filterwarnings('ignore')
-    import glob
-    import scanpy as sc
-    def Norm_rna(x):
-        return np.log(((x/np.sum(x))*1000000)+1)
-    def Norm_spatial(x):
-            return np.log(((x/np.sum(x))*np.median(cell_count)) + 1)
-    print("preparing single cell data...")
-    sc_meta = pd.read_csv(glob.glob($data_path + '/' + 'sc_meta*')[0])
-    sc_count = sc.read_mtx(glob.glob($data_path + '/' + 'sc_matrix*')[0])
-    sc_count = pd.DataFrame.sparse.from_spmatrix(sc_count.X)
-    cell_id = pd.read_csv(glob.glob($data_path + '/' + 'sc_barcode*')[0], header = None)
-    cell_id = cell_id[0].to_list()
-    gene_id1 = pd.read_csv(glob.glob($data_path + '/' + 'sc_gene*')[0], header = None)
-    gene_id1 = gene_id1[0].to_list()
-    sc_count.columns = cell_id
-    sc_count.index = gene_id1
-    gene_count = np.sum(sc_count>0, axis=1)
-    sc_count = sc_count.loc[gene_count >=10, :]
-    sc_count = sc_count.apply(Norm_rna,axis=0)
-    sc_count=sc_count.sparse.to_dense()
-    print("preparing spatial data...")
-    sp_meta = pd.read_csv(glob.glob($data_path + '/' + 'sp_meta*')[0])
-    sp_count = sc.read_mtx(glob.glob($data_path + '/' + 'sp_matrix*')[0])
-    sp_count = pd.DataFrame.sparse.from_spmatrix(sp_count.X)
-    cell_id2 = pd.read_csv(glob.glob($data_path + '/' + 'sp_barcode*')[0], header = None)
-    cell_id2 = cell_id2[0].to_list()
-    gene_id = pd.read_csv(glob.glob($data_path + '/' + 'sp_gene*')[0], header = None)
-    gene_id = gene_id[0].to_list()
-    sp_count.columns = cell_id2
-    sp_count.index = gene_id
-    cell_count = np.sum(sp_count,axis=0)
-    sp_count = sp_count.apply(Norm_spatial,axis=0)
-    sp_count = sp_count.sparse.to_dense()
-    gene_list = sc_count.index.to_list()
-    obs = pd.DataFrame()
-    obs['x_coord'] = sp_meta.x
-    obs['y_coord'] = sp_meta.y
-    obs['labels'] = sp_meta.cluster
-    spatial_adata =  anndata.AnnData(sp_count.T.values, obs = obs)
-    spatial_adata.var_names = sp_count.index.tolist()
-    spatial_adata.obs_names = sp_count.columns.tolist()
-    rna_adata = anndata.AnnData(sc_count.T)
-    rna_adata.obs['cell_subclass'] = sc_meta.name
-    rna_adata.var_names = sc_count.index.tolist()
-    rna_adata.obs_names = sc_count.columns.tolist()
-    overlap_genes = list(set(rna_adata.var_names) & set(spatial_adata.var_names))
-    spatial_adata = spatial_adata[:,overlap_genes].copy()
-    tg.pp_adatas(rna_adata, spatial_adata, genes=overlap_genes)
-    ad_map = tg.map_cells_to_space(rna_adata, spatial_adata, density_prior='uniform',num_epochs=500,device="cpu")
-    ad_ge = tg.project_genes(adata_map=ad_map, adata_sc=rna_adata)
+function run_tangram(sp_obj::Union{CartanaObject, XeniumObject,MerfishObject, STARmapObject, seqFishObject}, 
+    sc_obj::scRNAObject; 
+    density_prior="uniform",num_epochs=100,device="cpu")
+    sc = pyimport("scanpy")
+    pd=pyimport("pandas")
+    scipy=pyimport("scipy")
+    tg=pyimport("tangram")
+    common_gene = intersect(sp_obj.rawCount.gene_name, sc_obj.rawCount.gene_name)
+    gene_use = [common_gene; gene_list]
+    sp_count = deepcopy(sp_obj.rawCount.count_mtx)
+    cell_count = sum(sp_count, dims=1)
+    median_value = median(cell_count)
+    sp_count = hcat([log_norm_spatial(sp_count[:, i], median_value) for i = 1:size(sp_count, 2)]...)
+    sp_count = convert(SparseMatrixCSC{Float64, Int64}, sp_count')
+    @assert convert(SparseMatrixCSC, PyObject(sp_count)) == sp_count
+    spatial_adata = sc.AnnData(sp_count)
+    spatial_adata.var_names = sp_obj.rawCount.gene_name
+    spatial_adata.obs_names = sp_obj.rawCount.cell_name
+    spatial_adata.var_names_make_unique()
+    sc_count = deepcopy(sc_obj.rawCount.count_mtx)
+    sc_count = hcat([log_norm_cpm(sc_count[:, i]) for i = 1:size(sc_count, 2)]...)
+    sc_count = convert(SparseMatrixCSC{Float64, Int64}, sc_count')
+    @assert convert(SparseMatrixCSC, PyObject(sc_count)) == sc_count
+    sc_adata = sc.AnnData(sc_count)
+    sc_adata.var_names = sc_obj.rawCount.gene_name
+    sc_adata.obs_names = sc_obj.rawCount.cell_name
+    sc_adata.var_names_make_unique()
+    sc_adata = sc_adata[:,gene_use]
+    spatial_adata = spatial_adata[:,common_gene]
+    tg.pp_adatas(sc_adata, spatial_adata, genes=common_gene)
+    ad_map = tg.map_cells_to_space(sc_adata, spatial_adata, 
+    density_prior=density_prior,num_epochs=100,device=device)
+    ad_ge = tg.project_genes(adata_map=ad_map, adata_sc=sc_adata)
     ad_ge.X = scipy.sparse.csc_matrix(ad_ge.X)
-    Imp_Genes = pd.DataFrame.sparse.from_spmatrix(ad_ge.X)
-    Imp_Genes.columns = rna_adata.var_names.to_list()
-    print("done!")
-    """
-    imp_count = py"Imp_Genes"
+    imp_count = pd.DataFrame.sparse.from_spmatrix(ad_ge.X)
+    imp_count.columns = sc_adata.var_names.to_list()
     new_df = pd_to_df(imp_count)
     gene_list = names(new_df)
     new_df = convert(SparseMatrixCSC{Float64, Int64},Matrix(new_df)')
-    cell_list = py"cell_id2"
-    cell_list = string.(cell_list)
+    cell_list = string.(spatial_adata.obs_names.to_list())
     new_counts = SpaCountObj(new_df, cell_list, gene_list)
-    if isdefined(sp, :imputeData)
-        sp.imputeData = add_impdata(sp.imputeData, "tangram", new_counts)
+    if isdefined(sp_obj, :imputeData)
+        sp_obj.imputeData = add_impdata(sp_obj.imputeData, "tangram", new_counts)
     else
-        sp.imputeData = SpaImputeObj("tangram"; imp_data = new_counts)
+        sp_obj.imputeData = SpaImputeObj("tangram"; imp_data = new_counts)
     end
-    return sp
+    return sp_obj
 end
 
 function run_spaGE(sp::Union{CartanaObject, XeniumObject,MerfishObject, STARmapObject, seqFishObject}, 

@@ -91,7 +91,7 @@ function read_visium(visium_dir::String;
     return vsm_obj
 end
 
-function read_xenium(xenium_dir::String; prefix = "xenium", min_gene::Int64 = 0, min_cell::Int64 = 0)
+function read_xenium(xenium_dir::String; prefix = "xenium", min_gene::Int64 = 0, min_cell::Int64 = 0, version="1.1")
     gene_file = xenium_dir * "/cell_feature_matrix/features.tsv.gz"
     cell_file = xenium_dir * "/cell_feature_matrix/barcodes.tsv.gz"
     count_file = xenium_dir * "/cell_feature_matrix/matrix.mtx.gz"
@@ -131,7 +131,9 @@ function read_xenium(xenium_dir::String; prefix = "xenium", min_gene::Int64 = 0,
     count_cells =  DataFrame(CSV.File(cell_meta))
     rename!(count_molecules, :cell_id => :cell, :feature_name => :gene, :x_location => :x, :y_location => :y, :z_location => :z)
     rename!(count_cells, :cell_id => :cell, :x_centroid => :x, :y_centroid => :y)
-    count_molecules.cell[count_molecules.cell.==-1] .= 0
+    if version == 1.0
+        count_molecules.cell[count_molecules.cell.==-1] .= 0
+    end
     raw_count = RawCountObject(counts, cells, genes)
     genes2 = setdiff(genes, gene_rm)
     println("Filtering cells and genes...")
