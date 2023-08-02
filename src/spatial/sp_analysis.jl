@@ -181,84 +181,58 @@ function run_spaGE(sp::Union{CartanaObject, XeniumObject,MerfishObject, STARmapO
     return sp
 end
 
-function run_gimVI(sp::Union{CartanaObject, XeniumObject, STARmapObject, seqFishObject, MerfishObject, STARmapObject, seqFishObject}, data_path::String)
-    py"""
-    import os
-    import numpy as np
-    import pandas as pd
-    from scvi.external import GIMVI
-    import anndata
-    from anndata import AnnData
-    import warnings
-    warnings.filterwarnings('ignore')
-    import glob
-    import scanpy as sc
-    def Norm_rna(x):
-        return np.log(((x/np.sum(x))*1000000)+1)
-    def Norm_spatial(x):
-            return np.log(((x/np.sum(x))*np.median(cell_count)) + 1)
-    print("preparing single cell data...")
-    sc_meta = pd.read_csv(glob.glob($data_path + '/' + 'sc_meta*')[0])
-    sc_count = sc.read_mtx(glob.glob($data_path + '/' + 'sc_matrix*')[0])
-    sc_count = pd.DataFrame.sparse.from_spmatrix(sc_count.X)
-    cell_id = pd.read_csv(glob.glob($data_path + '/' + 'sc_barcode*')[0], header = None)
-    cell_id = cell_id[0].to_list()
-    gene_id1 = pd.read_csv(glob.glob($data_path + '/' + 'sc_gene*')[0], header = None)
-    gene_id1 = gene_id1[0].to_list()
-    sc_count.columns = cell_id
-    sc_count.index = gene_id1
-    gene_count = np.sum(sc_count>0, axis=1)
-    sc_count = sc_count.loc[gene_count >=10, :]
-    sc_count = sc_count.apply(Norm_rna,axis=0)
-    sc_count=sc_count.sparse.to_dense()
-    print("preparing spatial data...")
-    sp_meta = pd.read_csv(glob.glob($data_path + '/' + 'sp_meta*')[0])
-    sp_count = sc.read_mtx(glob.glob($data_path + '/' + 'sp_matrix*')[0])
-    sp_count = pd.DataFrame.sparse.from_spmatrix(sp_count.X)
-    cell_id2 = pd.read_csv(glob.glob($data_path + '/' + 'sp_barcode*')[0], header = None)
-    cell_id2 = cell_id2[0].to_list()
-    gene_id = pd.read_csv(glob.glob($data_path + '/' + 'sp_gene*')[0], header = None)
-    gene_id = gene_id[0].to_list()
-    sp_count.columns = cell_id2
-    sp_count.index = gene_id
-    cell_count = np.sum(sp_count,axis=0)
-    sp_count = sp_count.apply(Norm_spatial,axis=0)
-    sp_count = sp_count.sparse.to_dense()
-    gene_list = sc_count.index.to_list()
-    obs = pd.DataFrame()
-    obs['x_coord'] = sp_meta.x
-    obs['y_coord'] = sp_meta.y
-    obs['labels'] = sp_meta.cluster
-    spatial_adata =  anndata.AnnData(sp_count.T.values, obs = obs)
-    spatial_adata.var_names = sp_count.index.tolist()
-    spatial_adata.obs_names = sp_count.columns.tolist()
-    rna_adata = anndata.AnnData(sc_count.T)
-    rna_adata.obs['cell_subclass'] = sc_meta.name
-    rna_adata.var_names = sc_count.index.tolist()
-    rna_adata.obs_names = sc_count.columns.tolist()
-    overlap_genes = list(set(rna_adata.var_names) & set(spatial_adata.var_names))
-    spatial_adata = spatial_adata[:,overlap_genes].copy()
-    GIMVI.setup_anndata(spatial_adata, labels_key='labels')
-    GIMVI.setup_anndata(rna_adata)
-    model = GIMVI(rna_adata, spatial_adata)
-    _, Imp_Genes = model.get_imputed_values(normalized=True)
-    Imp_Genes = pd.DataFrame(Imp_Genes, columns=rna_adata.var_names.to_list())
-    print("done!")
-    """
-    imp_count = py"Imp_Genes"
-    new_df = pd_to_df(imp_count)
-    gene_list = names(new_df)
-    new_df = convert(SparseMatrixCSC{Float64, Int64},Matrix(new_df)')
-    cell_list = py"cell_id2"
-    cell_list = string.(cell_list)
-    new_counts = SpaCountObj(new_df, cell_list, gene_list)
-    if isdefined(sp, :imputeData)
-        sp.imputeData = add_impdata(sp.imputeData, "gimVI", new_counts)
-    else
-        sp.imputeData = SpaImputeObj("gimVI"; imp_data = new_counts)
+function run_gimVI(sp_obj::Union{CartanaObject, XeniumObject,MerfishObject, STARmapObject, seqFishObject}, 
+    sc_obj::scRNAObject; gene_list::Union{String, Vector{String}, Nothing}=nothing, epochs::Int64=200)
+    if isa(gene_list, String)
+        gene_list = [gene_list]
     end
-    return sp
+    if isa(gene_list, Nothing)
+        gene_list = sc_obj.rawCount.gene_name
+    end
+    sc = pyimport("scanpy")
+    pd=pyimport("pandas")
+    scvi=pyimport("scvi.external")
+    common_gene = intersect(sp_obj.rawCount.gene_name, sc_obj.rawCount.gene_name)
+    gene_use = [common_gene; gene_list]
+    sp_count = deepcopy(sp_obj.rawCount.count_mtx)
+    cell_count = sum(sp_count, dims=1)
+    median_value = median(cell_count)
+    sp_count = hcat([log_norm_spatial(sp_count[:, i], median_value) for i = 1:size(sp_count, 2)]...)
+    sp_count = convert(SparseMatrixCSC{Float64, Int64}, sp_count')
+    @assert convert(SparseMatrixCSC, PyObject(sp_count)) == sp_count
+    spatial_adata = sc.AnnData(sp_count)
+    spatial_adata.var_names = sp_obj.rawCount.gene_name
+    spatial_adata.obs_names = sp_obj.rawCount.cell_name
+    spatial_adata.var_names_make_unique()
+    sc_count = deepcopy(sc_obj.rawCount.count_mtx)
+    sc_count = hcat([log_norm_cpm(sc_count[:, i]) for i = 1:size(sc_count, 2)]...)
+    sc_count = convert(SparseMatrixCSC{Float64, Int64}, sc_count')
+    @assert convert(SparseMatrixCSC, PyObject(sc_count)) == sc_count
+    sc_adata = sc.AnnData(sc_count)
+    sc_adata.var_names = sc_obj.rawCount.gene_name
+    sc_adata.obs_names = sc_obj.rawCount.cell_name
+    sc_adata.var_names_make_unique()
+    sc_adata = sc_adata[:,gene_use].copy()
+    spatial_adata = spatial_adata[:,common_gene].copy()
+    scvi.GIMVI.setup_anndata(spatial_adata)
+    scvi.GIMVI.setup_anndata(sc_adata)
+    model = scvi.GIMVI(sc_adata, spatial_adata)
+    model.train(epochs)
+    _, imp_genes = model.get_imputed_values(normalized=true)
+    imp_genes = pd.DataFrame(imp_genes, columns=sc_adata.var_names.to_list())
+    new_df = pd_to_df(imp_genes)
+    genes = names(new_df)
+    cells = sp_obj.rawCount.cell_name
+    imp_counts = convert(SparseMatrixCSC{Float64, Int64},Matrix(new_df)')
+    imp_counts = SpaCountObj(imp_counts, cells, genes)
+    if isdefined(sp_obj, :imputeData)
+        sp_obj.imputeData = add_impdata(sp_obj.imputeData, "gimVI", imp_counts)
+    else
+        sp_obj.imputeData = SpaImputeObj("gimVI"; imp_data = imp_counts)
+    end
+    return sp_obj
 end
+
 
 function run_cell_pairing(df::DataFrame, cell_col::Union{Symbol, String}, celltype_col::Union{Symbol, String}; radius::Union{Int64, Float64, Nothing}=nothing)
     cells=df[!,cell_col]
