@@ -147,9 +147,9 @@ mutable struct XeniumObject <: AbstractImagingObj
             molecule_data[!, cell_col] = molecule_data[!, cell_col] .* "_" .* postfix
             cell_data[!, cell_col] = cell_data[!, cell_col] .* "_" .* postfix
         end
-        count_mat = raw_count.count_mtx
-        gene_name = raw_count.gene_name
-        cell_name = raw_count.cell_name
+        count_mat = counts.count_mtx
+        gene_name = counts.gene_name
+        cell_name = counts.cell_name
         count_mat, gene_name, cell_name = subset_matrix(count_mat, gene_name, cell_name, min_gene, min_cell)
         if isa(meta_data, Nothing)
             nFeatures = vec(colSum(count_mat))
