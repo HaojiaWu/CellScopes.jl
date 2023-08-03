@@ -111,7 +111,7 @@ function read_xenium(xenium_dir::String; prefix = "xenium", min_gene::Int64 = 0,
     cell_kept = check_vec(cell_ids_filter, cell_ids)
     count_molecules =  DataFrame(CSV.File(transcript_meta))
     count_cells =  DataFrame(CSV.File(cell_meta))
-    counts = MatrixMarket.mmread(cs.gunzip(count_file))
+    counts = MatrixMarket.mmread(gunzip(count_file))
     counts = counts[:, cell_kept]
     seg = filter(:cell_id => ∈(Set(clustering.Barcode)), seg)
     cells = filter(:Column1 => ∈(Set(clustering.Barcode)), cells)
