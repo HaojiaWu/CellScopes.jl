@@ -493,9 +493,17 @@ function bin_gene_spatial(sp::Union{CartanaObject, XeniumObject,MerfishObject, s
     return new_df2
 end
 
+#=
 function pd_to_df(df_pd)
     colnames = map(Symbol, df_pd.columns)
     df = DataFrame(Any[Array(df_pd[c].values) for c in colnames], colnames)
+end
+=#
+
+function pd_to_df(pydf)
+    cols = pydf.columns.to_list()
+    jldf = DataFrame(Any[collect(values(pydf[c])) for c in cols], map(Symbol, cols))
+    return jldf
 end
 
 function ctobj_to_df(ct_obj::AbstractCount)
