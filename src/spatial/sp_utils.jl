@@ -535,3 +535,55 @@ end
 function log_norm_cpm(x)
     return log.(((x ./ sum(x)) .* 1000000) .+ 1)
 end
+
+function from_anndata(adata::Union{String, PyObject}; data_type = "scRNA", 
+    sp_coord_name="spatial", anno="leiden")
+    sc = pyimport("scanpy")
+    if isa(adata, String)
+        adata = read(adata)
+    end
+    umap = get(adata.obsm,"X_umap")
+    meta = pd_to_df(adata.obs)
+    genes = convert(Vector{String},adata.var_names)
+    cells = convert(Vector{String}, adata.obs_names)
+    if data_type == "scRNA"
+        scale_count = adata.X
+        scale_count = scale_count'
+        sim_count = sprand(size(scale_count)[1],size(scale_count)[2],0.1) ## simulate a count matrix but it is not going to use
+        raw_count = RawCountObject(sim_count, cells, genes)
+        cs_obj = scRNAObject(raw_count;meta_data=meta)
+    elseif data_type == "spatial"
+        scale_count = adata.X.toarray()
+        scale_count = scale_count'
+        sim_count = sprand(size(scale_count)[1],size(scale_count)[2],0.1) ## simulate a count matrix but it is not going to use
+        raw_count = RawCountObject(sim_count, cells, genes)
+        sp_coord = adata.obsm[sp_coord_name]
+        sp_coord = DataFrame(sp_coord, :auto)
+        rename!(sp_coord, [:x, :y])
+        sp_coord.cell = convert(Vector{String}, adata.obs_names)
+        sp_coord[!,anno] = meta[!, anno]
+        cs_obj = CartanaObject(sp_coord, sp_coord,raw_count; meta_data=meta)
+    else
+        error("Currently only support scRNA and spatial")
+    end
+    cs_obj = normalize_object(cs_obj)
+    cs_obj = scale_object(cs_obj)
+    cs_obj.rawCount.count_mtx = scale_count
+    cs_obj.normCount.count_mtx = scale_count
+    cs_obj.scaleCount.count_mtx = scale_count ### replace all count with the scale_count from scanpy
+    umap = UMAPObject(umap, 
+        "UMAP", 
+        size(umap)[2],
+        nothing,
+        nothing, 
+        nothing,
+        nothing,
+        nothing
+        )
+    cs_obj.dimReduction = ReductionObject(nothing, nothing, umap)
+    clusters = DataFrame(:cell=>cells, :cluster => meta[!, anno])
+    cs_obj.clustData = ClusteringObject(clusters, 
+        nothing, 
+        nothing, nothing, nothing )
+    return cs_obj
+end
