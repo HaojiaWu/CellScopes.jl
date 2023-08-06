@@ -80,7 +80,9 @@ matchtype(field) = @match field begin
 end
 
 function Base.show(io::IO, sp_obj::Union{CartanaObject, VisiumObject, XeniumObject, MerfishObject, SlideseqObject, STARmapObject, seqFishObject})
-    if isa(sp_obj, CartanaObject)
+    if isa(sp_obj, ImagingSpatialObject)
+        println(io, "ImagingSpatialObject in CellScopes.jl")
+    elseif isa(sp_obj, CartanaObject)
         println(io, "CartanaObject in CellScopes.jl")
     elseif isa(sp_obj, XeniumObject)
         println(io, "XeniumObject in CellScopes.jl")

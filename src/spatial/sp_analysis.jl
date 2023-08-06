@@ -51,7 +51,7 @@ function run_SpaGCN(sp::AbstractSpaObj, count_path::String, python_path::String;
             return sp
 end
 
-function run_tangram(sp_obj::Union{CartanaObject, XeniumObject,MerfishObject, STARmapObject, seqFishObject}, 
+function run_tangram(sp_obj::Union{ImagingSpatialObject, CartanaObject, XeniumObject,MerfishObject, STARmapObject, seqFishObject}, 
     sc_obj::scRNAObject; 
     density_prior="uniform",num_epochs=100,device="cpu")
     sc = pyimport("scanpy")
@@ -100,7 +100,7 @@ function run_tangram(sp_obj::Union{CartanaObject, XeniumObject,MerfishObject, ST
     return sp_obj
 end
 
-function run_spaGE(sp::Union{CartanaObject, XeniumObject,MerfishObject, STARmapObject, seqFishObject}, 
+function run_spaGE(sp::Union{ImagingSpatialObject, CartanaObject, XeniumObject,MerfishObject, STARmapObject, seqFishObject}, 
     sc::scRNAObject, spaGE_path::String; gene_list::Union{String, Vector{String}, Nothing}=nothing, npv::Int64=30)
     if isa(gene_list, String)
         gene_list = [gene_list]
@@ -149,7 +149,7 @@ function run_spaGE(sp::Union{CartanaObject, XeniumObject,MerfishObject, STARmapO
     return sp
 end
 
-function run_gimVI(sp_obj::Union{CartanaObject, XeniumObject,MerfishObject, STARmapObject, seqFishObject}, 
+function run_gimVI(sp_obj::Union{ImagingSpatialObject, CartanaObject, XeniumObject,MerfishObject, STARmapObject, seqFishObject}, 
     sc_obj::scRNAObject; gene_list::Union{String, Vector{String}, Nothing}=nothing, epochs::Int64=200)
     if isa(gene_list, String)
         gene_list = [gene_list]
