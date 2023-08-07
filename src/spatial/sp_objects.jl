@@ -209,7 +209,7 @@ mutable struct XeniumObject <: AbstractImagingObj
         count_mat = counts.count_mtx
         gene_name = counts.gene_name
         cell_name = counts.cell_name
-        if min_gene > 0 | min_cell > 0
+        if min_gene > 0 || min_cell > 0
             count_mat, gene_name, cell_name = subset_matrix(count_mat, gene_name, cell_name, min_gene, min_cell)
             cell_check = check_vec(cell_name, cell_data[!, cell_col])
             cell_data = cell_data[cell_check, :]
