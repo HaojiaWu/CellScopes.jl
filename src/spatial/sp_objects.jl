@@ -194,13 +194,13 @@ mutable struct XeniumObject <: AbstractImagingObj
         prefix::Union{String, Nothing}=nothing, postfix::Union{String, Nothing}=nothing, meta_data::Union{DataFrame, Nothing} = nothing,
         min_gene::Int64=0, min_cell::Int64=0, x_col::Union{String, Symbol} = "x", 
         y_col::Union{String, Symbol} = "y", cell_col::Union{String, Symbol} = "cell")
-        if prefix !== nothing
+        if isa(prefix, String)
             println("Adding prefix " * prefix * " to all cells...")
             counts.cell_name = prefix * "_" .* counts.cell_name
             molecule_data[!, cell_col] = prefix * "_" .* molecule_data[!, cell_col]
             cell_data[!, cell_col] = prefix * "_" .* cell_data[!, cell_col]
         end
-        if postfix !== nothing
+        if isa(postfix, String)
             println("Adding postfix " * postfix * " to all cells...")
             counts.cell_name = counts.cell_name .* "_" .* postfix
             molecule_data[!, cell_col] = molecule_data[!, cell_col] .* "_" .* postfix
@@ -209,17 +209,19 @@ mutable struct XeniumObject <: AbstractImagingObj
         count_mat = counts.count_mtx
         gene_name = counts.gene_name
         cell_name = counts.cell_name
-        count_mat, gene_name, cell_name = subset_matrix(count_mat, gene_name, cell_name, min_gene, min_cell)
+        if min_gene > 0 | min_cell > 0
+            count_mat, gene_name, cell_name = subset_matrix(count_mat, gene_name, cell_name, min_gene, min_cell)
+            cell_check = check_vec(cell_name, cell_data[!, cell_col])
+            cell_data = cell_data[cell_check, :]
+            mol_check = check_vec(cell_name, molecule_data[!, cell_col])
+            molecule_data = molecule_data[mol_check, :]
+        end
         if isa(meta_data, Nothing)
             nFeatures = vec(colSum(count_mat))
             nGenes = vec(sum(x->x>0, count_mat, dims=1))
             meta_data = DataFrame(Cell_id = cell_name, nFeatures=nFeatures, nGenes = nGenes)
         end
         counts = RawCountObject(count_mat, cell_name, gene_name)
-        cell_check = check_vec(cell_name, cell_data[!, cell_col])
-        cell_data = cell_data[cell_check, :]
-        mol_check = check_vec(cell_name, molecule_data[!, cell_col])
-        molecule_data = molecule_data[mol_check, :]
         spObj = new(counts)
         polygon_df = DataFrame(polygon_number = 1:length(poly_data), mapped_cell = cell_data.cell, cluster=cell_data.cluster)
         meta = SpaMetaObj(cell_data, molecule_data, polygon_df)

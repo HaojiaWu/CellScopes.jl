@@ -562,7 +562,7 @@ function from_anndata(adata::Union{String, PyObject}; data_type = "scRNA",
         rename!(sp_coord, [:x, :y])
         sp_coord.cell = convert(Vector{String}, adata.obs_names)
         sp_coord[!,anno] = meta[!, anno]
-        cs_obj = CartanaObject(sp_coord, sp_coord,raw_count; meta_data=meta)
+        cs_obj = ImagingSpatialObject(sp_coord, sp_coord,raw_count; meta_data=meta)
     else
         error("Currently only support scRNA and spatial")
     end
