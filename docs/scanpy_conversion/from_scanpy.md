@@ -31,5 +31,8 @@ All fields:
 - undefinedData
 ```
 ##### 1.1 Visualize cells
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/scanpy_sc_umap.png" width="600"> <br>
+##### 1.2 Visualize genes
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/scanpy_sc_genes.png" width="1200"> <br>
 
 
