@@ -604,6 +604,15 @@ function from_seurat(seurat_file; data_type::String = "scRNA",
     umap = rcopy(seu_obj["reductions"]["umap"]["cell.embeddings"])
     cells = rcopy(rbase.colnames(seu_obj))
     genes = rcopy(rbase.rownames(seu_obj))
+    umap = UMAPObject(umap, 
+        "UMAP", 
+        size(umap)[2],
+        nothing,
+        nothing, 
+        nothing,
+        nothing,
+        nothing
+    )
     raw_count = RawCountObject(counts, cells, genes)
     if data_type == "scRNA"
         cs_obj = scRNAObject(raw_count; meta_data=meta)
@@ -650,7 +659,7 @@ function from_seurat(seurat_file; data_type::String = "scRNA",
             cell_coords = rcopy(seu.GetTissueCoordinates(seu_obj))
             meta.cell = cell_coords.cell
             cell_coords[!, anno] = rcopy(seu_obj["active.ident"])
-            cs_obj = XeniumObject(molecules, cell_coords, raw_count, poly, umap_obj; meta_data=meta)
+            cs_obj = XeniumObject(molecules, cell_coords, raw_count, poly, umap; meta_data=meta)
         elseif tech == "visium"
             cs_obj = VisiumObject(raw_count)
             positions = rcopy(seu.GetTissueCoordinates(seu_obj))
@@ -674,15 +683,6 @@ function from_seurat(seurat_file; data_type::String = "scRNA",
     else
         error("data_type can only be scRNA or spatial")
     end
-    umap = UMAPObject(umap, 
-        "UMAP", 
-        size(umap)[2],
-        nothing,
-        nothing, 
-        nothing,
-        nothing,
-        nothing
-    )
     cs_obj.dimReduction = ReductionObject(nothing, nothing, umap)
     clusters = DataFrame(:cell=>cells, :cluster => clusters)
     cs_obj.clustData = ClusteringObject(clusters, 
