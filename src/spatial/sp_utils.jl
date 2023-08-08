@@ -536,33 +536,61 @@ function log_norm_cpm(x)
     return log.(((x ./ sum(x)) .* 1000000) .+ 1)
 end
 
-function from_anndata(adata::Union{String, PyObject}; data_type = "scRNA", 
+function from_scanpy(adata::Union{String, PyObject}; data_type = "scRNA", 
+    tech::Union{String, Nothing}=nothing,
     sp_coord_name="spatial", anno="leiden")
     sc = pyimport("scanpy")
     if isa(adata, String)
-        adata = read(adata)
+        adata = sc.read(adata)
     end
-    umap = get(adata.obsm,"X_umap")
-    meta = pd_to_df(adata.obs)
     genes = convert(Vector{String},adata.var_names)
     cells = convert(Vector{String}, adata.obs_names)
+    umap = get(adata.obsm,"X_umap")
+    meta = pd_to_df(adata.obs)
+    meta.cell = cells
+    scale_count = convert(SparseMatrixCSC,adata.X.transpose())
+    scale_count = scale_count
+    sim_count = sprand(size(scale_count)[1],size(scale_count)[2],0.1) ## simulate a count matrix but it is not going to use
+    raw_count = RawCountObject(sim_count, cells, genes)    
     if data_type == "scRNA"
-        scale_count = adata.X
-        scale_count = scale_count'
-        sim_count = sprand(size(scale_count)[1],size(scale_count)[2],0.1) ## simulate a count matrix but it is not going to use
-        raw_count = RawCountObject(sim_count, cells, genes)
         cs_obj = scRNAObject(raw_count;meta_data=meta)
     elseif data_type == "spatial"
-        scale_count = adata.X.toarray()
-        scale_count = scale_count'
-        sim_count = sprand(size(scale_count)[1],size(scale_count)[2],0.1) ## simulate a count matrix but it is not going to use
-        raw_count = RawCountObject(sim_count, cells, genes)
-        sp_coord = adata.obsm[sp_coord_name]
-        sp_coord = DataFrame(sp_coord, :auto)
-        rename!(sp_coord, [:x, :y])
-        sp_coord.cell = convert(Vector{String}, adata.obs_names)
-        sp_coord[!,anno] = meta[!, anno]
-        cs_obj = ImagingSpatialObject(sp_coord, sp_coord,raw_count; meta_data=meta)
+        if isa(tech, Nothing)
+            error("Please specify the spatial technology names in the 'tech' parameter. It can be 'xenium' or 'visium'.")
+        elseif tech == "xenium"
+            raw_count = RawCountObject(sim_count, cells, genes)
+            sp_coord = adata.obsm[sp_coord_name]
+            sp_coord = DataFrame(sp_coord, :auto)
+            rename!(sp_coord, [:x, :y])
+            sp_coord.cell = convert(Vector{String}, adata.obs_names)
+            sp_coord[!,anno] = meta[!, anno]
+            cs_obj = ImagingSpatialObject(sp_coord, sp_coord,raw_count; meta_data=meta)
+        elseif tech == "visium"
+            raw_count = RawCountObject(sim_count, cells, genes)
+            sp_coord = adata.obsm[sp_coord_name]
+            sp_coord = DataFrame(sp_coord, :auto)
+            rename!(sp_coord, [:x, :y])
+            sp_coord.cell = cells
+            sp_coord[!,anno] = meta[!, anno]
+            rename!(sp_coord, [:cell, :y, :x] .=> [:barcode, :pxl_col_in_fullres, :pxl_row_in_fullres])
+            img_high = adata.uns["spatial"][collect(keys(adata.uns["spatial"]))[1]]["images"]["hires"]
+            img_high = [RGB(img_high[i, j, 1], img_high[i, j, 2], img_high[i, j, 3]) for i in 1:size(img_high, 1), j in 1:size(img_high, 2)]
+            img_high = img_high'
+            img_high = convert(Matrix{RGB{N0f8}}, img_high)
+            img_low = adata.uns["spatial"][collect(keys(adata.uns["spatial"]))[1]]["images"]["lowres"]
+            img_low = [RGB(img_low[i, j, 1], img_low[i, j, 2], img_low[i, j, 3]) for i in 1:size(img_low, 1), j in 1:size(img_low, 2)]
+            img_low = img_low'
+            img_low = convert(Matrix{RGB{N0f8}}, img_low)
+            json_data = adata.uns["spatial"][collect(keys(adata.uns["spatial"]))[1]]["scalefactors"]
+            json_data = convert(Dict{String, Any}, scale_data)
+            cs_obj = VisiumObject(raw_count)
+            image_obj = VisiumImgObject(img_high, img_low, nothing, nothing, nothing, json_data)
+            cs_obj.metaData = meta
+            cs_obj.imageData = image_obj
+            cs_obj.spmetaData = sp_coord
+        else
+            error("tech can only be visum or xenium for now!")
+        end
     else
         error("Currently only support scRNA and spatial")
     end
@@ -665,13 +693,14 @@ function from_seurat(seurat_file; data_type::String = "scRNA",
             positions = rcopy(seu.GetTissueCoordinates(seu_obj))
             positions.barcode = cells
             positions.cluster = clusters
-            rename!(positions, :imagerow => :pxl_row_in_fullres, :imagecol =>:pxl_col_in_fullres)
+            rename!(positions, :imagecol => :pxl_row_in_fullres, :imagerow =>:pxl_col_in_fullres)
             cs_obj.spmetaData = positions
             keys_scale = ["tissue_lowres_scalef", "tissue_hires_scalef"]
             values_scale = [1 , 1]
             json_data = Dict{String, Any}(keys_scale .=> values_scale)
             img = rcopy(seu_obj["images"][1]["image"])
             img = [RGB(img[i, j, 1], img[i, j, 2], img[i, j, 3]) for i in 1:size(img, 1), j in 1:size(img, 2)]
+            img = img'
             img = convert(Matrix{RGB{N0f8}}, img)
             image_obj = VisiumImgObject(img, img, nothing, nothing, nothing, json_data)
             cs_obj.metaData = meta
