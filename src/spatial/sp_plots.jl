@@ -106,8 +106,8 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
             x_col = Symbol(x_col)
             y_col = Symbol(y_col)
             rename!(coord_cell, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
-            coord_cell[!, x_col] = parse.(Float64, coord_cell[!, x_col])
-            coord_cell[!, y_col] = parse.(Float64, coord_cell[!, y_col])
+            coord_cell[!, x_col] = Float64.(coord_cell[!, x_col])
+            coord_cell[!, y_col] = Float64.(coord_cell[!, y_col])
             if img_res == "high"
                 scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
             elseif img_res == "low"
@@ -527,10 +527,10 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
         y_col = Symbol(y_col)
         rename!(anno_df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
         if isa(anno_df[!, x_col], Vector{String})
-            anno_df[!, x_col] = parse.(Float64, anno_df[!, x_col])
+            anno_df[!, x_col] = Float64.(anno_df[!, x_col])
         end
         if isa(anno_df[!, y_col], Vector{String})
-            anno_df[!, y_col] = parse.(Float64, anno_df[!, y_col])
+            anno_df[!, y_col] = Float64.(anno_df[!, y_col])
         end
         if img_res == "high"
             scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
@@ -759,8 +759,8 @@ function sp_feature_plot_group(sp_list::Union{ Vector{ImagingSpatialObject}, Vec
                 x_col = Symbol(x_col)
                 y_col = Symbol(y_col)
                 rename!(coord_cell, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
-                coord_cell[!, x_col] = parse.(Float64, coord_cell[!, x_col])
-                coord_cell[!, y_col] = parse.(Float64, coord_cell[!, y_col])
+                coord_cell[!, x_col] = Float64.(coord_cell[!, x_col])
+                coord_cell[!, y_col] = Float64.(coord_cell[!, y_col])
                 if img_res == "high"
                     scale_factor = sp_list[i].imageData.jsonParameters["tissue_hires_scalef"]
                 elseif img_res == "low"
