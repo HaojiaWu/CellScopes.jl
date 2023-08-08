@@ -548,16 +548,18 @@ function from_scanpy(adata::Union{String, PyObject}; data_type = "scRNA",
     umap = get(adata.obsm,"X_umap")
     meta = pd_to_df(adata.obs)
     meta.cell = cells
-    scale_count = convert(SparseMatrixCSC,adata.X.transpose())
-    scale_count = scale_count
-    sim_count = sprand(size(scale_count)[1],size(scale_count)[2],0.1) ## simulate a count matrix but it is not going to use
-    raw_count = RawCountObject(sim_count, cells, genes)    
     if data_type == "scRNA"
+        scale_count = convert(SparseMatrixCSC,adata.X)
+        scale_count = scale_count'
+        sim_count = sprand(size(scale_count)[1],size(scale_count)[2],0.1) ## simulate a count matrix but it is not going to use
+        raw_count = RawCountObject(sim_count, cells, genes)     
         cs_obj = scRNAObject(raw_count;meta_data=meta)
     elseif data_type == "spatial"
         if isa(tech, Nothing)
             error("Please specify the spatial technology names in the 'tech' parameter. It can be 'xenium' or 'visium'.")
         elseif tech == "xenium"
+            scale_count = convert(SparseMatrixCSC, adata.X.transpose())
+            sim_count = sprand(size(scale_count)[1],size(scale_count)[2],0.1) ## simulate a count matrix but it is not going to use        
             raw_count = RawCountObject(sim_count, cells, genes)
             sp_coord = adata.obsm[sp_coord_name]
             sp_coord = DataFrame(sp_coord, :auto)
@@ -566,6 +568,8 @@ function from_scanpy(adata::Union{String, PyObject}; data_type = "scRNA",
             sp_coord[!,anno] = meta[!, anno]
             cs_obj = ImagingSpatialObject(sp_coord, sp_coord,raw_count; meta_data=meta)
         elseif tech == "visium"
+            scale_count = convert(SparseMatrixCSC, adata.X.transpose())
+            sim_count = sprand(size(scale_count)[1],size(scale_count)[2],0.1) ## simulate a count matrix but it is not going to use
             raw_count = RawCountObject(sim_count, cells, genes)
             sp_coord = adata.obsm[sp_coord_name]
             sp_coord = DataFrame(sp_coord, :auto)
