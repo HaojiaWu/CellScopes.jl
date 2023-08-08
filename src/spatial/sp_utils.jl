@@ -493,7 +493,7 @@ function bin_gene_spatial(sp::Union{ImagingSpatialObject, CartanaObject, XeniumO
     return new_df2
 end
 
-#=
+#= This is deprecated.
 function pd_to_df(df_pd)
     colnames = map(Symbol, df_pd.columns)
     df = DataFrame(Any[Array(df_pd[c].values) for c in colnames], colnames)
@@ -582,6 +582,109 @@ function from_anndata(adata::Union{String, PyObject}; data_type = "scRNA",
         )
     cs_obj.dimReduction = ReductionObject(nothing, nothing, umap)
     clusters = DataFrame(:cell=>cells, :cluster => meta[!, anno])
+    cs_obj.clustData = ClusteringObject(clusters, 
+        nothing, 
+        nothing, nothing, nothing )
+    return cs_obj
+end
+
+function from_seurat(seurat_file; data_type::String = "scRNA", 
+                tech::Union{String, Nothing} = nothing,  
+                anno::String = "cluster", 
+                assay::String = "RNA")
+    rbase = rimport("base")
+    seu = rimport("Seurat")
+    seu_obj = rbase.readRDS(seurat_file)
+    meta = seu_obj["meta.data"]
+    meta = rcopy(meta)
+    clusters = rcopy(seu_obj["active.ident"])
+    meta[!, anno] = clusters
+    counts = rcopy(seu_obj["assays"][assay]["counts"])
+    counts = sparse_r_to_jl(counts)
+    umap = rcopy(seu_obj["reductions"]["umap"]["cell.embeddings"])
+    cells = rcopy(rbase.colnames(seu_obj))
+    genes = rcopy(rbase.rownames(seu_obj))
+    raw_count = RawCountObject(counts, cells, genes)
+    if data_type == "scRNA"
+        cs_obj = scRNAObject(raw_count; meta_data=meta)
+        norm_count = rcopy(seu_obj["assays"]["RNA"]["data"])
+        norm_count = sparse_r_to_jl(norm_count)
+        cs_obj = normalize_object(cs_obj)
+        cs_obj.normCount.count_mtx = norm_count
+    elseif data_type == "spatial"
+        if isa(tech, Nothing)
+            error("Please specify the spatial technology names in the 'tech' parameter. It can be 'xenium' or 'visium'.")
+        elseif tech == "xenium"
+            x_coords = Float64[]
+            y_coords = Float64[]
+            gene_symbols = String[]
+            for gene in genes
+                gene_coord = rcopy(seu_obj["images"]["fov"]["molecules"]["molecules"][gene]["coords"])
+                append!(x_coords, gene_coord[:, 1])
+                append!(y_coords, gene_coord[:, 2])
+                append!(gene_symbols, fill(gene, size(gene_coord, 1)))
+            end
+            molecules = DataFrame(x = x_coords, y = y_coords, gene = gene_symbols)
+            x_coords = Float64[]
+            y_coords = Float64[]
+            cell_symbols = String[]
+            for i in 1:length(cells)
+                poly = rcopy(seu_obj["images"]["fov"]["boundaries"]["segmentation"]["polygons"][i]["Polygons"][1]["coords"])
+                append!(x_coords, poly[:, 1])
+                append!(y_coords, poly[:, 2])
+                append!(cell_symbols, fill(cells[i], size(poly, 1)))
+            end
+            seg = DataFrame(x = x_coords, y = y_coords, cell_id = cell_symbols)
+            grouped = groupby(seg, :cell_id)
+            cell_ids = unique(seg.cell_id)
+            poly = Vector{Matrix{Float64}}(undef, length(cell_ids))
+            n = length(cell_ids)
+            println("Formatting cell polygons...")
+            p = Progress(n, dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, color=:blue)
+            for idx in 1:length(cell_ids)
+                cell_data = grouped[idx]
+                cell_1 = Matrix(cell_data[!, 1:2])
+                poly[idx] = cell_1
+                next!(p)
+            end
+            cell_coords = rcopy(seu.GetTissueCoordinates(seu_obj))
+            meta.cell = cell_coords.cell
+            cell_coords[!, anno] = rcopy(seu_obj["active.ident"])
+            cs_obj = XeniumObject(molecules, cell_coords, raw_count, poly, umap_obj; meta_data=meta)
+        elseif tech == "visium"
+            cs_obj = VisiumObject(raw_count)
+            positions = rcopy(seu.GetTissueCoordinates(seu_obj))
+            positions.barcode = cells
+            positions.cluster = clusters
+            rename!(positions, :imagerow => :pxl_row_in_fullres, :imagecol =>:pxl_col_in_fullres)
+            cs_obj.spmetaData = positions
+            keys_scale = ["tissue_lowres_scalef", "tissue_hires_scalef"]
+            values_scale = [1 , 1]
+            json_data = Dict{String, Any}(keys_scale .=> values_scale)
+            img = rcopy(seu_obj["images"][1]["image"])
+            img = [RGB(img[i, j, 1], img[i, j, 2], img[i, j, 3]) for i in 1:size(img, 1), j in 1:size(img, 2)]
+            img = convert(Matrix{RGB{N0f8}}, img)
+            image_obj = VisiumImgObject(img, img, nothing, nothing, nothing, json_data)
+            cs_obj.metaData = meta
+            cs_obj.imageData = image_obj
+            cs_obj = normalize_object(cs_obj)
+        else
+            error("tech can only be visum or xenium for now!")
+        end
+    else
+        error("data_type can only be scRNA or spatial")
+    end
+    umap = UMAPObject(umap, 
+        "UMAP", 
+        size(umap)[2],
+        nothing,
+        nothing, 
+        nothing,
+        nothing,
+        nothing
+    )
+    cs_obj.dimReduction = ReductionObject(nothing, nothing, umap)
+    clusters = DataFrame(:cell=>cells, :cluster => clusters)
     cs_obj.clustData = ClusteringObject(clusters, 
         nothing, 
         nothing, nothing, nothing )

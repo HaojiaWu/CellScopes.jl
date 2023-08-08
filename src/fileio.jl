@@ -77,8 +77,12 @@ function read_visium(visium_dir::String;
     positions.barcode = string.(positions.barcode)
     high_img = FileIO.load(highres_image_file)
     low_img = FileIO.load(lowres_image_file)
-    full_img = FileIO.load(fullres_image_file)
-    full_img = convert(Matrix{RGB{N0f8}}, full_img)
+    if isfile(fullres_image_file)
+        full_img = FileIO.load(fullres_image_file)
+        full_img = convert(Matrix{RGB{N0f8}}, full_img)
+    else
+        full_img = nothing
+    end
     tissue_img = FileIO.load(detected_tissue)
     aligned_img = FileIO.load(aligned_image_file)
     json_data = JSON.parsefile(json_file)
