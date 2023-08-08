@@ -34,7 +34,7 @@ All fields:
 ```julia
 cs.dim_plot(scanpy_sc; anno = "leiden", marker_size=5)
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/scanpy_sc_umap.png" width="600"> <br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/scanpy_sc_umap.png" width="400"> <br>
 ##### 1.2 Visualize genes
 ```julia
 cs.feature_plot(scanpy_sc, ["CST3", "NKG7", "PPBP"]; marker_size=6, dim_type="umap")
@@ -86,7 +86,7 @@ Then we can use all the functions developped in CellScopes to visualize the data
 ```julia
 cs.dim_plot(scanpy_xenium; anno="leiden")
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/scanpy_xenium_umap.png" width="600"> <br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/scanpy_xenium_umap.png" width="400"> <br>
 ##### 2.2 Visualize clusters in tissue
 ```julia
 cs.sp_dim_plot(scanpy_xenium, "leiden"; canvas_size=(800, 600), marker_size=2)
