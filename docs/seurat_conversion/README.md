@@ -40,7 +40,7 @@ cs.dim_plot(pbmc; marker_size=5)
 ```julia
 cs.feature_plot(seurat_sc, ["CST3", "NKG7", "PPBP"]; marker_size=6, dim_type="umap")
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/seurat_sc_genes.png" width="400"> <br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/seurat_sc_genes.png" width="1200"> <br>
 
 ### 2. From a Xenium Seurat object
 
