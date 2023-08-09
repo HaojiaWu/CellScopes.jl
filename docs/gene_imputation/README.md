@@ -4,7 +4,7 @@ Imaging based spatial technologies (such as Xenium, MERFISH, Cartana, or seqFISH
 import CellScopes as cs
 using CSV, DataFrames, GZip, CSVFiles, SparseArrays
 ```
-### 1. Prepare scRNA-seq dataset
+### 1. Prepare scRNA-seq data
 First, we need a single cell RNA-seq data for imputation. Here we download a kidney snRNA-seq data published from our lab for demo purpose. 
 ```julia
 ;wget -c "https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE139107&format=file&file=GSE139107%5FMouseIRI%5Fcontrol%2Edge%2Etxt%2Egz" -O control_count.dge.txt.gz
@@ -42,8 +42,9 @@ We can quickly explore the clustering result.
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/kidney_sc.png" width="600"> 
 <br>
 :point_right: Gene expression
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/kidney_gene.png" width="1200"> <br>
+<br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/kidney_gene.png" width="800"> <br>
 
-
+### 2. Prepare Cartana data
 
 
