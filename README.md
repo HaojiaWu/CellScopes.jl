@@ -42,7 +42,7 @@ In addition to these standalone CellScopes analyses, we also provide tutorials h
 <br>
 ***l. Gene imputation using SpaGE, tangram and gimVI***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/gene_imputation
 <br>
-***m. Spot deconvolution with Spotling, RCTD, TACCO and STdeconvolve***: To be done
+***m. Spot deconvolution with SPOTlight, RCTD, TACCO and STdeconvolve***: To be done
 <br>
 
 ## 3. Analysis of imaging-based spatial transcriptomic data (dRNA HybISS by Cartana)
