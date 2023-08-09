@@ -43,7 +43,83 @@ cs.feature_plot(seurat_sc, ["CST3", "NKG7", "PPBP"]; marker_size=6, dim_type="um
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/seurat_sc_genes.png" width="1200"> <br>
 
 ### 2. From a Xenium Seurat object
+The xenium rds file is prepared following this guide: https://satijalab.org/seurat/articles/spatial_vignette_2.html#mouse-brain-10x-genomics-xenium-in-situ. 
+After the rds file is ready, you can convert it to a CellScopes XeniumObject.
+```julia
+seurat_xenium=cs.from_seurat("xenium_seurat.rds"; 
+    data_type="spatial",
+    tech="xenium", 
+    assay="Xenium")
+```
+This is how it looks after the object is created.
+```
+XeniumObject in CellScopes.jl
+Genes x Cells = 248 x 36553
+Available data:
+- rawCount
+- normCount
+- metaData
+- spmetaData
+- dimReduction
+- clustData
+- polynormCount
+- coordData
+- polygonData
+All fields:
+- rawCount
+- normCount
+- scaleCount
+- metaData
+- spmetaData
+- varGene
+- dimReduction
+- clustData
+- polyCount
+- polynormCount
+- coordData
+- imputeData
+- imageData
+- polygonData
+```
+#### 2.1 plot cell annoation on umap
+```julia
+cs.dim_plot(seurat_xenium; legend_ncol=2)
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/seurat_xenium_umap.png" width="400"> <br>
 
+#### 2.2 plot cell annoation on tissue
+```julia
+cs.sp_dim_plot(seurat_xenium, "cluster"; 
+    canvas_size=(600, 500), 
+    marker_size=3,legend_ncol=2)
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/seurat_xenium_tissue.png" width="400"> <br>
 
+#### 2.3 plot gene expression on tissue
+```julia
+cs.sp_feature_plot(seurat_xenium, ["Rorb", "Bcl11b"]; 
+    color_keys=["gray94", "lemonchiffon", "red"])
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/seurat_xenium_genes.png" width="800"> <br>
 
+### 3. From a Visium Seurat object
+Here is a short tuturial on converting a Visium Seurat object to a CellScopes Visium Object. The Visium seurat object is prepared by following this tutorial: https://satijalab.org/seurat/articles/spatial_vignette.html. Then you can read the rds file and convert it into a CellScopes object:
+```julia
+seurat_visium = cs.from_seurat("brain_visium.rds"; 
+    data_type="spatial",tech="visium", assay="SCT")
+```
+#### 3.1 plot cell annoation on tissue
+```julia
+cs.sp_dim_plot(seurat_visium, "cluster"; 
+    marker_size = 8, canvas_size = (600,500), 
+    do_label=false, alpha=0.5, img_res="high")
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/seurat_visium_tissu.png" width="400"> <br>
+
+#### 3.2 plot gene expression on tissue
+```julia
+cs.sp_feature_plot(seurat_visium, ["Gng4","Nrgn", "Ttr"]; 
+    marker_size = 8, color_keys=["gray90", "lemonchiffon" ,"red"])
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/seurat_visium_genes.png" width="1200"> <br>
 
