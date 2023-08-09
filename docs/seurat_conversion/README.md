@@ -1,0 +1,3 @@
+## Conversion of Seurat object to CellScopes object
+If you are a Seurat user and interested in exploring the functionalities within ```CellScopes```, the ```from_seurat``` function is at your disposal. It enables the direct reading of Seurat RDS files, converting them into a CellScope object. As of now, the ```from_seurat``` function can read Seurat objects that have been prepared from scRNA-seq, Xenium, and Viisum analyses. Note that Seurat package must be pre-installed in your current R environment for this functionality to work properly. For installation of Seurat, please visit Satija's lab for more detail. https://satijalab.org/seurat/
+
