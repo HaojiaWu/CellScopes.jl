@@ -46,5 +46,29 @@ We can quickly explore the clustering result.
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/kidney_gene.png" width="800"> <br>
 
 ### 2. Prepare Cartana data
+The files for the Cartana data can be downloaded from the GEO (GSE227044). To match the scRNA data, we use a sham kidney from the project for gene imputation.
+```julia
+molecules =  DataFrame(CSV.File("/mnt/sdc/cartana_weekend/Sham_Jia/segmentation.csv"))
+count_df =  DataFrame(CSV.File("/mnt/sdc/cartana_weekend/Sham_Jia/segmentation_counts.tsv"))
+cells =  DataFrame(CSV.File("/mnt/sdc/cartana_weekend/Sham_Jia/segmentation_cell_stats.csv"))
+
+gene_name = count_df.gene
+cell_name = string.(names(count_df)[2:end])
+count_df = count_df[!, 2:end]
+count_df = convert(SparseMatrixCSC{Int64, Int64},Matrix(count_df))
+raw_count = cs.RawCountObject(count_df, cell_name, gene_name)
+molecules.cell = string.(molecules.cell)
+cells.cell = string.(cells.cell)
+sham_sp = cs.CartanaObject(molecules, cells, raw_count;
+    prefix = "sham", min_gene = 0, min_cell = 3)
+```
+### 3. Run SpaGE gene imputation
+Before running this step, the SpaGE package need to be downloaded from the original github respoitory:
+
+```julia
+sham_sp = cs.run_spaGE(sham_sp, sham_sc, "/mnt/sdd/NC_revision/compare_seurat/SpaGE/"; 
+                gene_list=["Slc4a4", "Wdr17"])
+```
+
 
 
