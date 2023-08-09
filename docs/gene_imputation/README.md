@@ -42,7 +42,7 @@ We can quickly explore the clustering result.
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/kidney_sc.png" width="600"> 
 <br>
 :point_right: Gene expression
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/kidney_genes.png" width="1200"> <br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/kidney_gene.png" width="1200"> <br>
 
 
 
