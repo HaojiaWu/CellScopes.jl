@@ -34,6 +34,17 @@ On this markdown page, we will demonstrate how to use ```CellScopes.jl``` to ana
 ***i. STARmap***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/starmap_tutorial
 <br>
 
+In addition to these standalone CellScopes analyses, we also provide tutorials how CellScopes can interact with other popular tools such as Seurat, Scanpy and tools for gene imputations.
+<br>
+***j. Conversion of Scanpy AnnData to CellScopes Objects***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/scanpy_conversion
+<br>
+***k. Conversion of Seurat Object to CellScopes Objects***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/seurat_conversion
+<br>
+***l. Gene imputation using SpaGE, tangram and gimVI***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/gene_imputation
+<br>
+***m. Spot deconvolution with Spotling, RCTD, TACCO and STdeconvolve***: To be done
+<br>
+
 ## 3. Analysis of imaging-based spatial transcriptomic data (dRNA HybISS by Cartana)
 The tutorial below used the spatial data from CARTANA for demo but basically it can process any FISH-based methods (such as Xenium and MERFISH) after slight data formatting. If you find ```CellScopes.jl``` useful to your research, please cite our paper or this github page. Below is the overall design for the spatial data analysis with ```CellScopes.jl```. <br>
 
