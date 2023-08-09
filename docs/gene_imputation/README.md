@@ -64,11 +64,15 @@ sham_sp = cs.CartanaObject(molecules, cells, raw_count;
 ```
 ### 3. Run SpaGE gene imputation
 Before running this step, the SpaGE package need to be downloaded from the original github respoitory:
-
 ```julia
 sham_sp = cs.run_spaGE(sham_sp, sham_sc, "/mnt/sdd/NC_revision/compare_seurat/SpaGE/"; 
                 gene_list=["Slc4a4", "Wdr17"])
 ```
 
+```julia
+cs.sp_feature_plot(sham_sp, ["Wdr17"]; 
+    use_imputed=true, 
+    color_keys = ["gray94", "lemonchiffon", "red"])
+```
 
 
