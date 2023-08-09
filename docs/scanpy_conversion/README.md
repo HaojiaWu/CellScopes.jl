@@ -149,5 +149,5 @@ cs.sp_feature_plot(brain, ["Olfm1", "Plp1", "Itpka"];
     marker_size = 8, color_keys=["gray90", "lemonchiffon1" ,"red"], 
     adjust_brightness=0.3, adjust_contrast=1.5, clip=1, alpha=(0.5,0.8),img_res="low")
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/scanpy_visium_genes.png" width="600"> <br>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/scanpy_visium_genes.png" width="1200"> <br>
 
