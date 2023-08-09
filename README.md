@@ -38,7 +38,7 @@ In addition to these standalone CellScopes analyses, we also provide tutorials h
 <br>
 ***j. Conversion of Scanpy AnnData to CellScopes Objects***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/scanpy_conversion
 <br>
-***k. Conversion of Seurat Object to CellScopes Objects***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/seurat_conversion
+***k. Conversion of Seurat Objects to CellScopes Objects***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/seurat_conversion
 <br>
 ***l. Gene imputation using SpaGE, tangram and gimVI***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/gene_imputation
 <br>
