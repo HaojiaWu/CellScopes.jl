@@ -52,7 +52,7 @@ function run_SpaGCN(sp::AbstractSpaObj, count_path::String, python_path::String;
 end
 
 function run_tangram(sp_obj::Union{ImagingSpatialObject, CartanaObject, XeniumObject,MerfishObject, STARmapObject, seqFishObject}, 
-    sc_obj::scRNAObject; 
+    sc_obj::scRNAObject, gene_list; 
     density_prior="uniform",num_epochs=100,device="cpu")
     sc = pyimport("scanpy")
     pd=pyimport("pandas")
