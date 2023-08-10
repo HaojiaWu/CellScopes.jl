@@ -52,12 +52,18 @@ function run_SpaGCN(sp::AbstractSpaObj, count_path::String, python_path::String;
 end
 
 function run_tangram(sp_obj::Union{ImagingSpatialObject, CartanaObject, XeniumObject,MerfishObject, STARmapObject, seqFishObject}, 
-    sc_obj::scRNAObject, gene_list; 
+    sc_obj::scRNAObject; gene_list::Union{String, Vector{String}, Nothing}=nothing,
     density_prior="uniform",num_epochs=100,device="cpu")
     sc = pyimport("scanpy")
     pd=pyimport("pandas")
     scipy=pyimport("scipy")
     tg=pyimport("tangram")
+    if isa(gene_list, String)
+        gene_list = [gene_list]
+    end
+    if isa(gene_list, Nothing)
+        gene_list = sc_obj.rawCount.gene_name
+    end
     common_gene = intersect(sp_obj.rawCount.gene_name, sc_obj.rawCount.gene_name)
     gene_use = [common_gene; gene_list]
     sp_count = deepcopy(sp_obj.rawCount.count_mtx)
