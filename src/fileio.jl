@@ -96,7 +96,6 @@ function read_visium(visium_dir::String;
 end
 
 function read_xenium(xenium_dir::String; prefix = "xenium", min_gene::Int64 = 0, min_cell::Int64 = 0, version="1.1")
-    xenium_dir = "/mnt/sdd/xenium_iri/ShamL-XETG00063__0005295__Region_5__20230717__191520/"
     gene_file = xenium_dir * "/cell_feature_matrix/features.tsv.gz"
     cell_file = xenium_dir * "/cell_feature_matrix/barcodes.tsv.gz"
     count_file = xenium_dir * "/cell_feature_matrix/matrix.mtx.gz"
