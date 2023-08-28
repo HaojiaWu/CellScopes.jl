@@ -45,6 +45,22 @@ function check_duplicates(arr)
     return uniq_arr, removed_positions
 end
 
+function is_duplicates(list_vec)
+    seen = Set()
+    for x in list_vec
+        if x in seen
+            return true
+        end
+        push!(seen, x)
+    end
+    return false
+end
+
+# Example usage
+println(has_duplicates_set([1, 2, 3, 4]))  # Output should be false
+println(has_duplicates_set([1, 2, 2, 4]))  # Output should be true
+
+
 function subset_count(ct_obj::T; 
     genes::Union{Vector{String}, Nothing} = nothing, 
     cells::Union{Vector{String}, Nothing} = nothing) where T <: AbstractCount
@@ -286,18 +302,18 @@ function check_vec(vec1, vec2)
     return [x in vec1_set for x in vec2]
 end
 
-#= This function is deprecated because it is too slow
-function subset_matrix(count_mat, gene_name, cell_name, min_gene, min_cell)
-    row_sum = sum(count_mat, dims=2)
-    col_sum = sum(count_mat, dims=1)  
-    gene_kept = vec(row_sum .>= min_cell)
-    cell_kept = vec(col_sum .>= min_gene)
-    gene_name = gene_name[gene_kept]
-    cell_name = cell_name[cell_kept]
-    count_mat = count_mat[gene_kept, cell_kept]
-    return count_mat, gene_name, cell_name
+function find_unique_indices(input_vec)
+    T = eltype(input_vec)
+    counts = Dict{T, Int}()
+    first_occurrence_indices = Int[]
+    for (i, x) in enumerate(input_vec)
+        if !haskey(counts, x)
+            push!(first_occurrence_indices, i)
+        end
+        counts[x] = get(counts, x, 0) + 1
+    end
+    return first_occurrence_indices
 end
-=#
 
 function subset_matrix(count_mat, gene_name, cell_name, min_gene, min_cell)
     row_sum = sum(count_mat, dims=2)
@@ -307,6 +323,11 @@ function subset_matrix(count_mat, gene_name, cell_name, min_gene, min_cell)
     gene_name = gene_name[gene_kept]
     cell_name = cell_name[cell_kept]
     count_mat = count_mat[gene_kept, cell_kept]
+    if is_duplicates(gene_name)
+        gene_kept2 = find_unique_indices(gene_name)
+        gene_name = gene_name[gene_kept2]
+        count_mat = count_mat[gene_kept2, :]
+    end
     return count_mat, gene_name, cell_name
 end
 
