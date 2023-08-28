@@ -305,6 +305,7 @@ function read_10x_h5(h5file_path)
     genes = h5read(h5file_path, "matrix/features/name")
     cells = h5read(h5file_path, "matrix/barcodes")
     count_mtx = SparseMatrixCSC(shape[1], shape[2], indptr, indices, data)
+    count_mtx = sparse(Matrix(count_mtx))
     raw_ct = RawCountObject(count_mtx, cells, genes)
     return raw_ct
 end
