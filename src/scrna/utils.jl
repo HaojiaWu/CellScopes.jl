@@ -56,11 +56,6 @@ function is_duplicates(list_vec)
     return false
 end
 
-# Example usage
-println(has_duplicates_set([1, 2, 3, 4]))  # Output should be false
-println(has_duplicates_set([1, 2, 2, 4]))  # Output should be true
-
-
 function subset_count(ct_obj::T; 
     genes::Union{Vector{String}, Nothing} = nothing, 
     cells::Union{Vector{String}, Nothing} = nothing) where T <: AbstractCount
