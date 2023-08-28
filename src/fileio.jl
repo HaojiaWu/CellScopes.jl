@@ -297,5 +297,15 @@ function read_slideseq(bead_coord_file, count_file; min_gene::Int64 = 0, min_cel
     return slide
 end
 
-
+funcition read_10x_h5(h5file_path)
+    data = h5read(h5file_path, "matrix/data")
+    indices = h5read(h5file_path, "matrix/indices") .+= 1
+    indptr = h5read(h5file_path, "matrix/indptr") .+= 1
+    shape = h5read(h5file_path, "matrix/shape")
+    genes = h5read(h5file_path, "matrix/features/name")
+    cells = h5read(h5file_path, "matrix/barcodes")
+    count_mtx = SparseMatrixCSC(shape[1], shape[2], indptr, indices, data)
+    raw_ct = RawCountObject(count_mtx, cells, genes)
+    return raw_ct
+end
 
