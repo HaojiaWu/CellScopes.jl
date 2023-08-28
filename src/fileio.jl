@@ -297,7 +297,7 @@ function read_slideseq(bead_coord_file, count_file; min_gene::Int64 = 0, min_cel
     return slide
 end
 
-funcition read_10x_h5(h5file_path)
+function read_10x_h5(h5file_path)
     data = h5read(h5file_path, "matrix/data")
     indices = h5read(h5file_path, "matrix/indices") .+= 1
     indptr = h5read(h5file_path, "matrix/indptr") .+= 1
