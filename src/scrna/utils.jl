@@ -336,3 +336,34 @@ function sparse_r_to_jl(counts::RObject{S4Sxp})
     julia_sparse_matrix = sparse(i, cols, x, m, n)
     return julia_sparse_matrix
 end
+
+function annotate_cells(sp::Union{scRNAObject, VisiumObject, ImagingSpatialObject, CartanaObject, XeniumObject, MerfishObject, SlideseqObject, seqFishObject, STARmapObject}, cell_map::Dict; old_id_name::Union{String, Symbol}="cluster", new_id_name::Union{String, Symbol}="celltype")
+    sp.metaData = map_values(sp.metaData, old_id_name , new_id_name, collect(keys(cell_map)),  collect(values(cell_map)))
+    if isa(sp, Union{CartanaObject, MerfishObject, XeniumObject, seqFishObject, STARmapObject})
+        sp.spmetaData.cell = map_values(sp.spmetaData.cell,old_id_name , new_id_name, collect(keys(cell_map)),  collect(values(cell_map)))
+        sp.spmetaData.molecule = map_values(sp.spmetaData.molecule, "cell", new_id_name, sp.spmetaData.cell[!, "cell"], sp.spmetaData.cell[new_id_name])
+        if !isa(sp.spmetaData.polygon, Nothing)
+            sp.spmetaData.polygon = map_values(sp.spmetaData.polygon, old_id_name, new_id_name, collect(keys(cell_map)),  collect(values(cell_map)))
+        end
+    end
+    if isa(sp, Union{VisiumObject, SlideseqObject})
+        sp.spmetaData = map_values(sp.spmetaData, old_id_name, new_id_name, collect(keys(cell_map)),  collect(values(cell_map)))
+    end
+    return sp
+end
+
+function add_alpha_color_dict(color_dict::Dict{String, String}, alpha::Real)
+    new_dict = Dict{String, Tuple{String, Real}}()
+    for key in keys(color_dict)
+        original_value = color_dict[key]
+        new_value = (original_value, alpha)
+        new_dict[key] = new_value
+    end
+    return new_dict
+end
+
+function add_alpha_color(color_vec::Dict{String, String}, alpha::Real)
+    color_vec2 = map(x -> (x, alpha), color_vec)
+    return color_vec2
+end
+
