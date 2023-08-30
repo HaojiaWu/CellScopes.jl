@@ -52,6 +52,9 @@ function read_visium(visium_dir::String;
     detected_tissue = visium_dir * "/spatial/detected_tissue_image.jpg"
     aligned_image_file = visium_dir * "/spatial/aligned_fiducials.jpg"
     position_file = visium_dir * "/spatial/tissue_positions_list.csv"
+    if !isfile(position_file)
+        position_file = visium_dir * "/spatial/tissue_positions.csv"
+    end
     json_file = visium_dir * "/spatial/scalefactors_json.json"
     gene_file = visium_dir * "/filtered_feature_bc_matrix/features.tsv.gz"
     cell_file = visium_dir * "/filtered_feature_bc_matrix/barcodes.tsv.gz"
@@ -74,6 +77,18 @@ function read_visium(visium_dir::String;
     # prepare spatial info
     positions = DataFrame(CSV.File(position_file, header=false))
     rename!(positions, ["barcode","in_tissue","array_row","array_col","pxl_row_in_fullres","pxl_col_in_fullres"])
+    if !isa(positions.pxl_col_in_fullres, Vector{<:Real})
+        positions.pxl_col_in_fullres = parse.(Int64, positions.pxl_col_in_fullres)
+    end
+    if !isa(positions.pxl_row_in_fullres, Vector{<:Real})
+        positions.pxl_row_in_fullres = parse.(Int64, positions.pxl_row_in_fullres)
+    end
+    if !isa(positions.array_col, Vector{<:Real})
+        positions.array_col = parse.(Int64, positions.array_col)
+    end
+    if !isa(positions.array_row, Vector{<:Real})
+        positions.array_row = parse.(Int64, positions.array_row)
+    end
     positions.barcode = string.(positions.barcode)
     high_img = FileIO.load(highres_image_file)
     low_img = FileIO.load(lowres_image_file)
