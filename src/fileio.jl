@@ -75,7 +75,7 @@ function read_visium(visium_dir::String;
     counts = counts[Not(gene_removed), :]
     rawcount = RawCountObject(counts, cells, gene_kept)
     # prepare spatial info
-    positions = DataFrame(CSV.File(position_file, header=false))
+    positions = DataFrame(CSV.File(position_file, header=true))
     rename!(positions, ["barcode","in_tissue","array_row","array_col","pxl_row_in_fullres","pxl_col_in_fullres"])
     if !isa(positions.pxl_col_in_fullres, Vector{<:Real})
         positions.pxl_col_in_fullres = parse.(Int64, positions.pxl_col_in_fullres)
