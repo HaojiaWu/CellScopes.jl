@@ -726,7 +726,8 @@ end
 
 function add_full_res_img(vsm_obj::VisiumObject, fullres_image_file::String)
     full_img = FileIO.load(fullres_image_file)
-    full_img = convert(Matrix{RGB{N0f8}}, full_img)
+   # full_img = convert(Matrix{RGB{N0f8}}, full_img)
+   full_img = RGB{N0f8}.(full_img)
     vsm_obj.imageData.fullresImage = full_img
     return vsm_obj
 end
