@@ -214,6 +214,9 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                 else
                     img = deepcopy(sp.imageData.fullresImage)
                 end
+                if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
+                    img = img[x_lims[1]:x_lims[2], y_lims[1]:y_lims[2]]
+                end
                 img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
                 MK.image!(ax1, img2)
             end
