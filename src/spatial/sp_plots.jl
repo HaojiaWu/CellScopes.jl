@@ -100,8 +100,6 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
     else
         n_cols = 3
     end
-    x_lims0 = x_lims
-    y_lims0 = y_lims
     if layer === "cells"
         if isa(sp, VisiumObject)
             coord_cell = deepcopy(sp.spmetaData)
@@ -217,16 +215,20 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                     img = deepcopy(sp.imageData.fullresImage)
                 end
                 if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
-                    img = img[x_lims0[1]:x_lims[2], y_lims0[1]:y_lims[2]]
+                    img = img[x_lims[1]:x_lims[2], y_lims[1]:y_lims[2]]
                 end
                 img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
                 MK.image!(ax1, img2)
             end
-            #MK.xlims!(MK.current_axis(), x_lims)
-            #MK.ylims!(MK.current_axis(), y_lims)
-            df_plt = filter([x_col, y_col] => (x,y) -> x_lims0[1] < x < x_lims0[2] && y_lims0[1] < y < y_lims0[2], df_plt)
-            df_plt[!, x_col] = df_plt[!, x_col] .- x_lims0[1]
-            df_plt[!, y_col] = df_plt[!, y_col] .- y_lims0[1]
+
+            if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
+                df_plt = filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], df_plt)
+                df_plt[!, x_col] = df_plt[!, x_col] .- x_lims[1]
+                df_plt[!, y_col] = df_plt[!, y_col] .- y_lims[1]
+            else
+                MK.xlims!(MK.current_axis(), x_lims)
+                MK.ylims!(MK.current_axis(), y_lims)
+            end
             MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.plt_color, strokewidth = 0, markersize = marker_size)
             MK.Colorbar(fig[n_row,n_col2], label = "", colormap = c_map, width=10, limits = (0, maximum(gene_expr)))
         end
