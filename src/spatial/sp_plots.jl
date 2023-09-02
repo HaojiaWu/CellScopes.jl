@@ -209,11 +209,16 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
             if isa(sp, VisiumObject)
                 if img_res == "high"
                     img = deepcopy(sp.imageData.highresImage)
+                    scale_factor = size(sp.imageData.fullresImage)[1]/size(sp.imageData.highresImage)[1]
                 elseif img_res == "low"
                     img = deepcopy(sp.imageData.lowresImage)
+                    scale_factor = size(sp.imageData.fullresImage)[1]/size(sp.imageData.lowresImage)[1]
                 else
                     img = deepcopy(sp.imageData.fullresImage)
+                    scale_factor = 1
                 end
+                x_lims = x_lims .* scale_factor
+                y_lims = y_lims .* scale_factor
                 if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
                     img = img[x_lims[1]:x_lims[2], y_lims[1]:y_lims[2]]
                 end
