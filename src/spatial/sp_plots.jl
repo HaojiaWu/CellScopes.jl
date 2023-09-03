@@ -153,10 +153,10 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
             end
         end
         if isa(x_lims, Nothing)
-            x_lims=(minimum(coord_cell[!, x_col])-0.05*maximum(coord_cell[!, x_col]),1.05*maximum(coord_cell[!, x_col]))
+            x_lims1=(minimum(coord_cell[!, x_col])-0.05*maximum(coord_cell[!, x_col]),1.05*maximum(coord_cell[!, x_col]))
         end
         if isa(y_lims, Nothing)
-            y_lims=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
+            y_lims1=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
         end
         c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
         fig = MK.Figure(resolution = (width * n_cols, height * n_rows))
@@ -209,16 +209,11 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
             if isa(sp, VisiumObject)
                 if img_res == "high"
                     img = deepcopy(sp.imageData.highresImage)
-                    scale_factor = size(sp.imageData.fullresImage)[1]/size(sp.imageData.highresImage)[1]
                 elseif img_res == "low"
                     img = deepcopy(sp.imageData.lowresImage)
-                    scale_factor = size(sp.imageData.fullresImage)[1]/size(sp.imageData.lowresImage)[1]
                 else
                     img = deepcopy(sp.imageData.fullresImage)
-                    scale_factor = 1
                 end
-                x_lims = x_lims .* scale_factor
-                y_lims = y_lims .* scale_factor
                 if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
                     img = img[x_lims[1]:x_lims[2], y_lims[1]:y_lims[2]]
                 end
@@ -231,8 +226,8 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                 df_plt[!, x_col] = df_plt[!, x_col] .- x_lims[1]
                 df_plt[!, y_col] = df_plt[!, y_col] .- y_lims[1]
             else
-                MK.xlims!(MK.current_axis(), x_lims)
-                MK.ylims!(MK.current_axis(), y_lims)
+                MK.xlims!(MK.current_axis(), x_lims1)
+                MK.ylims!(MK.current_axis(), y_lims1)
             end
             MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.plt_color, strokewidth = 0, markersize = marker_size)
             MK.Colorbar(fig[n_row,n_col2], label = "", colormap = c_map, width=10, limits = (0, maximum(gene_expr)))
