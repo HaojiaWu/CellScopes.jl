@@ -1,4 +1,48 @@
 function polygons_cell_mapping(sp::AbstractImagingObj; anno::Union{String, Symbol}="cluster")
+    polygons = sp.polygonData
+    n_polygons = length(polygons)
+    cell = Vector{Int}(undef, n_polygons)
+    X = Vector{Float64}(undef, n_polygons)
+    Y = Vector{Float64}(undef, n_polygons)
+    for (i, p) in enumerate(polygons)
+        X[i], Y[i] = mean(p[:,1]), mean(p[:,2])
+        cell[i] = i
+    end
+    center_df = DataFrame(cell=cell, X=X, Y=Y)
+    cell_coord = sp.spmetaData.cell
+
+    poly_mtx = Matrix(center_df[!, 2:3])
+    ref_mtx = Matrix(cell_coord[:, ["x","y"]])
+
+    ref_coord = [row for row in eachrow(ref_mtx)]
+    query_coord = [row for row in eachrow(poly_mtx)]
+    query_dist = Vector{Int}(undef, length(query_coord))
+    p = Progress(length(query_coord), dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, color=:blue)
+    for (j, q) in enumerate(query_coord)
+        ref_dists = [Distances.euclidean(q, r) for r in ref_coord]
+        query_dist[j] = argmin(ref_dists)
+        next!(p)
+    end
+
+    println("Polygons have been mapped to the cells!")
+
+    my_annot = DataFrame(polygon_number=collect(1:length(query_dist)), mapped_cell=query_dist)
+    from = sp.spmetaData.cell.cell
+    to = sp.spmetaData.cell[!, anno]
+
+    prefix = split(sp.spmetaData.cell.cell[1], "_")
+    if length(prefix) > 1
+        my_annot.mapped_cell .= prefix[1] .* "_" .* string.(my_annot.mapped_cell)
+    end
+    
+    anno = map_values(my_annot, :mapped_cell, :cluster, from, to)
+    sp.spmetaData.polygon = anno
+
+    return sp
+end
+
+#=
+function polygons_cell_mapping(sp::AbstractImagingObj; anno::Union{String, Symbol}="cluster")
     polygons=sp.polygonData
     center_df=DataFrame()
     cell=Int[]
@@ -45,6 +89,7 @@ function polygons_cell_mapping(sp::AbstractImagingObj; anno::Union{String, Symbo
     sp.spmetaData.polygon=anno
     return sp
 end
+=#
 
 function generate_polygon_counts(sp::AbstractImagingObj)
     coord_molecules = deepcopy(sp.spmetaData.molecule)

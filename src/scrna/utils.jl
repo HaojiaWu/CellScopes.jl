@@ -340,6 +340,7 @@ end
 function annotate_cells(sp::Union{scRNAObject, VisiumObject, ImagingSpatialObject, CartanaObject, XeniumObject, MerfishObject, SlideseqObject, seqFishObject, STARmapObject}, cell_map::Dict; old_id_name::Union{String, Symbol}="cluster", new_id_name::Union{String, Symbol}="celltype")
     sp.metaData = map_values(sp.metaData, old_id_name , new_id_name, collect(keys(cell_map)),  collect(values(cell_map)))
     if isa(sp, Union{CartanaObject, MerfishObject, XeniumObject, seqFishObject, STARmapObject})
+        sp.spmetaData.cell[!, old_id_name] = sp.metaData.cell[!, old_id_name]
         sp.spmetaData.cell = map_values(sp.spmetaData.cell,old_id_name , new_id_name, collect(keys(cell_map)),  collect(values(cell_map)))
         sp.spmetaData.molecule = map_values(sp.spmetaData.molecule, "cell", new_id_name, sp.spmetaData.cell[!, "cell"], sp.spmetaData.cell[new_id_name])
         if !isa(sp.spmetaData.polygon, Nothing)
@@ -347,6 +348,7 @@ function annotate_cells(sp::Union{scRNAObject, VisiumObject, ImagingSpatialObjec
         end
     end
     if isa(sp, Union{VisiumObject, SlideseqObject})
+        sp.spmetaData[!, old_id_name] = sp.metaData[!, old_id_name]
         sp.spmetaData = map_values(sp.spmetaData, old_id_name, new_id_name, collect(keys(cell_map)),  collect(values(cell_map)))
     end
     return sp
