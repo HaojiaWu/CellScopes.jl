@@ -104,12 +104,26 @@ function generate_polygon_counts(sp::AbstractImagingObj)
     join_df = innerjoin(coord_molecules[!,[:gene,:cell]],anno[!,[:number,:cell]], on=:cell)
     join_df.gene = string.(join_df.gene)
     gdf = groupby(join_df, :gene)
-    new_df = DataFrame()
-    for (i, df) in enumerate(gdf)
-        map_dict = countmap(df.number)
-        anno1 = DataFrame(cell=collect(keys(map_dict)),count=collect(values(map_dict)))
-        anno1.gene .= gdf[i].gene[1]
-        new_df = [new_df;anno1]
+    new_df = []
+    p = Progress(length(gdf), dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, color=:blue)
+    if isa(sp, StereoSeqObject)
+        for df in gdf
+            anno1 = combine(groupby(df, :number), :MIDCount => sum => :count)
+            anno1.gene .= df.gene[1]
+            push!(new_df, anno1)
+            next!(p)
+        end
+        new_df = vcat(new_df...)
+        rename!(new_df, :number => :cell)    
+    else
+        for df in gdf
+            map_dict = countmap(df.number)
+            anno1 = DataFrame(cell=collect(keys(map_dict)), count=collect(values(map_dict)))
+            anno1.gene .= df.gene[1]
+            push!(new_df, anno1)
+            next!(p)
+        end
+        new_df = vcat(new_df...) 
     end
     final_df = unstack(new_df, :cell, :gene, :count)
     final_df .= ifelse.(isequal.(final_df, missing), 0, final_df)
@@ -182,7 +196,7 @@ function create_scs_count(scs_results, spot_coord; prefix="sp", min_gene=0, min_
     raw_count = RawCountObject(final_df, cellnames, genenames)
     cell_coord = combine(groupby(new_coord, :cell), :x => mean => :x, :y => mean => :y)
     rename!(new_coord,:geneID => :gene)
-    sp = CartanaObject(new_coord, cell_coord, raw_count;
+    sp = StereoSeqObject(new_coord, cell_coord, raw_count;
     prefix = prefix, min_gene = min_gene, min_cell = min_cell)
-    return raw_count
+    return sp
 end

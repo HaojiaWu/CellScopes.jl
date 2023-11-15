@@ -542,3 +542,71 @@ mutable struct seqFishObject <: AbstractImagingObj
         println("seqFishObject was successfully created!")
     end
 end
+
+mutable struct SpaImageObj <: AbstractImagingObj
+    histoImage::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Nothing}
+    ifImage::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Nothing}
+    dapiImage::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Nothing}
+    SpaImageObj(histoImage, ifImage, dapiImage) = new(histoImage, ifImage, dapiImage)
+end
+
+mutable struct StereoSeqObject <: AbstractImagingObj
+    rawCount::Union{RawCountObject, Nothing}
+    normCount::Union{NormCountObject, Nothing}
+    scaleCount::Union{ScaleCountObject, Nothing}
+    metaData::Union{DataFrame, Nothing}
+    spmetaData::Union{SpaMetaObj, Nothing}
+    varGene::Union{VariableGeneObject, Nothing}
+    dimReduction::Union{ReductionObject, Nothing}
+    clustData::Union{ClusteringObject, Nothing}
+    polyCount::Union{RawCountObject, Nothing}
+    polynormCount::Union{NormCountObject, Nothing}
+    coordData::Union{SpaCoordObj, Nothing}
+    imputeData::Union{SpaImputeObj, Nothing}
+    imgObject::Union{SpaImageObj, Nothing}
+    polygonData::Union{Vector{Matrix{Float64}}, Nothing}
+    function StereoSeqObject(molecule_data::DataFrame, cell_data::DataFrame, counts::RawCountObject; 
+        prefix::Union{String, Nothing}=nothing, postfix::Union{String, Nothing}=nothing, meta_data::Union{DataFrame, Nothing} = nothing,
+        min_gene::Int64=0, min_cell::Int64=0, x_col::Union{String, Symbol} = "x", 
+        y_col::Union{String, Symbol} = "y", cell_col::Union{String, Symbol} = "cell")
+        if isa(prefix, String)
+            println("Adding prefix " * prefix * " to all cells...")
+            counts.cell_name = prefix * "_" .* counts.cell_name
+            molecule_data[!, cell_col] = prefix * "_" .* molecule_data[!, cell_col]
+            cell_data[!, cell_col] = prefix * "_" .* cell_data[!, cell_col]
+        end
+        if isa(postfix, String)
+            println("Adding postfix " * postfix * " to all cells...")
+            counts.cell_name = counts.cell_name .* "_" .* postfix
+            molecule_data[!, cell_col] = molecule_data[!, cell_col] .* "_" .* postfix
+            cell_data[!, cell_col] = cell_data[!, cell_col] .* "_" .* postfix
+        end
+        count_mat = counts.count_mtx
+        gene_name = counts.gene_name
+        cell_name = counts.cell_name
+        if min_gene > 0 || min_cell > 0
+            count_mat, gene_name, cell_name = subset_matrix(count_mat, gene_name, cell_name, min_gene, min_cell)
+            cell_check = check_vec(cell_name, cell_data[!, cell_col])
+            cell_data = cell_data[cell_check, :]
+            mol_check = check_vec(cell_name, molecule_data[!, cell_col])
+            molecule_data = molecule_data[mol_check, :]
+        end
+        if isa(meta_data, Nothing)
+            nFeatures = vec(colSum(count_mat))
+            nGenes = vec(sum(x->x>0, count_mat, dims=1))
+            meta_data = DataFrame(Cell_id = cell_name, nFeatures=nFeatures, nGenes = nGenes)
+        end
+        counts = RawCountObject(count_mat, cell_name, gene_name)
+        spObj=new(counts)
+        meta = SpaMetaObj(cell_data, molecule_data, nothing)
+        spObj.spmetaData = meta
+        cell_coord = cell_data[!, [x_col, y_col]]
+        mol_coord = molecule_data[!, [x_col, y_col]]
+        coord = SpaCoordObj(cell_coord, mol_coord, nothing, nothing)
+        spObj.coordData = coord
+        spObj.metaData = meta_data
+        spObj.polygonData = nothing
+        return spObj
+        println("StereoSeqObject was successfully created!")
+    end
+end
