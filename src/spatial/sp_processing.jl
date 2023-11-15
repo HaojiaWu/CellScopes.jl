@@ -108,7 +108,7 @@ function generate_polygon_counts(sp::AbstractImagingObj)
     p = Progress(length(gdf), dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, color=:blue)
     if isa(sp, StereoSeqObject)
         for df in gdf
-            anno1 = combine(groupby(df, :number), :MIDCount => sum => :count)
+            anno1 = DataFrames.combine(groupby(df, :number), :MIDCount => sum => :count)
             anno1.gene .= df.gene[1]
             push!(new_df, anno1)
             next!(p)
@@ -181,7 +181,7 @@ function create_stereoseq_scs(scs_results, spot_coord; prefix="sp", min_gene=0, 
     new_df = []
     p = Progress(length(gdf), dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, color=:blue)
     for df in gdf
-        anno1 = combine(groupby(df, :geneID), :MIDCount => sum => :count)
+        anno1 = DataFrames.combine(groupby(df, :geneID), :MIDCount => sum => :count)
         anno1.cell .= df.cell[1]
         push!(new_df, anno1)
         next!(p)
@@ -194,7 +194,7 @@ function create_stereoseq_scs(scs_results, spot_coord; prefix="sp", min_gene=0, 
     genenames = names(final_df)
     final_df = convert(SparseMatrixCSC{Int64, Int64},Matrix(final_df)')
     raw_count = RawCountObject(final_df, cellnames, genenames)
-    cell_coord = combine(groupby(new_coord, :cell), :x => mean => :x, :y => mean => :y)
+    cell_coord = DataFrames.combine(groupby(new_coord, :cell), :x => mean => :x, :y => mean => :y)
     rename!(new_coord,:geneID => :gene)
     sp = StereoSeqObject(new_coord, cell_coord, raw_count;
     prefix = prefix, min_gene = min_gene, min_cell = min_cell)
