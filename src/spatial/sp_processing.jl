@@ -170,7 +170,7 @@ function process_scs_directory(directory)
     return vcat(all_dataframes...)
 end
 
-function create_scs_count(scs_results, spot_coord; prefix="sp", min_gene=0, min_cell=0)
+function create_stereoseq_scs(scs_results, spot_coord; prefix="sp", min_gene=0, min_cell=0)
     final_dataframe = process_scs_directory(scs_results)
     orig_cord = CSV.File(spot_coord; delim='\t') |> DataFrame
     final_dataframe[!, :spot_loc] = [string(i) * "_" * string(j) for (i, j) in zip(final_dataframe.x, final_dataframe.y)]
