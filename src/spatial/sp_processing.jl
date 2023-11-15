@@ -171,6 +171,7 @@ function process_scs_directory(directory)
 end
 
 function create_stereoseq_scs(scs_results, spot_coord; prefix="sp", min_gene=0, min_cell=0)
+    @info("1. Reading input files...")
     final_dataframe = process_scs_directory(scs_results)
     orig_cord = CSV.File(spot_coord; delim='\t') |> DataFrame
     final_dataframe[!, :spot_loc] = [string(i) * "_" * string(j) for (i, j) in zip(final_dataframe.x, final_dataframe.y)]
@@ -179,6 +180,7 @@ function create_stereoseq_scs(scs_results, spot_coord; prefix="sp", min_gene=0, 
     new_coord = innerjoin(orig_cord2, final_dataframe[:, [:spot_loc, :cell]], on=:spot_loc)
     gdf = groupby(new_coord, :cell)
     new_df = []
+    @info("2. Creating count matrix...")
     p = Progress(length(gdf), dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, color=:blue)
     for df in gdf
         anno1 = DataFrames.combine(groupby(df, :geneID), :MIDCount => sum => :count)
@@ -187,6 +189,7 @@ function create_stereoseq_scs(scs_results, spot_coord; prefix="sp", min_gene=0, 
         next!(p)
     end
     new_df = vcat(new_df...)
+    @info("3. Constructing StereoSeq object...")
     final_df = unstack(new_df, :cell, :geneID, :count)
     final_df .= ifelse.(isequal.(final_df, missing), 0, final_df)
     cellnames = final_df.cell
