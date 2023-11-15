@@ -465,7 +465,9 @@ function plot_transcript_polygons(sp::Union{ImagingSpatialObject, CartanaObject,
     pt_bg_color::Union{Vector, Symbol, String}="gray95",
     stroke_color::Union{Vector, Symbol, String}="black",
     marker_size = 2, stroke_width=0.1, bg_color="white",
-    canvas_size=(900,1000),x_lims=nothing, y_lims=nothing, 
+    width = 900,
+    height = 1000,
+    x_lims=nothing, y_lims=nothing, 
     anno::Union{Symbol, String, Nothing}=nothing,
     ann_colors::Union{Nothing, Dict}=nothing
 )
@@ -496,10 +498,16 @@ function plot_transcript_polygons(sp::Union{ImagingSpatialObject, CartanaObject,
     if isa(anno, String)
         anno = Symbol(anno)
     end
-    anno_df=sp.spmetaData.polygon
+    select_fov = filter([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], sp.spmetaData.cell)
+    cell_set = Set(select_fov.cell)
+    anno_df = filter(:mapped_cell => ∈(cell_set), sp.spmetaData.polygon)
+    polygon_num = anno_df.polygon_number
+    polygons = sp.polygonData
+    polygons = polygons[polygon_num]
+    df_spatial = filter(:cell => ∈(cell_set), df_spatial)
     if isa(ann_colors, Nothing)
         cell_anno=unique(anno_df[!,anno])
-        c_map=Colors.distinguishable_colors(length(cell_anno), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
+        c_map=Colors.distinguishable_colors(length(cell_anno), parse(Colors.Colorant, pt_bg_color), lchoices=range(20, stop=70, length=15))
         c_map = "#" .* hex.(c_map)
         ann_colors=Dict(cell_anno .=> c_map)
     end
@@ -509,7 +517,7 @@ function plot_transcript_polygons(sp::Union{ImagingSpatialObject, CartanaObject,
     colors1 = df_spatial1[!,:new_color]
     df_spatial2=filter(:gene => ∈(Set(gene_list)), df_spatial)
     colors2 = df_spatial2[!,:new_color]
-    fig = MK.Figure(resolution=canvas_size)
+    fig = MK.Figure(resolution=(width, height))
     fig[1, 1] = MK.Axis(fig; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, 
         xticksvisible=false, xticklabelsvisible=false, yticksvisible=false, 
         yticklabelsvisible=false, xgridvisible = false, ygridvisible = false)
