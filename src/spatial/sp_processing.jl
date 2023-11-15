@@ -129,3 +129,60 @@ function generate_polygon_counts(sp::AbstractImagingObj)
     println("Polygon counts was normalized!")
     return sp
 end
+
+function process_scs_file(file_path, add_x, add_y, prefix)
+    df = CSV.File(file_path; delim='\t', header=false) |> DataFrame
+    rename!(df, [:coord, :cell])
+    coords = split.(df[:, :coord], ':')
+    df.x = parse.(Int, getindex.(coords, 1)) .+ add_x
+    df.y = parse.(Int, getindex.(coords, 2)) .+ add_y
+    df.cell = prefix .* "_" .* string.(df.cell)
+    return df
+end
+
+function process_scs_directory(directory)
+    filenames = glob("spot2cell_*.txt", directory)
+    all_dataframes = DataFrame[]
+    p = Progress(length(filenames), desc="Processing Files")
+    for filename in filenames
+        numbers = [parse(Int, m.match) for m in eachmatch(r"\d+", basename(filename))]
+        add_x, add_y = numbers[2], numbers[3]
+        file_path = joinpath(directory, filename)
+        prefix = join(numbers[2:4], ':')
+        df = process_file(file_path, add_x, add_y, prefix)
+        push!(all_dataframes, df)
+        next!(p)
+    end
+    return vcat(all_dataframes...)
+end
+
+function create_scs_count(scs_results, spot_coord; prefix="sp", min_gene=0, min_cell=0)
+    final_dataframe = process_directory(scs_results)
+    orig_cord = CSV.File(spot_coord; delim='\t') |> DataFrame
+    final_dataframe[!, :spot_loc] = [string(i) * "_" * string(j) for (i, j) in zip(final_dataframe.x, final_dataframe.y)]
+    orig_cord[!, :spot_loc] = [string(i) * "_" * string(j) for (i, j) in zip(orig_cord.x, orig_cord.y)]
+    orig_cord2 = filter(:spot_loc => ∈(Set(final_dataframe.spot_loc)), orig_cord)
+    new_coord = innerjoin(orig_cord2, final_dataframe[:, [:spot_loc, :cell]], on=:spot_loc)
+    gdf = groupby(new_coord, :cell)
+    new_df = []
+    p = Progress(length(gdf), dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, color=:blue)
+    for df in gdf
+        anno1 = combine(groupby(df, :geneID), :MIDCount => sum => :count)
+        anno1.cell .= df.cell[1]
+        push!(new_df, anno1)
+        next!(p)
+    end
+    new_df = vcat(new_df...)
+    final_df = unstack(new_df, :cell, :geneID, :count)
+    final_df .= ifelse.(isequal.(final_df, missing), 0, final_df)
+    cellnames = final_df.cell
+    final_df = mapcols(ByRow(Int64), final_df[!, 2:end])
+    genenames = names(final_df)
+    final_df = convert(SparseMatrixCSC{Int64, Int64},Matrix(final_df)')
+    raw_count = RawCountObject(final_df, cellnames, genenames)
+    cell_coord = combine(groupby(new_coord, :cell), :x => mean => :x, :y => mean => :y)
+    rename!(new_coord,:geneID => :gene)
+    sp = CartanaObject(new_coord, cell_coord, raw_count;
+    prefix = prefix, min_gene = min_gene, min_cell = min_cell)
+    return raw_count
+end
