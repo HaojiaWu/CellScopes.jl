@@ -56,7 +56,7 @@ function Base.show(io::IO, count::AbstractCount)
     [println("- ", string(i)) for i in fieldnames(typeof(count))]
 end
 
-function Base.show(io::IO, obj_type::Union{AbstractDimReduction, ClusteringObject, VariableGeneObject, UndefinedObject, SpaImputeObj, VisiumImgObject, SpaCountObj,SpaMetaObj})
+function Base.show(io::IO, obj_type::Union{AbstractDimReduction, ClusteringObject, VariableGeneObject, UndefinedObject, SpaImputeObj, VisiumImgObject, SpaCountObj,SpaMetaObj,SpaImageObj})
     println(io, string(typeof(obj_type)))
     println("All fields:")
     [println("- ", string(i)) for i in fieldnames(typeof(obj_type))]
@@ -76,10 +76,11 @@ matchtype(field) = @match field begin
     spMeta::SpaMetaObj => println("- Spatial metadata")
     spCoord::SpaCoordObj => println("- Spatial coordiantes")
     fragment::FragmentObject => println("- Fragment data")
+    imgObject::SpaImageObj => println("- Image data")
     uns::UndefinedObject => println("- Undefined slot")
 end
 
-function Base.show(io::IO, sp_obj::Union{ImagingSpatialObject, CartanaObject, VisiumObject, XeniumObject, MerfishObject, SlideseqObject, STARmapObject, seqFishObject})
+function Base.show(io::IO, sp_obj::Union{ImagingSpatialObject, CartanaObject, VisiumObject, XeniumObject, MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject})
     if isa(sp_obj, ImagingSpatialObject)
         println(io, "ImagingSpatialObject in CellScopes.jl")
     elseif isa(sp_obj, CartanaObject)
@@ -94,6 +95,8 @@ function Base.show(io::IO, sp_obj::Union{ImagingSpatialObject, CartanaObject, Vi
         println(io, "seqFishObject in CellScopes.jl")
     elseif isa(sp_obj, SlideseqObject)
         println(io, "SlideseqObject in CellScopes.jl")
+    elseif isa(sp_obj, StereoSeqObject)
+        println(io, "StereoSeqObject in CellScopes.jl")
     else
         println(io, "VisiumObject in CellScopes.jl")
     end
