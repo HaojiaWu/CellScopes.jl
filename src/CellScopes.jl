@@ -54,6 +54,14 @@ using GeneticsMakie
 using Arrow
 using HDF5
 using PyCallUtils
+import FFTW
+import ImageMorphology
+import Graphs
+using NearestNeighbors: KDTree, knn
+using SimpleWeightedGraphs
+using StatsBase: countmap
+using KernelDensity
+using Graphs: src, dst
 
 include("scrna/objects.jl")
 include("spatial/sp_objects.jl")
