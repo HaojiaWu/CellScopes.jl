@@ -78,4 +78,6 @@ include("spatial/sp_processing.jl")
 include("scatac/atac_processing.jl")
 include("scatac/atac_plots.jl")
 include("scatac/atac_utils.jl")
+include("spatial/baysor_boundary.jl")
+
 end
