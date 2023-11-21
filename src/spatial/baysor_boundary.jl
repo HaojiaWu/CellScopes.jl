@@ -264,7 +264,7 @@ function extract_polygons_from_label_grid(grid_labels::Matrix{<:Unsigned}; min_b
     return [vcat(cp, cp[1,:]') for cp in polygons]
 end
 
-function baysor_boundary_polygons(molecules::Matrix{Float64}, cell_labels::Vector{<:Integer}; min_x::Union{Array{Float64}, Nothing}=nothing, max_x::Union{Array{Float64}, Nothing}=nothing,
+function baysor_boundary_polygons(molecules::DataFrame, cell_labels::Vector{<:Integer}; min_x::Union{Array{Float64}, Nothing}=nothing, max_x::Union{Array{Float64}, Nothing}=nothing,
                            grid_step::Float64=5.0, min_border_length::Int=3, shape_method::Symbol=:path, max_dev::Float64=10.0, x_col=:x, y_col=:y,
                            bandwidth::Float64=(grid_step / 2), exclude_labels::Vector{Int}=Int[], kwargs...)::Array{Matrix{Float64}, 1}
     post_data = copy(Matrix{Float64}(molecules[:, [x_col, y_col]])')
