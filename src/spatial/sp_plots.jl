@@ -226,8 +226,16 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                 df_plt[!, x_col] = df_plt[!, x_col] .- x_lims[1]
                 df_plt[!, y_col] = df_plt[!, y_col] .- y_lims[1]
             else
-                MK.xlims!(MK.current_axis(), x_lims1)
-                MK.ylims!(MK.current_axis(), y_lims1)
+                if isa(x_lims, Nothing)
+                    MK.xlims!(MK.current_axis(), x_lims1)
+                else
+                    MK.xlims!(MK.current_axis(), x_lims)
+                end
+                if isa(y_lims, Nothing)
+                    MK.ylims!(MK.current_axis(), y_lims1)
+                else
+                    MK.ylims!(MK.current_axis(), y_lims)
+                end                    
             end
             MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.plt_color, strokewidth = 0, markersize = marker_size)
             MK.Colorbar(fig[n_row,n_col2], label = "", colormap = c_map, width=10, limits = (0, maximum(gene_expr)))
