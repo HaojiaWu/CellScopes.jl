@@ -94,7 +94,7 @@ function find_longest_paths(edges::Array{<:Graphs.AbstractEdge, 1})::Array{Vecto
     n_verts = maximum(keys(vert_counts));
     leafs = collect(keys(vert_counts))[collect(values(vert_counts)) .== 1];
 
-    adj_mtx = sparse(src.(edges), dst.(edges), weight.(edges), n_verts, n_verts)
+    adj_mtx = sparse(src.(edges), dst.(edges), SimpleWeightedGraphs.weight.(edges), n_verts, n_verts)
     g_inc = SimpleWeightedGraph(adj_mtx + adj_mtx')
 
     conn_comps = Graphs.connected_components(g_inc);
