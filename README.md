@@ -5,7 +5,32 @@
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/CellScopes2.png" width="1000"> <br>
 
 ## 1. Installation
-To install ```CellScopes.jl```, you will need to have Julia 1.6 or higher installed. It is recommended to use Julia 1.7.3 or higher to avoid issues with dependencies. To install all of the necessary dependencies, run the following command line in Julia. Note that this will not install the unregisterd package ```Leiden.jl```, which you may need to install manually from the GitHub repository first.
+
+### 1.1. Install Julia 1.7.3
+To install ```CellScopes.jl```, you will need to have Julia 1.6 or higher installed. It is recommended to use Julia 1.7.3 or higher to avoid issues with dependencies. Here we will show how to install Julia in the Linux system.
+
+Assume you have access to the directory ```/home/users/doe```.
+
+```bash
+# get Julia 1.7.3
+cd /home/users/doe/
+wget https://julialang-s3.julialang.org/bin/linux/x64/1.7/julia-1.7.3-linux-x86_64.tar.gz
+tar xvf julia-1.7.3-linux-x86_64.tar.gz
+```
+Then add Julia to PATH. Assume you have a ```~/.bashrc``` file, then append the following code to the end of the ```~/.bashrc``` file.
+
+```bash
+export PATH=/home/users/doe/julia-1.7.3/bin:$PATH
+```
+
+To implement your changes, either open a new login session or reload the .bashrc via
+
+```
+source ~/.bashrc
+```
+
+### 1.2. Install CellScopes and dependencies
+To install all of the necessary dependencies, run the following command line in Julia. Note that this will not install the unregisterd package ```Leiden.jl```, which you may need to install manually from the GitHub repository first.
 
 ```julia
 using Pkg;
