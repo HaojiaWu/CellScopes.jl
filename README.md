@@ -9,15 +9,16 @@
 ### 1.1. Install Julia 1.7.3
 To install ```CellScopes.jl```, you will need to have Julia 1.6 or higher installed. It is recommended to use Julia 1.7.3 or higher to avoid issues with dependencies. Here we will show how to install Julia in the Linux system.
 
-Assume you have access to the directory ```/home/users/doe```. If you have an older version of Julia installed at the same location, it is recommended to remove it first using:
+Assume you have access to the directory ```/home/users/doe```. If you have an older version of Julia installed, it is recommended to first remove it:
 
 ```bash
 rm -rf julia-1.X.X/
 rm -rf .julia/
 ```
 
+Then get ```Julia 1.7.3``` and unzip the installation file.
+
 ```bash
-# get Julia 1.7.3
 cd /home/users/doe/
 wget https://julialang-s3.julialang.org/bin/linux/x64/1.7/julia-1.7.3-linux-x86_64.tar.gz
 tar xvf julia-1.7.3-linux-x86_64.tar.gz
