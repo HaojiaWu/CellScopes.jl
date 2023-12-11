@@ -312,7 +312,7 @@ cs.plot_marker_rank(kidney, "celltype","vEC"; num_gene=20)
 ```julia
 cell_order=["Podo", "HealthyPT", "InjPT","TAL","DCT","CD-PC","CD-IC","Uro","gEC","aEC","MC","Fib","Immune"];
 genes=["Podxl","Slc26a4","Havcr1","Slc5a2","Krt19","Aqp2","Slc12a3","Eln","Ehd3","Acta2","Col1a1"]
-cs.sp_dot_plot(kidney, genes, :celltype; cell_order=cell_order, expr_cutoff=0.1,fontsize=16,fig_height=500, fig_width=300)
+cs.sp_dot_plot(kidney, genes, :celltype; cell_order=cell_order, expr_cutoff=0.1,fontsize=16,height=500, width=300)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/cartana_tutorial/img/dotplot2.png" width="400"> <br>
 
