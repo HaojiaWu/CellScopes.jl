@@ -31,7 +31,7 @@ source ~/.bashrc
 ```
 
 #### 1.1.2. Install CellScopes and dependencies
-To install all of the necessary dependencies, run the following command line ```in Julia```. Note that this will not install the unregisterd package ```Leiden.jl```, which you may need to install manually from the GitHub repository first.
+To install all of the necessary dependencies, run the following command line in ```Julia```. Note that this will not install the unregisterd package ```Leiden.jl```, which you may need to install manually from the GitHub repository first.
 
 ```julia
 using Pkg;
