@@ -101,7 +101,11 @@ function generate_polygon_counts(sp::AbstractImagingObj)
     anno = rename!(anno, :polygon_number => :number)
     anno = rename!(anno, :mapped_cell => :cell)
     anno.cell = string.(anno.cell)
-    join_df = innerjoin(coord_molecules[!,[:gene,:cell]],anno[!,[:number,:cell]], on=:cell)
+    if isa(sp, StereoSeqObject)
+        join_df = innerjoin(coord_molecules[!,[:gene,:cell,:MIDCount]],anno[!,[:number,:cell]], on=:cell)
+    else
+        join_df = innerjoin(coord_molecules[!,[:gene,:cell]],anno[!,[:number,:cell]], on=:cell)
+    end
     join_df.gene = string.(join_df.gene)
     gdf = groupby(join_df, :gene)
     new_df = []
