@@ -1,4 +1,4 @@
-## All the functions below were from Baysor. Please visit the original repo to learn more: https://github.com/kharchenkolab/Baysor/tree/master
+## All the functions below were modified from Baysor. Please visit the original repo to learn more: https://github.com/kharchenkolab/Baysor/tree/master
 
 function split(vector::T where T <: AbstractVector; n_parts::Int)
     offset = ceil(Int, length(vector) / n_parts)

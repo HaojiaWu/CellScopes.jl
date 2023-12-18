@@ -30,7 +30,7 @@ function polygons_cell_mapping(sp::AbstractImagingObj; anno::Union{String, Symbo
     from = sp.spmetaData.cell.cell
     to = sp.spmetaData.cell[!, anno]
 
-    prefix = split(sp.spmetaData.cell.cell[1], "_")
+    prefix = Base.split(sp.spmetaData.cell.cell[1], "_")
     if length(prefix) > 1
         my_annot.mapped_cell .= prefix[1] .* "_" .* string.(my_annot.mapped_cell)
     end
@@ -129,7 +129,7 @@ function generate_polygon_counts(sp::AbstractImagingObj)
     final_df .= ifelse.(isequal.(final_df, missing), 0, final_df)
     final_df = mapcols(ByRow(Int64), final_df);
     sort!(final_df, :cell)
-    prefix = split(sp.spmetaData.cell.cell[1], "_")
+    prefix = Base.split(sp.spmetaData.cell.cell[1], "_")
     if length(prefix) > 1
         final_df.cell = prefix[1] * "_" .* string.(final_df.cell)
     end
@@ -147,7 +147,7 @@ end
 function process_scs_file(file_path, add_x, add_y, prefix)
     df = CSV.File(file_path; delim='\t', header=false) |> DataFrame
     rename!(df, [:coord, :cell])
-    coords = split.(df[:, :coord], ':')
+    coords = Base.split.(df[:, :coord], ':')
     df.x = parse.(Int, getindex.(coords, 1)) .+ add_x
     df.y = parse.(Int, getindex.(coords, 2)) .+ add_y
     df.cell = prefix .* "_" .* string.(df.cell)
