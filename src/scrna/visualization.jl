@@ -1,4 +1,4 @@
-function dim_plot(sc_obj::Union{scRNAObject, VisiumObject,ImagingSpatialObject, CartanaObject, XeniumObject,scATACObject, MerfishObject, SlideseqObject, seqFishObject, STARmapObject}; anno::Union{Symbol, String}="cluster", dim_type::String="umap",
+function dim_plot(sc_obj::Union{scRNAObject, VisiumObject,ImagingSpatialObject, CartanaObject, XeniumObject,scATACObject, MerfishObject, SlideseqObject, seqFishObject, STARmapObject,StereoSeqObject}; anno::Union{Symbol, String}="cluster", dim_type::String="umap",
     anno_color::Union{Nothing, Dict} = nothing, cell_order::Union{Vector{String}, Nothing}=nothing,
     x_lims=nothing, y_lims=nothing,canvas_size=(600,500),stroke_width=0.5,stroke_color=:transparent, 
         marker_size=2, label_size=20, label_color="black", label_offset=(0,0), do_label=true, do_legend=true,
@@ -66,7 +66,7 @@ function dim_plot(sc_obj::Union{scRNAObject, VisiumObject,ImagingSpatialObject, 
         MK.current_figure()
 end
 
-function highlight_cells(sc_obj::Union{scRNAObject, VisiumObject, ImagingSpatialObject, CartanaObject, XeniumObject, scATACObject, MerfishObject, SlideseqObject}, cl::String; dim_type="umap", anno::Union{String,Symbol}="cluster",
+function highlight_cells(sc_obj::Union{scRNAObject, VisiumObject, ImagingSpatialObject, CartanaObject, XeniumObject, scATACObject, MerfishObject, SlideseqObject,StereoSeqObject}, cl::String; dim_type="umap", anno::Union{String,Symbol}="cluster",
     canvas_size=(600,500),stroke_width::Float64=0.1, stroke_color="black", cell_color::String="red",
     marker_size=2,x_lims=nothing, y_lims=nothing)
     dim_data, x_col, y_col = get_dim_data(sc_obj.dimReduction, dim_type)
@@ -93,7 +93,7 @@ function highlight_cells(sc_obj::Union{scRNAObject, VisiumObject, ImagingSpatial
     MK.current_figure()
 end
 
-function feature_plot(sc_obj::Union{scRNAObject, VisiumObject, ImagingSpatialObject, CartanaObject, XeniumObject, scATACObject, MerfishObject, SlideseqObject, seqFishObject, STARmapObject}, genes; dim_type::String = "umap", count_type = "norm",x_lims=nothing, y_lims=nothing, marker_size=4, order=true,
+function feature_plot(sc_obj::Union{scRNAObject, VisiumObject, ImagingSpatialObject, CartanaObject, XeniumObject, scATACObject, MerfishObject, SlideseqObject, seqFishObject, STARmapObject, StereoSeqObject}, genes; dim_type::String = "umap", count_type = "norm",x_lims=nothing, y_lims=nothing, marker_size=4, order=true,
     color_keys::Union{Vector{String}, Tuple{String,String,String}}=("black","yellow","red"), do_dimname::Bool=false,
         split_by::Union{String, Symbol, Nothing}=nothing, titlesize::Int64 = 24, height::Real = 500, width::Real = 500)
         dim_data, x_col, y_col = get_dim_data(sc_obj.dimReduction, dim_type)
@@ -211,7 +211,7 @@ function feature_plot(sc_obj::Union{scRNAObject, VisiumObject, ImagingSpatialObj
         MK.current_figure()
 end
 
-function dot_plot(sc_obj::Union{scRNAObject, VisiumObject, ImagingSpatialObject, CartanaObject, XeniumObject, scATACObject, MerfishObject, SlideseqObject, seqFishObject, STARmapObject}, genes::Union{Vector, String},
+function dot_plot(sc_obj::Union{scRNAObject, VisiumObject, ImagingSpatialObject, CartanaObject, XeniumObject, scATACObject, MerfishObject, SlideseqObject, seqFishObject, STARmapObject,StereoSeqObject}, genes::Union{Vector, String},
     cluster::Union{Symbol, String};count_type = "norm" , expr_cutoff::Union{Float64, Int64}=0, split_by::Union{String, Nothing}=nothing,
     x_title="Gene", y_title = "Cell type", cell_order::Union{Vector, String, Nothing}=nothing,
     fontsize::Int64 = 12, color_scheme::String="yelloworangered",reverse_color::Bool=false,
@@ -285,7 +285,7 @@ else
     return p
 end
 
-function violin_plot(sc_obj::Union{scRNAObject, VisiumObject, ImagingSpatialObject, CartanaObject, XeniumObject, scATACObject, MerfishObject, SlideseqObject, seqFishObject, STARmapObject}, genes; 
+function violin_plot(sc_obj::Union{scRNAObject, VisiumObject, ImagingSpatialObject, CartanaObject, XeniumObject, scATACObject, MerfishObject, SlideseqObject, seqFishObject, STARmapObject,StereoSeqObject}, genes; 
     count_type::String ="norm", group_by::String = "cluster", 
     pt_size::Real =0.5, line_width::Real = 0, alpha::Real=1,
     height::Real = 800, width::Real = 500, do_legend::Bool = false,

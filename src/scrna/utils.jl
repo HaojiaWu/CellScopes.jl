@@ -196,7 +196,7 @@ function update_object(sp_obj::Union{scRNAObject, VisiumObject, ImagingSpatialOb
         sp_obj.spmetaData.molecule.gene = string.(sp_obj.spmetaData.molecule.gene)
         sp_obj.spmetaData.molecule = filter(:gene => ∈(gene_set), sp_obj.spmetaData.molecule)
         println("Updating polygons data...")
-        prefix = split(sp_obj.spmetaData.cell.cell[1],"_")
+        prefix = Base.split(sp_obj.spmetaData.cell.cell[1],"_")
         if length(prefix) > 1
             poly_all_cell = prefix[1] .* "_" .* string.(sp_obj.spmetaData.polygon.polygon_number)
         else
