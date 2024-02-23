@@ -2,7 +2,7 @@
 function normalize_object(mtx::AbstractMatrix{<:Real}; scale_factor = 10000, norm_method = "logarithm", pseudocount = 1)
     n= size(mtx)[2]
     sum_val = sum(mtx, dims=1)
-    norm_count = hcat(Folds.collect(log.((mtx[:, i] ./ sum_val[i]) .* scale_factor .+ pseudocount) for i in 1:n)...)
+    norm_count = hcat(collect(log.((mtx[:, i] ./ sum_val[i]) .* scale_factor .+ pseudocount) for i in 1:n)...)
     return norm_count
 end
 
@@ -24,7 +24,7 @@ end
 function scale_object(count_mtx::AbstractMatrix{<:Real}; scale_max = 10.0, do_scale::Bool = true, do_center::Bool = true)
     rmean = mean(count_mtx, dims=2)
     rsd = sqrt.(var(count_mtx, dims=2))
-    count_mtx = hcat(Folds.collect(count_mtx[i, :] .- rmean[i] for i in 1:length(rmean))...)
+    count_mtx = hcat(collect(count_mtx[i, :] .- rmean[i] for i in 1:length(rmean))...)
     if do_scale
         count_mtx = hcat([count_mtx[:, i] ./ rsd[i] for i in 1:length(rsd)]...)
     end

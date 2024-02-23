@@ -154,8 +154,9 @@ function read_xenium(xenium_dir::String; prefix = "xenium", min_gene::Int64 = 0,
     genes = string.(genes.Column2)
     blank_gene = Grep.grep("BLANK", genes)
     neg_gene = Grep.grep("NegControl", genes)
-    unassigned_gene = Grep.grep("Unassigned", genes)
-    gene_rm = [blank_gene; neg_gene; unassigned_gene]
+#    unassigned_gene = Grep.grep("Unassigned", genes)
+#    gene_rm = [blank_gene; neg_gene; unassigned_gene]
+    gene_rm = [blank_gene; neg_gene]
     cells = string.(cells.Column1)
     rename!(count_molecules, :cell_id => :cell, :feature_name => :gene, :x_location => :x, :y_location => :y, :z_location => :z)
     rename!(count_cells, :cell_id => :cell, :x_centroid => :x, :y_centroid => :y)
@@ -170,7 +171,7 @@ function read_xenium(xenium_dir::String; prefix = "xenium", min_gene::Int64 = 0,
     count_molecules.cell = string.(count_molecules.cell)
     count_molecules = filter(:gene => ∈(Set(genes2)), count_molecules)
     count_cells.cell = string.(count_cells.cell)
-    count_cells = filter(:cell => ∈(Set(string.(clustering.Barcode))), count_cells)
+    count_cells = filter(:cell => ∈(Set(clustering.Barcode)), count_cells)
     count_cells.cluster = clustering.Cluster
     spObj = XeniumObject(count_molecules, count_cells, raw_count, poly, umap_obj;
             prefix = prefix, min_gene = min_gene, min_cell = min_gene)
