@@ -207,3 +207,62 @@ function create_stereoseq_scs(scs_results, spot_coord; prefix="sp", min_gene=0, 
     prefix = prefix, min_gene = min_gene, min_cell = min_cell)
     return sp
 end
+
+function moving_average_smooth_polygon(polygon::Matrix{Float64}, window_size::Int)::Matrix{Float64}
+    smoothed_polygon = copy(polygon)
+    n = size(polygon, 1)
+    half_window = div(window_size, 2)
+    for i in 1:n
+        for dim in 1:2
+            smoothed_polygon[i, dim] = mean([polygon[mod(j-1, n)+1, dim] for j in (i-half_window):(i+half_window)])
+        end
+    end
+    return smoothed_polygon
+end
+
+function smooth_polygons_moving_average(polygons::Vector{Matrix{Float64}}, window_size::Int)
+    return [moving_average_smooth_polygon(polygon, window_size) for polygon in polygons]
+end
+
+
+function gaussian_kernel(kernel_size::Int, theta::Float64)
+    offset = kernel_size ÷ 2
+    kernel = Float64[exp(-0.5 * ((x - offset) / theta)^2) for x in 0:kernel_size-1]
+    kernel /= sum(kernel) 
+    return kernel
+end
+
+function gaussian_blur_polygon(polygon::Matrix{Float64}, kernel_size::Int, theta::Float64)::Matrix{Float64}
+    kernel = gaussian_kernel(kernel_size, theta)
+    smoothed_polygon = copy(polygon)
+    n = size(polygon, 1)
+    for i in 1:n
+        for dim in 1:2
+            smoothed_polygon[i, dim] = sum([kernel[j] * polygon[mod(i + j - div(kernel_size, 2) - 1, n) + 1, dim] for j in 1:kernel_size])
+        end
+    end
+    return smoothed_polygon
+end
+
+function smooth_polygons_gaussian_blur(polygons::Vector{Matrix{Float64}}, kernel_size::Int, σ::Float64)
+    return [gaussian_blur_polygon(polygon, kernel_size, theta) for polygon in polygons]
+end
+
+function add_full_res_img(vsm_obj::VisiumObject, fullres_image_file::String)
+    full_img = FileIO.load(fullres_image_file)
+    full_img = convert(Matrix{RGB{N0f8}}, full_img)
+    vsm_obj.imageData.fullresImage = full_img
+    return vsm_obj
+end
+
+function add_xenium_img(xen_obj::XeniumObject; img_path::Union{String, Nothing}=nothing)
+    if isa(img_path, Nothing)
+        error("Please provide the address to the image file! Make sure the image has been registrered with the DAPI image from Xenium output.")
+    end
+    img = FileIO.load(img_path)
+    img = convert(Matrix{RGB{N0f8}}, img)
+    rotated_img = rotr90(img)
+    flipped_img = reverse(rotated_img, dims=2)
+    xen_obj.imageData = flipped_img
+    return xen_obj
+end

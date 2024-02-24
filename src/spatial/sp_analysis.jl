@@ -382,3 +382,4 @@ function retrieve_scanpy_data(adata::PyObject; data_type="visium")
     rename!(norm_counts, :x1 => :gene)
     return cells, raw_counts, norm_counts
 end
+

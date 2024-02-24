@@ -540,6 +540,7 @@ function plot_transcript_polygons(sp::Union{ImagingSpatialObject, CartanaObject,
     return MK.current_figure()
 end
 
+#=
 function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject,XeniumObject,MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject}, anno::Union{Symbol, String}; 
     anno_color::Union{Nothing, Dict} = nothing, x_col::String = "x", y_col::String = "y", cell_order::Union{Vector{String}, Nothing}=nothing,
     x_lims=nothing, y_lims=nothing,canvas_size=(900,1000),stroke_width=0.5,stroke_color=:transparent,  bg_color=:white,
@@ -645,6 +646,162 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
             anno_df2 = filter(anno => ==(i), anno_df)
             x_ax = anno_df2[!, x_col]
             y_ax = anno_df2[!, y_col]
+            MK.text!(i, position = (mean(x_ax) - label_offset[1], mean(y_ax) - label_offset[2]),align = (:center, :center),font = "Noto Sans Regular",fontsize = label_size,color = label_color)
+        end
+    end
+    MK.xlims!(ax1, x_lims)
+    MK.ylims!(ax1, y_lims)
+    MK.xlims!(ax2, x_lims)
+    MK.ylims!(ax2, y_lims)
+    MK.xlims!(MK.current_axis(), x_lims)
+    MK.ylims!(MK.current_axis(), y_lims)
+    return MK.current_figure()
+end
+=#
+
+function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject,XeniumObject,MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject}, anno::Union{Symbol, String}; 
+    anno_color::Union{Nothing, Dict} = nothing, x_col::String = "x", y_col::String = "y", cell_order::Union{Vector{String}, Nothing}=nothing,
+    x_lims=nothing, y_lims=nothing,canvas_size=(900,1000),stroke_width=0.5,stroke_color=:transparent,  bg_color=:white,
+        marker_size=2, label_size=50, label_color="black", label_offset=(0,0), do_label=false, do_legend=true, alpha::Real = 1,
+        legend_size = 10, legend_fontsize = 16, legend_ncol = 1,img_res::String = "low", custom_img=false, adjust_coord_to_img="auto",
+        adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3
+    )
+    if isa(sp, VisiumObject)
+        anno_df = deepcopy(sp.spmetaData)
+        anno_df[!, anno] = sp.metaData[!, anno]
+        x_col = Symbol(x_col)
+        y_col = Symbol(y_col)
+        rename!(anno_df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
+        if isa(anno_df[!, x_col], Vector{String})
+            anno_df[!, x_col] = Float64.(anno_df[!, x_col])
+        end
+        if isa(anno_df[!, y_col], Vector{String})
+            anno_df[!, y_col] = Float64.(anno_df[!, y_col])
+        end
+        if img_res == "high"
+            scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
+        elseif img_res == "low"
+            scale_factor = sp.imageData.jsonParameters["tissue_lowres_scalef"]
+        elseif img_res == "full"
+            dim_full = size(sp.imageData.fullresImage)
+            dim_high = size(sp.imageData.highresImage)
+            x_ratio = dim_full[1]/dim_high[1]
+            y_ratio = dim_full[2]/dim_high[2]
+            scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
+            scale_factor = scale_factor * (x_ratio + y_ratio)/2
+        else
+            error("img_res can only be \"high\", \"low\" or \"full\"!")
+        end
+        anno_df[!, x_col] =  anno_df[!, x_col] .* scale_factor
+        anno_df[!, y_col] =  anno_df[!, y_col] .* scale_factor
+    elseif isa(sp, SlideseqObject)
+        anno_df = deepcopy(sp.spmetaData)
+        anno_df[!, anno] = string.(sp.metaData[!, anno])
+    else
+        anno_df=deepcopy(sp.spmetaData.cell)
+        anno_df[!, anno] = string.(anno_df[!, anno])
+    end
+    if isa(x_lims, Nothing)
+        x_lims=(minimum(anno_df[!,x_col])-0.05*maximum(anno_df[!,x_col]),1.05*maximum(anno_df[!,x_col]))
+    end
+    if isa(y_lims, Nothing)
+        y_lims=(minimum(anno_df[!,y_col])-0.05*maximum(anno_df[!,y_col]),1.05*maximum(anno_df[!,y_col]))
+    end
+    if isa(anno, String)
+        anno=Symbol(anno)
+    end
+    if isa(anno_color, Nothing)
+        cell_anno=unique(anno_df[!,anno])
+        c_map=Colors.distinguishable_colors(length(cell_anno), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
+        c_map = "#" .* hex.(c_map)
+        anno_color=Dict(cell_anno .=> c_map)
+    end
+    anno_df=DataFrames.transform(anno_df, anno => ByRow(x -> anno_color[x]) => :new_color)
+    anno_df.new_color = [(i, alpha) for i in anno_df.new_color]
+    fig = MK.Figure(resolution=canvas_size)
+    ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+        xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
+        xgridvisible = false,ygridvisible = false);
+    ax2 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+        xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
+        xgridvisible = false,ygridvisible = false);
+    if isa(cell_order, Nothing)
+        cell_anno=unique(anno_df[!,anno])
+    else
+        cell_anno=cell_order
+    end
+    if isa(sp, VisiumObject)
+        if img_res == "high"
+            img = deepcopy(sp.imageData.highresImage)
+        elseif img_res == "low"
+            img = deepcopy(sp.imageData.lowresImage)
+        else
+            img = deepcopy(sp.imageData.fullresImage)
+        end
+        img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
+        MK.image!(ax1, img2)
+    end
+    if custom_img
+        if isa(sp, XeniumObject)
+            img = deepcopy(sp.imageData)   
+            scale_values = Dict(
+                                "level1" => 0.2125 / 0.2125,
+                                "level2" => 0.2125 / 0.4250,
+                                "level3" => 0.2125 / 0.8500,
+                                "level4" => 0.2125 / 1.7000,
+                                "level5" => 0.2125 / 3.4000,
+                                "level6" => 0.2125 / 6.8000,
+                                "level7" => 0.2125 / 13.6000,
+                                "level8" => 0.2125 / 27.2000
+                                )
+            scale_value = get(scale_values, adjust_coord_to_img, 0)
+            if scale_value == 0
+                anno_df2 = deepcopy(anno_df)
+                anno_df2[!, "x"] = anno_df2[!, "x"] .- minimum(anno_df2[!, "x"])
+                anno_df2[!, "y"] = anno_df2[!, "y"] .- minimum(anno_df2[!, "y"])
+                scale_x = maximum(anno_df2[!, "x"]) / size(img)[1]
+                scale_y = maximum(anno_df2[!, "y"]) / size(img)[2]
+            else
+                scale_x = scale_y == scale_value
+            end
+            img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
+            MK.image!(ax1, img2)
+        end
+    end
+    for i in cell_anno
+        anno_df2=filter(anno => ==(i), anno_df)
+        x_ax = anno_df2[!, x_col]
+        y_ax = anno_df2[!, y_col]
+        if custom_img
+            x_ax = x_ax .* scale_x
+            y_ax = y_ax .* scale_y
+            x_lims = x_lims .* scale_x
+            y_lims = y_lims .* scale_y
+        end
+        colors = unique(anno_df2.new_color)
+        if do_legend
+            MK.scatter!(ax2, x_ax , y_ax; strokecolor=stroke_color, visible=false,
+                color=colors[1], strokewidth=0, markersize=2*legend_size, label=i)
+            MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
+                color=colors[1], strokewidth=0, markersize=marker_size, label=i)
+        else
+            MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
+                color=colors[1], strokewidth=0, markersize=marker_size)
+        end
+    end
+    if do_legend
+        MK.Legend(fig[1, 2], ax2, framecolor=:white, labelsize=legend_fontsize, nbanks=legend_ncol)
+    end
+    if do_label
+        for i in cell_anno
+            anno_df = filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], anno_df)
+            anno_df2 = filter(anno => ==(i), anno_df)
+            x_ax = anno_df2[!, x_col]
+            y_ax = anno_df2[!, y_col]
+            if custom_img
+                x_ax = x_ax .* scale_x
+                y_ax = y_ax .* scale_y
+            end
             MK.text!(i, position = (mean(x_ax) - label_offset[1], mean(y_ax) - label_offset[2]),align = (:center, :center),font = "Noto Sans Regular",fontsize = label_size,color = label_color)
         end
     end
