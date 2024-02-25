@@ -415,6 +415,17 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
             y_lims1=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
         end
         c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
+        scale_values = Dict(
+            "level1" => 0.2125 / 0.2125,
+            "level2" => 0.4250 / 0.2125,
+            "level3" => 0.8500 / 0.2125,
+            "level4" => 1.7000 / 0.2125,
+            "level5" => 3.4000 / 0.2125,
+            "level6" => 6.8000 / 0.2125,
+            "level7" => 13.6000 / 0.2125,
+            "level8" => 27.2000 / 0.2125
+            )
+        scale_value = get(scale_values, adjust_coord_to_img, 0)
         fig = MK.Figure(resolution = (width * n_cols, height * n_rows))
         for (i, gene) in enumerate(gene_list)
             gene_expr = subset_count(norm_counts; genes = [gene])
@@ -457,6 +468,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                 n_col1 = 2*(i-3*(n_row-1))-1
                 n_col2 = 2*(i-3*(n_row-1))
             end
+            df_plt_img = deepcopy(df_plt)
             ax1 = MK.Axis(fig[n_row,n_col1]; backgroundcolor = bg_color, xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
             xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
             xgridvisible = false, ygridvisible = false,yreversed=false, title = gene_list[i], 
@@ -478,26 +490,15 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
             end
             if custom_img
                 if isa(sp, XeniumObject)
-                    img = deepcopy(sp.imageData)   
-                    scale_values = Dict(
-                                        "level1" => 0.2125 / 0.2125,
-                                        "level2" => 0.4250 / 0.2125,
-                                        "level3" => 0.8500 / 0.2125,
-                                        "level4" => 1.7000 / 0.2125,
-                                        "level5" => 3.4000 / 0.2125,
-                                        "level6" => 6.8000 / 0.2125,
-                                        "level7" => 13.6000 / 0.2125,
-                                        "level8" => 27.2000 / 0.2125
-                                        )
-                    scale_value = get(scale_values, adjust_coord_to_img, 0)
+                    img = deepcopy(sp.imageData)
                     if scale_value == 0
-                        scale_x = maximum(df_plt[!, x_col]) / size(img)[1]
-                        scale_y = maximum(df_plt[!, y_col]) / size(img)[2]
+                        scale_x = maximum(df_plt_img[!, x_col]) / size(img)[1]
+                        scale_y = maximum(df_plt_img[!, y_col]) / size(img)[2]
                     else
                         scale_x = scale_y == scale_value
                     end
-                    df_plt[!, x_col] = df_plt[!, x_col] ./ scale_x
-                    df_plt[!, y_col] = df_plt[!, y_col] ./ scale_y
+                    df_plt_img[!, x_col] = df_plt_img[!, x_col] ./ scale_x
+                    df_plt_img[!, y_col] = df_plt_img[!, y_col] ./ scale_y
                     if isa(x_lims, Nothing)
                         x_lims1 = x_lims1 ./ scale_x
                     else
@@ -516,9 +517,9 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                 end
             end
             if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
-                df_plt = filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], df_plt)
-                df_plt[!, x_col] = df_plt[!, x_col] .- x_lims[1]
-                df_plt[!, y_col] = df_plt[!, y_col] .- y_lims[1]
+                df_plt_img = filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], df_plt_img)
+                df_plt_img[!, x_col] = df_plt_img[!, x_col] .- x_lims[1]
+                df_plt_img[!, y_col] = df_plt_img[!, y_col] .- y_lims[1]
             else
                 if isa(x_lims, Nothing)
                     MK.xlims!(MK.current_axis(), x_lims1)
@@ -531,7 +532,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                     MK.ylims!(MK.current_axis(), y_lims)
                 end                    
             end
-            MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.plt_color, strokewidth = 0, markersize = marker_size)
+            MK.scatter!(ax1, df_plt_img[!, x_col], df_plt_img[!, y_col]; color = df_plt_img.plt_color, strokewidth = 0, markersize = marker_size)
             MK.Colorbar(fig[n_row,n_col2], label = "", colormap = c_map, width=10, limits = (0, maximum(gene_expr)))
         end
         MK.current_figure()
