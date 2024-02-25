@@ -490,15 +490,15 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
             if custom_img
                 if isa(sp, XeniumObject)
                     img = deepcopy(sp.imageData)
+                    if scale_value == 0
+                        scale_x = maximum(df_plt[!, x_col]) / size(img)[1]
+                        scale_y = maximum(df_plt[!, y_col]) / size(img)[2]
+                    else
+                        scale_x = scale_y == scale_value
+                    end
+                    df_plt[!, x_col] = df_plt[!, x_col] ./ scale_x
+                    df_plt[!, y_col] = df_plt[!, y_col] ./ scale_y
                     if i == 1
-                        if scale_value == 0
-                            scale_x = maximum(df_plt[!, x_col]) / size(img)[1]
-                            scale_y = maximum(df_plt[!, y_col]) / size(img)[2]
-                        else
-                            scale_x = scale_y == scale_value
-                        end
-                        df_plt[!, x_col] = df_plt[!, x_col] ./ scale_x
-                        df_plt[!, y_col] = df_plt[!, y_col] ./ scale_y
                         if isa(x_lims, Nothing)
                             x_lims1 = x_lims1 ./ scale_x
                         else
@@ -509,13 +509,13 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                         else
                             y_lims = y_lims ./ scale_y
                         end
-                    end                            
-                    if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
-                        img = img[round(Int, x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
                     end
-                    img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
-                    MK.image!(ax1, img2)
+                end                            
+                if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
+                    img = img[round(Int, x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
                 end
+                img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
+                MK.image!(ax1, img2)
             end
             if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
                 df_plt = filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], df_plt)
