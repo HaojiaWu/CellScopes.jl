@@ -756,14 +756,17 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
                                 )
             scale_value = get(scale_values, adjust_coord_to_img, 0)
             if scale_value == 0
-                anno_df2 = deepcopy(anno_df)
-                anno_df2[!, "x"] = anno_df2[!, "x"] .- minimum(anno_df2[!, "x"])
-                anno_df2[!, "y"] = anno_df2[!, "y"] .- minimum(anno_df2[!, "y"])
-                scale_x = maximum(anno_df2[!, "x"]) / size(img)[1]
-                scale_y = maximum(anno_df2[!, "y"]) / size(img)[2]
+                anno_df[!, x_col] = anno_df[!, x_col] .- minimum(anno_df[!, x_col])
+                anno_df[!, y_col] = anno_df[!, y_col] .- minimum(anno_df[!, y_col])
+                scale_x = maximum(anno_df[!, x_col]) / size(img)[1]
+                scale_y = maximum(anno_df[!, y_col]) / size(img)[2]
             else
                 scale_x = scale_y == scale_value
             end
+            anno_df[!, x_col] = anno_df[!, x_col] .* scale_x
+            anno_df[!, y_col] = anno_df[!, y_col] .* scale_y
+            x_lims = x_lims .* scale_x
+            y_lims = y_lims .* scale_y
             img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
             MK.image!(ax1, img2)
         end
@@ -772,12 +775,6 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
         anno_df2=filter(anno => ==(i), anno_df)
         x_ax = anno_df2[!, x_col]
         y_ax = anno_df2[!, y_col]
-        if custom_img
-            x_ax = x_ax .* scale_x
-            y_ax = y_ax .* scale_y
-            x_lims = x_lims .* scale_x
-            y_lims = y_lims .* scale_y
-        end
         colors = unique(anno_df2.new_color)
         if do_legend
             MK.scatter!(ax2, x_ax , y_ax; strokecolor=stroke_color, visible=false,
@@ -798,10 +795,6 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
             anno_df2 = filter(anno => ==(i), anno_df)
             x_ax = anno_df2[!, x_col]
             y_ax = anno_df2[!, y_col]
-            if custom_img
-                x_ax = x_ax .* scale_x
-                y_ax = y_ax .* scale_y
-            end
             MK.text!(i, position = (mean(x_ax) - label_offset[1], mean(y_ax) - label_offset[2]),align = (:center, :center),font = "Noto Sans Regular",fontsize = label_size,color = label_color)
         end
     end
