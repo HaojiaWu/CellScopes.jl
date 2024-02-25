@@ -509,7 +509,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                         y_lims = y_lims ./ scale_y
                     end                            
                     if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
-                        img = img[round(Int, xlims[1]):round(Int, xlims[2]), round(Int, ylims[1]):round(Int, ylims[2])]
+                        img = img[round(Int, x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
                     end
                     img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
                     MK.image!(ax1, img2)
