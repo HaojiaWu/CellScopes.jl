@@ -746,27 +746,27 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
             img = deepcopy(sp.imageData)   
             scale_values = Dict(
                                 "level1" => 0.2125 / 0.2125,
-                                "level2" => 0.2125 / 0.4250,
-                                "level3" => 0.2125 / 0.8500,
-                                "level4" => 0.2125 / 1.7000,
-                                "level5" => 0.2125 / 3.4000,
-                                "level6" => 0.2125 / 6.8000,
-                                "level7" => 0.2125 / 13.6000,
-                                "level8" => 0.2125 / 27.2000
+                                "level2" => 0.4250 / 0.2125,
+                                "level3" => 0.8500 / 0.2125,
+                                "level4" => 1.7000 / 0.2125,
+                                "level5" => 3.4000 / 0.2125,
+                                "level6" => 6.8000 / 0.2125,
+                                "level7" => 13.6000 / 0.2125,
+                                "level8" => 27.2000 / 0.2125
                                 )
             scale_value = get(scale_values, adjust_coord_to_img, 0)
             if scale_value == 0
-                anno_df[!, x_col] = anno_df[!, x_col] .- minimum(anno_df[!, x_col])
-                anno_df[!, y_col] = anno_df[!, y_col] .- minimum(anno_df[!, y_col])
+#                anno_df[!, x_col] = anno_df[!, x_col] .- minimum(anno_df[!, x_col])
+#                anno_df[!, y_col] = anno_df[!, y_col] .- minimum(anno_df[!, y_col])
                 scale_x = maximum(anno_df[!, x_col]) / size(img)[1]
                 scale_y = maximum(anno_df[!, y_col]) / size(img)[2]
             else
                 scale_x = scale_y == scale_value
             end
-            anno_df[!, x_col] = anno_df[!, x_col] .* scale_x
-            anno_df[!, y_col] = anno_df[!, y_col] .* scale_y
-            x_lims = x_lims .* scale_x
-            y_lims = y_lims .* scale_y
+            anno_df[!, x_col] = anno_df[!, x_col] ./ scale_x
+            anno_df[!, y_col] = anno_df[!, y_col] ./ scale_y
+            x_lims = x_lims ./ scale_x
+            y_lims = y_lims ./ scale_y
             img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
             MK.image!(ax1, img2)
         end
