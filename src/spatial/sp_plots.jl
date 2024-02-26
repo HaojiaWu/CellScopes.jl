@@ -165,16 +165,20 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
             end
         end
         if isa(x_lims, Nothing)
-            x_lims1=(minimum(coord_cell[!, x_col])-0.05*maximum(coord_cell[!, x_col]),1.05*maximum(coord_cell[!, x_col]))
+            if isa(sp, VisiumObject)
+                x_lims=(minimum(coord_cell[!, x_col])-0.05*maximum(coord_cell[!, x_col]),1.05*maximum(coord_cell[!, x_col]))
+                x_lims = x_lims .* scale_factor
+            else
+                x_lims1=(minimum(coord_cell[!, x_col])-0.05*maximum(coord_cell[!, x_col]),1.05*maximum(coord_cell[!, x_col]))
+            end
         end
         if isa(y_lims, Nothing)
-            y_lims1=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
-        end
-        if isa(sp, VisiumObject)
-            x_lims = x_lims .* scale_factor
-            y_lims = y_lims .* scale_factor
-            x_lims1 = x_lims1 .* scale_factor
-            y_lims1 = y_lims1 .* scale_factor
+            if isa(sp, VisiumObject)
+                y_lims=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
+                y_lims = y_lims .* scale_factor
+            else
+                y_lims1=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
+            end
         end
         c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
         fig = MK.Figure(resolution = (width * n_cols, height * n_rows))
