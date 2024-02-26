@@ -377,7 +377,8 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                     to = collect(values(gene_color))
                     df_plt=DataFrames.transform(coord_molecules, :gene => ByRow(name -> name ∈ gene ? name : "others") => :new_gene)
                     df_plt = map_values(df_plt, :new_gene, :forcolor, from, to)
-                    df_plt.new_gene = string.(df_plt.new_gene)
+                    df_plt.new_gene = String.(df_plt.new_gene)
+                    df_plt.forcolor = String.(df_plt.forcolor)
                     df_plt.forcolor = [(i, alpha) for i in df_plt.forcolor]
                     ax1 = MK.Axis(fig[n_row,n_col]; backgroundcolor = bg_color, xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
                     xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
