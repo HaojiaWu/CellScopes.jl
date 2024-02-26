@@ -586,6 +586,8 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                 if custom_img
                     if isa(sp, XeniumObject)
                         img = deepcopy(sp.imageData)
+                        all_genes = from[from .!= "others"]
+                        all_colors = to[to .!= color_keys[1]]
                         if scale_value == 0
                             scale_x = maximum(df_plt[!, x_col]) / size(img)[1]
                             scale_y = maximum(df_plt[!, y_col]) / size(img)[2]
@@ -610,10 +612,14 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                     x_ax = df_plt[!, x_col][df_plt.new_gene .== gene]
                     y_ax = df_plt[!, y_col][df_plt.new_gene .== gene]
                     if do_legend
-                        MK.scatter!(ax1, x_ax , y_ax; color = ann_color, strokewidth = 0, markersize = legend_size, label = gene)
-                        MK.scatter!(ax2, x_ax, y_ax; color = :white, strokewidth = 0, markersize = legend_size * 2, label = gene)
-                        MK.scatter!(ax3, x_ax, y_ax; color = ann_color, strokewidth = 0, markersize = marker_size, label = gene)
-                        MK.Legend(fig[1, 2], ax1, framecolor=:white, labelsize=legend_fontsize)
+                        if !custom_img
+                            MK.scatter!(ax1, x_ax , y_ax; color = ann_color, strokewidth = 0, markersize = legend_size, label = gene)
+                            MK.scatter!(ax2, x_ax, y_ax; color = :white, strokewidth = 0, markersize = legend_size * 2, label = gene)
+                            MK.scatter!(ax3, x_ax, y_ax; color = ann_color, strokewidth = 0, markersize = marker_size, label = gene)
+                            MK.Legend(fig[1, 2], ax1, framecolor=:white, labelsize=legend_fontsize)
+                        else
+                            MK.Legend(fig[1, 2], ax1, framecolor=:white, labelsize=legend_fontsize)
+                        end
                     else
                         MK.scatter!(ax1, x_ax , y_ax; color = ann_color, strokewidth = 0, markersize = marker_size)
                     end
