@@ -356,6 +356,17 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
     else
         n_cols = 3
     end
+    scale_values = Dict(
+        "level1" => 0.2125 / 0.2125,
+        "level2" => 0.4250 / 0.2125,
+        "level3" => 0.8500 / 0.2125,
+        "level4" => 1.7000 / 0.2125,
+        "level5" => 3.4000 / 0.2125,
+        "level6" => 6.8000 / 0.2125,
+        "level7" => 13.6000 / 0.2125,
+        "level8" => 27.2000 / 0.2125
+        )
+    scale_value = get(scale_values, adjust_coord_to_img, 0)
     if layer === "cells"
         if isa(sp, VisiumObject)
             coord_cell = deepcopy(sp.spmetaData)
@@ -415,17 +426,6 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
             y_lims1=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
         end
         c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
-        scale_values = Dict(
-            "level1" => 0.2125 / 0.2125,
-            "level2" => 0.4250 / 0.2125,
-            "level3" => 0.8500 / 0.2125,
-            "level4" => 1.7000 / 0.2125,
-            "level5" => 3.4000 / 0.2125,
-            "level6" => 6.8000 / 0.2125,
-            "level7" => 13.6000 / 0.2125,
-            "level8" => 27.2000 / 0.2125
-            )
-        scale_value = get(scale_values, adjust_coord_to_img, 0)
         fig = MK.Figure(resolution = (width * n_cols, height * n_rows))
         for (i, gene) in enumerate(gene_list)
             gene_expr = subset_count(norm_counts; genes = [gene])
@@ -584,8 +584,30 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                 all_genes = ["others"; from[from .!= "others"]]
                 all_colors = [color_keys[1]; to[to .!= color_keys[1]]]
                 for (gene, ann_color) in zip(all_genes, all_colors)
-                        x_ax = df_plt[!, x_col][df_plt.new_gene .== gene]
-                        y_ax = df_plt[!, y_col][df_plt.new_gene .== gene]
+                    if custom_img
+                        if isa(sp, XeniumObject)
+                            img = deepcopy(sp.imageData)
+                            if scale_value == 0
+                                scale_x = maximum(df_plt[!, x_col]) / size(img)[1]
+                                scale_y = maximum(df_plt[!, y_col]) / size(img)[2]
+                            else
+                                scale_x = scale_y == scale_value
+                            end
+                            df_plt[!, x_col] = df_plt[!, x_col] ./ scale_x
+                            df_plt[!, y_col] = df_plt[!, y_col] ./ scale_y
+                            if gene == all_genes[1]
+                                    x_lims = x_lims ./ scale_x
+                                    y_lims = y_lims ./ scale_y
+                            end
+                        end                            
+                        if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
+                            img = img[round(Int, x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
+                        end
+                        img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
+                        MK.image!(ax1, img2)
+                    end
+                    x_ax = df_plt[!, x_col][df_plt.new_gene .== gene]
+                    y_ax = df_plt[!, y_col][df_plt.new_gene .== gene]
                     if do_legend
                         MK.scatter!(ax1, x_ax , y_ax; color = ann_color, strokewidth = 0, markersize = legend_size, label = gene)
                         MK.scatter!(ax2, x_ax, y_ax; color = :white, strokewidth = 0, markersize = legend_size * 2, label = gene)
@@ -622,6 +644,32 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                     xgridvisible = false, ygridvisible = false,yreversed=false, title = gene_list[i], 
                     titlesize = titlesize, xlabel = "", ylabel = "", 
                     xlabelsize = titlesize -4, ylabelsize = titlesize -4)
+                    if custom_img
+                        if isa(sp, XeniumObject)
+                            img = deepcopy(sp.imageData)
+                            if scale_value == 0
+                                scale_x = maximum(df_plt[!, x_col]) / size(img)[1]
+                                scale_y = maximum(df_plt[!, y_col]) / size(img)[2]
+                            else
+                                scale_x = scale_y == scale_value
+                            end
+                            df_plt[!, x_col] = df_plt[!, x_col] ./ scale_x
+                            df_plt[!, y_col] = df_plt[!, y_col] ./ scale_y
+                            df_plt1[!, x_col] = df_plt1[!, x_col] ./ scale_x
+                            df_plt1[!, y_col] = df_plt1[!, y_col] ./ scale_y
+                            df_plt2[!, x_col] = df_plt2[!, x_col] ./ scale_x
+                            df_plt2[!, y_col] = df_plt2[!, y_col] ./ scale_y
+                            if i == 1
+                                x_lims = x_lims ./ scale_x
+                                y_lims = y_lims ./ scale_y
+                            end
+                        end                            
+                        if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
+                            img = img[round(Int, x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
+                        end
+                        img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
+                        MK.image!(ax1, img2)
+                    end
                     if order
                         MK.scatter!(ax1, df_plt1[!, x_col], df_plt1[!, y_col]; color = df_plt1.forcolor, strokewidth = 0, markersize = marker_size)
                         MK.scatter!(ax1, df_plt2[!, x_col], df_plt2[!, y_col]; color = df_plt2.forcolor, strokewidth = 0, markersize = marker_size)
