@@ -284,7 +284,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
         MK.current_figure()
     elseif layer === "transcripts"
             if isa(sp, Union{VisiumObject, SlideseqObject})
-                error("Visium object doesn't support transcript plot.")
+                error("Visium or SlideSeq object doesn't support transcript plot.")
             end
             coord_molecules=deepcopy(sp.spmetaData.molecule)
             if isa(x_lims, Nothing)
@@ -370,12 +370,15 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                     else
                         n_col = i-3*(n_row-1)
                     end
-                    df_plt = DataFrames.transform(coord_molecules, :gene => ByRow(name -> name == gene ? color_keys[3] : color_keys[1]) => :forcolor)
-                    df_plt1 = filter(:forcolor => ==(color_keys[1]), df_plt)
-                    df_plt2 = filter(:forcolor => ==(color_keys[3]), df_plt)
+                    gene_list = ["others", gene]
+                    c_map = [color_keys[1], color_keys[3]]
+                    gene_color=Dict(gene_list .=> c_map)
+                    from = collect(keys(gene_color))
+                    to = collect(values(gene_color))
+                    df_plt=DataFrames.transform(coord_molecules, :gene => ByRow(name -> name ∈ gene ? name : "others") => :new_gene)
+                    df_plt = map_values(df_plt, :new_gene, :forcolor, from, to)
+                    df_plt.new_gene = string.(df_plt.new_gene)
                     df_plt.forcolor = [(i, alpha) for i in df_plt.forcolor]
-                    df_plt1.forcolor = [(i, alpha) for i in df_plt1.forcolor]
-                    df_plt2.forcolor = [(i, alpha) for i in df_plt2.forcolor]
                     ax1 = MK.Axis(fig[n_row,n_col]; backgroundcolor = bg_color, xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
                     xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
                     xgridvisible = false, ygridvisible = false,yreversed=false, title = gene_list[i], 
@@ -392,10 +395,6 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                             end
                             df_plt[!, x_col] = df_plt[!, x_col] ./ scale_x
                             df_plt[!, y_col] = df_plt[!, y_col] ./ scale_y
-                            df_plt1[!, x_col] = df_plt1[!, x_col] ./ scale_x
-                            df_plt1[!, y_col] = df_plt1[!, y_col] ./ scale_y
-                            df_plt2[!, x_col] = df_plt2[!, x_col] ./ scale_x
-                            df_plt2[!, y_col] = df_plt2[!, y_col] ./ scale_y
                             if i == 1
                                 x_lims = x_lims ./ scale_x
                                 y_lims = y_lims ./ scale_y
@@ -407,14 +406,23 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                         img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
                         MK.image!(ax1, img2)
                     end
-                    if order
-                        MK.scatter!(ax1, df_plt1[!, x_col], df_plt1[!, y_col]; color = df_plt1.forcolor, strokewidth = 0, markersize = marker_size)
+                    df_plt = filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], df_plt)
+                    df_plt[!, x_col] = df_plt[!, x_col] .- x_lims[1]
+                    df_plt[!, y_col] = df_plt[!, y_col] .- y_lims[1]
+                    df_plt1 = filter(:forcolor => ==(color_keys[1]), df_plt)
+                    df_plt2 = filter(:forcolor => ==(color_keys[3]), df_plt)
+                    df_plt1.forcolor = [(i, alpha) for i in df_plt1.forcolor]
+                    df_plt2.forcolor = [(i, alpha) for i in df_plt2.forcolor]
+                    if custom_img
                         MK.scatter!(ax1, df_plt2[!, x_col], df_plt2[!, y_col]; color = df_plt2.forcolor, strokewidth = 0, markersize = marker_size)
                     else
-                        MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.forcolor, strokewidth = 0, markersize = marker_size)
+                        if order
+                            MK.scatter!(ax1, df_plt1[!, x_col], df_plt1[!, y_col]; color = df_plt1.forcolor, strokewidth = 0, markersize = marker_size)
+                            MK.scatter!(ax1, df_plt2[!, x_col], df_plt2[!, y_col]; color = df_plt2.forcolor, strokewidth = 0, markersize = marker_size)
+                        else
+                            MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.forcolor, strokewidth = 0, markersize = marker_size)
+                        end
                     end
-                    MK.xlims!(ax1, x_lims)
-                    MK.ylims!(ax1, y_lims)
                 end
                 MK.current_figure()
             end
