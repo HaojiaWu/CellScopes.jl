@@ -239,7 +239,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                         scale_x = maximum(df_plt[!, x_col]) / size(img)[1]
                         scale_y = maximum(df_plt[!, y_col]) / size(img)[2]
                     else
-                        scale_x = scale_y == scale_value
+                        scale_x = scale_y = scale_value
                     end
                     df_plt[!, x_col] = df_plt[!, x_col] ./ scale_x
                     df_plt[!, y_col] = df_plt[!, y_col] ./ scale_y
@@ -331,7 +331,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                             scale_x = maximum(df_plt[!, x_col]) / size(img)[1]
                             scale_y = maximum(df_plt[!, y_col]) / size(img)[2]
                         else
-                            scale_x = scale_y == scale_value
+                            scale_x = scale_y = scale_value
                         end
                         df_plt[!, x_col] = df_plt[!, x_col] ./ scale_x
                         df_plt[!, y_col] = df_plt[!, y_col] ./ scale_y
@@ -371,9 +371,9 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                     else
                         n_col = i-3*(n_row-1)
                     end
-                    gene_list = ["others", gene]
+                    gene_list2 = ["others", gene]
                     c_map = [color_keys[1], color_keys[3]]
-                    gene_color=Dict(gene_list .=> c_map)
+                    gene_color=Dict(gene_list2 .=> c_map)
                     from = collect(keys(gene_color))
                     to = collect(values(gene_color))
                     df_plt=DataFrames.transform(coord_molecules, :gene => ByRow(name -> name == gene ? name : "others") => :new_gene)
@@ -382,7 +382,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                     df_plt.forcolor = [(i, alpha) for i in df_plt.forcolor]
                     ax1 = MK.Axis(fig[n_row,n_col]; backgroundcolor = bg_color, xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
                     xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
-                    xgridvisible = false, ygridvisible = false,yreversed=false, title = gene_list[i], 
+                    xgridvisible = false, ygridvisible = false,yreversed=false, title = gene, 
                     titlesize = titlesize, xlabel = "", ylabel = "", 
                     xlabelsize = titlesize -4, ylabelsize = titlesize -4)
                     if custom_img
@@ -392,7 +392,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                                 scale_x = maximum(df_plt[!, x_col]) / size(img)[1]
                                 scale_y = maximum(df_plt[!, y_col]) / size(img)[2]
                             else
-                                scale_x = scale_y == scale_value
+                                scale_x = scale_y = scale_value
                             end
                             df_plt[!, x_col] = df_plt[!, x_col] ./ scale_x
                             df_plt[!, y_col] = df_plt[!, y_col] ./ scale_y
@@ -727,12 +727,10 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
                                 )
             scale_value = get(scale_values, adjust_coord_to_img, 0)
             if scale_value == 0
-#                anno_df[!, x_col] = anno_df[!, x_col] .- minimum(anno_df[!, x_col])
-#                anno_df[!, y_col] = anno_df[!, y_col] .- minimum(anno_df[!, y_col])
                 scale_x = maximum(anno_df[!, x_col]) / size(img)[1]
                 scale_y = maximum(anno_df[!, y_col]) / size(img)[2]
             else
-                scale_x = scale_y == scale_value
+                scale_x = scale_y = scale_value
             end
             anno_df[!, x_col] = anno_df[!, x_col] ./ scale_x
             anno_df[!, y_col] = anno_df[!, y_col] ./ scale_y
