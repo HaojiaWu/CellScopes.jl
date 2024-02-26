@@ -372,7 +372,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                         n_col = i-3*(n_row-1)
                     end
                     gene_list2 = ["others", gene]
-                    c_map = [color_keys[1], color_keys[3]]
+                    c_map = [gene_colors[1], gene_colors[2]]
                     gene_color=Dict(gene_list2 .=> c_map)
                     from = collect(keys(gene_color))
                     to = collect(values(gene_color))
