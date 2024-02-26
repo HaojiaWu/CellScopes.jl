@@ -594,10 +594,8 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                         end
                         df_plt[!, x_col] = df_plt[!, x_col] ./ scale_x
                         df_plt[!, y_col] = df_plt[!, y_col] ./ scale_y
-                        if gene == all_genes[1]
-                                x_lims = x_lims ./ scale_x
-                                y_lims = y_lims ./ scale_y
-                        end
+                        x_lims = x_lims ./ scale_x
+                        y_lims = y_lims ./ scale_y
                     end                            
                     if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
                         img = img[round(Int, x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
