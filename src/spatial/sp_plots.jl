@@ -356,16 +356,10 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                     else
                         MK.scatter!(ax1, x_ax , y_ax; color = ann_color, strokewidth = 0, markersize = marker_size)
                     end
-                    if do_legend
-                        MK.Legend(fig[1, 2], ax2, framecolor=:white, labelsize=legend_fontsize)
-                    end
                 end
-#                MK.xlims!(ax1, x_lims)
-#                MK.ylims!(ax1, y_lims)
-#                MK.xlims!(ax2, x_lims)
-#                MK.ylims!(ax2, y_lims)
-#                MK.xlims!(ax3, x_lims)
-#                MK.ylims!(ax3, y_lims)
+                if do_legend
+                    MK.Legend(fig[1, 2], ax2, framecolor=:white, labelsize=legend_fontsize)
+                end
                 MK.current_figure()
             else
                 fig = MK.Figure(resolution = (width * n_cols, height * n_rows))
