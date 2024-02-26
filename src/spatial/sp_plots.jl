@@ -170,6 +170,12 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
         if isa(y_lims, Nothing)
             y_lims1=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
         end
+        if isa(sp, VisiumObject)
+            x_lims = x_lims .* scale_factor
+            y_lims = y_lims .* scale_factor
+            x_lims1 = x_lims1 .* scale_factor
+            y_lims1 = y_lims1 .* scale_factor
+        end
         c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
         fig = MK.Figure(resolution = (width * n_cols, height * n_rows))
         for (i, gene) in enumerate(gene_list)
@@ -227,7 +233,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                     img = deepcopy(sp.imageData.fullresImage)
                 end
                 if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
-                    img = img[x_lims[1]:x_lims[2], y_lims[1]:y_lims[2]]
+                    img = img[round(Int,x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
                 end
                 img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
                 MK.image!(ax1, img2)
@@ -659,7 +665,7 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
             scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
             scale_factor = scale_factor * (x_ratio + y_ratio)/2
         else
-            error("img_res can only be \"high\", \"low\" or \"full\"!")
+            error("img_res can only be \"low\", \"high\" or \"full\"!")
         end
         anno_df[!, x_col] =  anno_df[!, x_col] .* scale_factor
         anno_df[!, y_col] =  anno_df[!, y_col] .* scale_factor
@@ -675,6 +681,10 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
     end
     if isa(y_lims, Nothing)
         y_lims=(minimum(anno_df[!,y_col])-0.05*maximum(anno_df[!,y_col]),1.05*maximum(anno_df[!,y_col]))
+    end
+    if isa(sp, VisiumObject)
+        x_lims = x_lims .* scale_factor
+        y_lims = y_lims .* scale_factor
     end
     if isa(anno, String)
         anno=Symbol(anno)

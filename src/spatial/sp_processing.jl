@@ -248,8 +248,11 @@ function smooth_polygons_gaussian_blur(polygons::Vector{Matrix{Float64}}, kernel
     return [gaussian_blur_polygon(polygon, kernel_size, theta) for polygon in polygons]
 end
 
-function add_full_res_img(vsm_obj::VisiumObject, fullres_image_file::String)
-    full_img = FileIO.load(fullres_image_file)
+function add_visium_img(vsm_obj::VisiumObject; img_path::Union{String, Nothing}=nothing)
+    if isa(img_path, Nothing)
+        error("Please provide the address to the image file! Make sure the image has been aligned to the visium H&E image.")
+    end
+    full_img = FileIO.load(img_path)
     full_img = convert(Matrix{RGB{N0f8}}, full_img)
     vsm_obj.imageData.fullresImage = full_img
     return vsm_obj
