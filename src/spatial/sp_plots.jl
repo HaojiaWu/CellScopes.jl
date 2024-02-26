@@ -604,6 +604,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                     MK.image!(ax1, img2)
                 end
                 for (gene, ann_color) in zip(all_genes, all_colors)
+                    df_plt = filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], df_plt)
                     x_ax = df_plt[!, x_col][df_plt.new_gene .== gene]
                     y_ax = df_plt[!, y_col][df_plt.new_gene .== gene]
                     if do_legend
@@ -615,12 +616,12 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                         MK.scatter!(ax1, x_ax , y_ax; color = ann_color, strokewidth = 0, markersize = marker_size)
                     end
                 end
-                MK.xlims!(ax1, x_lims)
-                MK.ylims!(ax1, y_lims)
-                MK.xlims!(ax2, x_lims)
-                MK.ylims!(ax2, y_lims)
-                MK.xlims!(ax3, x_lims)
-                MK.ylims!(ax3, y_lims)
+#                MK.xlims!(ax1, x_lims)
+#                MK.ylims!(ax1, y_lims)
+#                MK.xlims!(ax2, x_lims)
+#                MK.ylims!(ax2, y_lims)
+#                MK.xlims!(ax3, x_lims)
+#                MK.ylims!(ax3, y_lims)
                 MK.current_figure()
             else
                 fig = MK.Figure(resolution = (width * n_cols, height * n_rows))
