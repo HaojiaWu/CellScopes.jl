@@ -410,10 +410,8 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                     df_plt = filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], df_plt)
                     df_plt[!, x_col] = df_plt[!, x_col] .- x_lims[1]
                     df_plt[!, y_col] = df_plt[!, y_col] .- y_lims[1]
-                    df_plt1 = filter(:forcolor => ==(color_keys[1]), df_plt)
-                    df_plt2 = filter(:forcolor => ==(color_keys[3]), df_plt)
-                    df_plt1.forcolor = [(i, alpha) for i in df_plt1.forcolor]
-                    df_plt2.forcolor = [(i, alpha) for i in df_plt2.forcolor]
+                    df_plt1 = filter(:new_gene => ==("others"), df_plt)
+                    df_plt2 = filter(:new_gene => ==(gene), df_plt)
                     if custom_img
                         MK.scatter!(ax1, df_plt2[!, x_col], df_plt2[!, y_col]; color = df_plt2.forcolor, strokewidth = 0, markersize = marker_size)
                     else
