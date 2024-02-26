@@ -605,6 +605,8 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                 end
                 for (gene, ann_color) in zip(all_genes, all_colors)
                     df_plt = filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], df_plt)
+                    df_plt[!, x_col] = df_plt[!, x_col] .- x_lims[1]
+                    df_plt[!, y_col] = df_plt[!, y_col] .- y_lims[1]
                     x_ax = df_plt[!, x_col][df_plt.new_gene .== gene]
                     y_ax = df_plt[!, y_col][df_plt.new_gene .== gene]
                     if do_legend
