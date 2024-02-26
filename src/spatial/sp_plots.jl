@@ -287,6 +287,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                 error("Visium or SlideSeq object doesn't support transcript plot.")
             end
             coord_molecules=deepcopy(sp.spmetaData.molecule)
+            coord_molecules.gene = String.(coord_molecules.gene)
             if isa(x_lims, Nothing)
                 x_lims=(minimum(coord_molecules[!, x_col])-0.05*maximum(coord_molecules[!, x_col]),1.05*maximum(coord_molecules[!, x_col]))
             end
@@ -375,10 +376,9 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                     gene_color=Dict(gene_list .=> c_map)
                     from = collect(keys(gene_color))
                     to = collect(values(gene_color))
-                    df_plt=DataFrames.transform(coord_molecules, :gene => ByRow(name -> name ∈ gene ? name : "others") => :new_gene)
+                    df_plt=DataFrames.transform(coord_molecules, :gene => ByRow(name -> name == gene ? name : "others") => :new_gene)
                     df_plt = map_values(df_plt, :new_gene, :forcolor, from, to)
                     df_plt.new_gene = String.(df_plt.new_gene)
-                    df_plt.forcolor = String.(df_plt.forcolor)
                     df_plt.forcolor = [(i, alpha) for i in df_plt.forcolor]
                     ax1 = MK.Axis(fig[n_row,n_col]; backgroundcolor = bg_color, xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
                     xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
