@@ -352,7 +352,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                     if do_legend
                         MK.scatter!(ax2, x_ax , y_ax;  visible=false,
                                         color=ann_color, strokewidth=0, markersize=2*legend_size, label=gene)
-                        MK.scatter!(ax1, x_ax , y_ax; color = ann_color, strokewidth = 0, markersize = legend_size, label = gene)
+                        MK.scatter!(ax1, x_ax , y_ax; color = ann_color, strokewidth = 0, markersize = marker_size)
                     else
                         MK.scatter!(ax1, x_ax , y_ax; color = ann_color, strokewidth = 0, markersize = marker_size)
                     end
