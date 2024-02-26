@@ -563,8 +563,8 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                 df_plt = map_values(df_plt, :new_gene, :forcolor, from, to)
                 df_plt.new_gene = string.(df_plt.new_gene)
                 df_plt.forcolor = [(i, alpha) for i in df_plt.forcolor]
-                df_plt1 = filter(:gene => ∈(Set(gene_list)), df_plt)
-                df_plt2 = filter(:gene => ∉(Set(gene_list)), df_plt)
+#                df_plt1 = filter(:gene => ∈(Set(gene_list)), df_plt)
+#                df_plt2 = filter(:gene => ∉(Set(gene_list)), df_plt)
                 fig = MK.Figure(resolution = (width, height))
                 ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
                     xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
@@ -583,29 +583,29 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                     xlabelsize = titlesize -4, ylabelsize = titlesize -4)
                 all_genes = ["others"; from[from .!= "others"]]
                 all_colors = [color_keys[1]; to[to .!= color_keys[1]]]
-                for (gene, ann_color) in zip(all_genes, all_colors)
-                    if custom_img
-                        if isa(sp, XeniumObject)
-                            img = deepcopy(sp.imageData)
-                            if scale_value == 0
-                                scale_x = maximum(df_plt[!, x_col]) / size(img)[1]
-                                scale_y = maximum(df_plt[!, y_col]) / size(img)[2]
-                            else
-                                scale_x = scale_y == scale_value
-                            end
-                            df_plt[!, x_col] = df_plt[!, x_col] ./ scale_x
-                            df_plt[!, y_col] = df_plt[!, y_col] ./ scale_y
-                            if gene == all_genes[1]
-                                    x_lims = x_lims ./ scale_x
-                                    y_lims = y_lims ./ scale_y
-                            end
-                        end                            
-                        if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
-                            img = img[round(Int, x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
+                if custom_img
+                    if isa(sp, XeniumObject)
+                        img = deepcopy(sp.imageData)
+                        if scale_value == 0
+                            scale_x = maximum(df_plt[!, x_col]) / size(img)[1]
+                            scale_y = maximum(df_plt[!, y_col]) / size(img)[2]
+                        else
+                            scale_x = scale_y == scale_value
                         end
-                        img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
-                        MK.image!(ax1, img2)
+                        df_plt[!, x_col] = df_plt[!, x_col] ./ scale_x
+                        df_plt[!, y_col] = df_plt[!, y_col] ./ scale_y
+                        if gene == all_genes[1]
+                                x_lims = x_lims ./ scale_x
+                                y_lims = y_lims ./ scale_y
+                        end
+                    end                            
+                    if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
+                        img = img[round(Int, x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
                     end
+                    img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
+                    MK.image!(ax1, img2)
+                end
+                for (gene, ann_color) in zip(all_genes, all_colors)
                     x_ax = df_plt[!, x_col][df_plt.new_gene .== gene]
                     y_ax = df_plt[!, y_col][df_plt.new_gene .== gene]
                     if do_legend
