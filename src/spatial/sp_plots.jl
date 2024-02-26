@@ -170,12 +170,24 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
             else
                 x_lims1=(minimum(coord_cell[!, x_col])-0.05*maximum(coord_cell[!, x_col]),1.05*maximum(coord_cell[!, x_col]))
             end
+        else 
+            if isa(sp, VisiumObject)
+                x_lims = x_lims .* scale_factor
+            else
+                x_lims = x_lims
+            end
         end
         if isa(y_lims, Nothing)
             if isa(sp, VisiumObject)
                 y_lims=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
             else
                 y_lims1=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
+            end
+        else
+            if isa(sp, VisiumObject)
+                y_lims = y_lims .* scale_factor
+            else
+                y_lims = y_lims
             end
         end
         c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
