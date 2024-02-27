@@ -761,6 +761,9 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
             MK.image!(ax1, img2)
         end
     end
+    df_plt = filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], df_plt)
+    df_plt[!, x_col] = df_plt[!, x_col] .- x_lims[1]
+    df_plt[!, y_col] = df_plt[!, y_col] .- y_lims[1]
     for i in cell_anno
         anno_df2=filter(anno => ==(i), anno_df)
         x_ax = anno_df2[!, x_col]
@@ -781,19 +784,18 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
     end
     if do_label
         for i in cell_anno
-            anno_df = filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], anno_df)
             anno_df2 = filter(anno => ==(i), anno_df)
             x_ax = anno_df2[!, x_col]
             y_ax = anno_df2[!, y_col]
             MK.text!(i, position = (mean(x_ax) - label_offset[1], mean(y_ax) - label_offset[2]),align = (:center, :center),font = "Noto Sans Regular",fontsize = label_size,color = label_color)
         end
     end
-    MK.xlims!(ax1, x_lims)
-    MK.ylims!(ax1, y_lims)
-    MK.xlims!(ax2, x_lims)
-    MK.ylims!(ax2, y_lims)
-    MK.xlims!(MK.current_axis(), x_lims)
-    MK.ylims!(MK.current_axis(), y_lims)
+#    MK.xlims!(ax1, x_lims)
+#    MK.ylims!(ax1, y_lims)
+#    MK.xlims!(ax2, x_lims)
+#    MK.ylims!(ax2, y_lims)
+#    MK.xlims!(MK.current_axis(), x_lims)
+#    MK.ylims!(MK.current_axis(), y_lims)
     return MK.current_figure()
 end
 
