@@ -1002,13 +1002,17 @@ function plot_fov(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,Mer
     x_col::Union{String, Symbol}="x", y_col::Union{String, Symbol}="y", group_label::Union{Nothing, String}=nothing, 
     width=4000, height=4000, cell_highlight::Union{Nothing, String, Number}=nothing, shield::Bool= false, marker_size::Union{Int64, Float64}=10)
     if isa(sp, VisiumObject)
-        df = sp.spmetaData
+        df = deepcopy(sp.spmetaData)
         if !isa(group_label, Nothing)
-            df[!,group_label] = sp.metaData[!, group_label]
+            meta = deepcopy(sp.metaData)
+            df[!,group_label] = meta[!, group_label]
         end
         rename!(df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, Symbol(x_col), Symbol(y_col)])
+        scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
+        df[!, x_col] =  df[!, x_col] .* scale_factor
+        df[!, y_col] =  df[!, y_col] .* scale_factor
     else
-        df = sp.spmetaData.cell
+        df = deepcopy(sp.spmetaData.cell)
     end
     pts, centroids=split_field(df, n_fields_x, n_fields_y)
     centroids=convert.(Tuple{Float64, Float64},centroids)
@@ -1023,7 +1027,11 @@ function plot_fov(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,Mer
     fig = MK.Figure(resolution=(width, height))
     fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
                 xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
-                xgridvisible = false,ygridvisible = false);
+                xgridvisible = false,ygridvisible = false)
+    if isa(sp, VisiumObject)
+        img = deepcopy(sp.imageData.highresImage)
+        MK.image!(img)
+    end
     if isa(group_label, Nothing) && isa(cell_highlight, Nothing)
         MK.scatter!(df[!,x_col],df[!, y_col]; strokecolor="black", color=:gray98, strokewidth=0.5,label="", markersize=marker_size)
     elseif isa(group_label, Nothing) && isa(cell_highlight, String)
