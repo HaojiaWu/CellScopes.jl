@@ -696,10 +696,6 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
     if isa(y_lims, Nothing)
         y_lims=(minimum(anno_df[!,y_col])-0.05*maximum(anno_df[!,y_col]),1.05*maximum(anno_df[!,y_col]))
     end
-    if isa(sp, VisiumObject)
-        x_lims = x_lims .* scale_factor
-        y_lims = y_lims .* scale_factor
-    end
     if isa(anno, String)
         anno=Symbol(anno)
     end
@@ -730,6 +726,9 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
             img = deepcopy(sp.imageData.lowresImage)
         else
             img = deepcopy(sp.imageData.fullresImage)
+        end
+        if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
+            img = img[round(Int,x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
         end
         img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
         MK.image!(ax1, img2)
@@ -997,7 +996,7 @@ function sp_feature_plot_group(sp_list::Union{ Vector{ImagingSpatialObject}, Vec
     MK.current_figure()
 end
 
-function plot_fov(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,MerfishObject, STARmapObject, seqFishObject, StereoSeqObject}, n_fields_x::Int64, n_fields_y::Int64; 
+function plot_fov(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,MerfishObject, STARmapObject, seqFishObject, StereoSeqObject, VisiumObject}, n_fields_x::Int64, n_fields_y::Int64; 
     x_col::Union{String, Symbol}="x", y_col::Union{String, Symbol}="y", group_label::Union{Nothing, String}=nothing, 
     width=4000, height=4000, cell_highlight::Union{Nothing, String, Number}=nothing, shield::Bool= false, marker_size::Union{Int64, Float64}=10)
     df = sp.spmetaData.cell
