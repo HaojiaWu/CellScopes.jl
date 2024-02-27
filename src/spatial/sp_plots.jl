@@ -146,7 +146,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
         
         if isa(x_lims, Nothing)
             if isa(sp, VisiumObject)
-                x_lims=coord_limits[1]
+                x_lims=round.(Int, coord_limits[1])
             else
                 x_lims1=(minimum(coord_cell[!, x_col])-0.05*maximum(coord_cell[!, x_col]),1.05*maximum(coord_cell[!, x_col]))
             end
@@ -159,7 +159,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
         end
         if isa(y_lims, Nothing)
             if isa(sp, VisiumObject)
-                y_lims=coord_limits[2]
+                y_lims=round.(Int, coord_limits[2])
             else
                 y_lims1=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
             end
