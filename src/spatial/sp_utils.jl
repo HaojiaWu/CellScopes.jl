@@ -729,4 +729,58 @@ function from_seurat(seurat_file; data_type::String = "scRNA",
     return cs_obj
 end
 
+function spatial_range(sp; x_col::String="x", y_col::String="y")
+    if isa(sp, VisiumObject)
+        coord_cell = deepcopy(sp.spmetaData)
+        x_col = Symbol(x_col)
+        y_col = Symbol(y_col)
+        rename!(coord_cell, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
+    else
+        coord_cell = deepcopy(sp.spmetaData.cell)
+    end
+        x_min = minimum(coord_cell[!,x_col])
+        x_max = maximum(coord_cell[!,x_col])
+        y_min = minimum(coord_cell[!,y_col])
+        y_max = maximum(coord_cell[!,y_col])
+    return [(x_min, x_max); (y_min, y_max)]
+end
 
+get_xn_sf = function(sp::XeniumObject;adjust_coord_to_img="auto", x_col="x", y_col="y")
+    scale_values = Dict(
+                        "level1" => 0.2125 / 0.2125,
+                        "level2" => 0.4250 / 0.2125,
+                        "level3" => 0.8500 / 0.2125,
+                        "level4" => 1.7000 / 0.2125,
+                        "level5" => 3.4000 / 0.2125,
+                        "level6" => 6.8000 / 0.2125,
+                        "level7" => 13.6000 / 0.2125,
+                        "level8" => 27.2000 / 0.2125
+                        )
+    scale_value = get(scale_values, adjust_coord_to_img, 0)
+    scale_x = scale_y = scale_value
+    if scale_value ==0
+        img = deepcopy(sp.imageData)
+        df_plt = deepcopy(sp.spmetaData.cell)
+        scale_x = maximum(df_plt[!, x_col]) / size(img)[1]
+        scale_y = maximum(df_plt[!, y_col]) / size(img)[2]
+    end
+    return (scale_x, scale_y)
+end
+
+get_vs_sf = function(sp::VisiumObject;img_res="high")
+        if img_res == "high"
+            scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
+        elseif img_res == "low"
+            scale_factor = sp.imageData.jsonParameters["tissue_lowres_scalef"]
+        elseif img_res == "full"
+            dim_full = size(sp.imageData.fullresImage)
+            dim_high = size(sp.imageData.highresImage)
+            x_ratio = dim_full[1]/dim_high[1]
+            y_ratio = dim_full[2]/dim_high[2]
+            scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
+            scale_factor = scale_factor * (x_ratio + y_ratio)/2    
+        else
+            error("img_res can only be \"high\", \"low\" or \"full\"!")
+        end
+        return scale_factor
+end

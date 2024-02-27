@@ -101,17 +101,6 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
     else
         n_cols = 3
     end
-    scale_values = Dict(
-        "level1" => 0.2125 / 0.2125,
-        "level2" => 0.4250 / 0.2125,
-        "level3" => 0.8500 / 0.2125,
-        "level4" => 1.7000 / 0.2125,
-        "level5" => 3.4000 / 0.2125,
-        "level6" => 6.8000 / 0.2125,
-        "level7" => 13.6000 / 0.2125,
-        "level8" => 27.2000 / 0.2125
-        )
-    scale_value = get(scale_values, adjust_coord_to_img, 0)
     if layer === "cells"
         if isa(sp, VisiumObject)
             coord_cell = deepcopy(sp.spmetaData)
@@ -120,20 +109,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
             rename!(coord_cell, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
             coord_cell[!, x_col] = Float64.(coord_cell[!, x_col])
             coord_cell[!, y_col] = Float64.(coord_cell[!, y_col])
-            if img_res == "high"
-                scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
-            elseif img_res == "low"
-                scale_factor = sp.imageData.jsonParameters["tissue_lowres_scalef"]
-            elseif img_res == "full"
-                dim_full = size(sp.imageData.fullresImage)
-                dim_high = size(sp.imageData.highresImage)
-                x_ratio = dim_full[1]/dim_high[1]
-                y_ratio = dim_full[2]/dim_high[2]
-                scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
-                scale_factor = scale_factor * (x_ratio + y_ratio)/2    
-            else
-                error("img_res can only be \"high\", \"low\" or \"full\"!")
-            end
+            scale_factor = get_vs_sf(sp; img_res = img_res)
             coord_cell[!, x_col] =  coord_cell[!, x_col] .* scale_factor
             coord_cell[!, y_col] =  coord_cell[!, y_col] .* scale_factor
         elseif isa(sp, SlideseqObject)
@@ -164,9 +140,10 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                 error("Please normalize the data first!")
             end
         end
+        coord_limits = spatial_range(sp)
         if isa(x_lims, Nothing)
             if isa(sp, VisiumObject)
-                x_lims=(minimum(coord_cell[!, x_col])-0.05*maximum(coord_cell[!, x_col]),1.05*maximum(coord_cell[!, x_col]))
+                x_lims=coord_limits[1]
             else
                 x_lims1=(minimum(coord_cell[!, x_col])-0.05*maximum(coord_cell[!, x_col]),1.05*maximum(coord_cell[!, x_col]))
             end
@@ -179,7 +156,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
         end
         if isa(y_lims, Nothing)
             if isa(sp, VisiumObject)
-                y_lims=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
+                y_lims=coord_limits[2]
             else
                 y_lims1=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
             end
@@ -255,12 +232,9 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
             if custom_img
                 if isa(sp, XeniumObject)
                     img = deepcopy(sp.imageData)
-                    if scale_value == 0
-                        scale_x = maximum(df_plt[!, x_col]) / size(img)[1]
-                        scale_y = maximum(df_plt[!, y_col]) / size(img)[2]
-                    else
-                        scale_x = scale_y = scale_value
-                    end
+                    scale_factor = get_xn_sf(sp; adjust_coord_to_img=adjust_coord_to_img)
+                    scale_x = scale_factor[1]
+                    scale_y = scale_factor[2]
                     df_plt[!, x_col] = df_plt[!, x_col] ./ scale_x
                     df_plt[!, y_col] = df_plt[!, y_col] ./ scale_y
                     if i == 1
@@ -347,12 +321,9 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                         img = deepcopy(sp.imageData)
                         all_genes = from[from .!= "others"]
                         all_colors = to[to .!= color_keys[1]]
-                        if scale_value == 0
-                            scale_x = maximum(df_plt[!, x_col]) / size(img)[1]
-                            scale_y = maximum(df_plt[!, y_col]) / size(img)[2]
-                        else
-                            scale_x = scale_y = scale_value
-                        end
+                        scale_factor = get_xn_sf(sp; adjust_coord_to_img=adjust_coord_to_img)
+                        scale_x = scale_factor[1]
+                        scale_y = scale_factor[2]
                         df_plt[!, x_col] = df_plt[!, x_col] ./ scale_x
                         df_plt[!, y_col] = df_plt[!, y_col] ./ scale_y
                         x_lims = x_lims ./ scale_x
@@ -408,12 +379,9 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                     if custom_img
                         if isa(sp, XeniumObject)
                             img = deepcopy(sp.imageData)
-                            if scale_value == 0
-                                scale_x = maximum(df_plt[!, x_col]) / size(img)[1]
-                                scale_y = maximum(df_plt[!, y_col]) / size(img)[2]
-                            else
-                                scale_x = scale_y = scale_value
-                            end
+                            scale_factor = get_xn_sf(sp; adjust_coord_to_img=adjust_coord_to_img)
+                            scale_x = scale_factor[1]
+                            scale_y = scale_factor[2]
                             df_plt[!, x_col] = df_plt[!, x_col] ./ scale_x
                             df_plt[!, y_col] = df_plt[!, y_col] ./ scale_y
                             if i == 1
@@ -667,20 +635,7 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
         if isa(anno_df[!, y_col], Vector{String})
             anno_df[!, y_col] = Float64.(anno_df[!, y_col])
         end
-        if img_res == "high"
-            scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
-        elseif img_res == "low"
-            scale_factor = sp.imageData.jsonParameters["tissue_lowres_scalef"]
-        elseif img_res == "full"
-            dim_full = size(sp.imageData.fullresImage)
-            dim_high = size(sp.imageData.highresImage)
-            x_ratio = dim_full[1]/dim_high[1]
-            y_ratio = dim_full[2]/dim_high[2]
-            scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
-            scale_factor = scale_factor * (x_ratio + y_ratio)/2
-        else
-            error("img_res can only be \"low\", \"high\" or \"full\"!")
-        end
+        scale_factor = get_vs_sf(sp; img_res = img_res)
         anno_df[!, x_col] =  anno_df[!, x_col] .* scale_factor
         anno_df[!, y_col] =  anno_df[!, y_col] .* scale_factor
     elseif isa(sp, SlideseqObject)
@@ -690,11 +645,20 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
         anno_df=deepcopy(sp.spmetaData.cell)
         anno_df[!, anno] = string.(anno_df[!, anno])
     end
+    coord_limits = spatial_range(sp)
     if isa(x_lims, Nothing)
-        x_lims=(minimum(anno_df[!,x_col])-0.05*maximum(anno_df[!,x_col]),1.05*maximum(anno_df[!,x_col]))
+        if isa(sp, VisiumObject)
+            x_lims = coord_limits[1]
+        else
+            x_lims=(minimum(anno_df[!,x_col])-0.05*maximum(anno_df[!,x_col]),1.05*maximum(anno_df[!,x_col]))
+        end
     end
     if isa(y_lims, Nothing)
-        y_lims=(minimum(anno_df[!,y_col])-0.05*maximum(anno_df[!,y_col]),1.05*maximum(anno_df[!,y_col]))
+        if isa(sp, VisiumObject)
+            y_lims = coord_limits[2]
+        else
+            y_lims=(minimum(anno_df[!,y_col])-0.05*maximum(anno_df[!,y_col]),1.05*maximum(anno_df[!,y_col]))
+        end
     end
     if isa(anno, String)
         anno=Symbol(anno)
@@ -736,23 +700,9 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
     if custom_img
         if isa(sp, XeniumObject)
             img = deepcopy(sp.imageData)   
-            scale_values = Dict(
-                                "level1" => 0.2125 / 0.2125,
-                                "level2" => 0.4250 / 0.2125,
-                                "level3" => 0.8500 / 0.2125,
-                                "level4" => 1.7000 / 0.2125,
-                                "level5" => 3.4000 / 0.2125,
-                                "level6" => 6.8000 / 0.2125,
-                                "level7" => 13.6000 / 0.2125,
-                                "level8" => 27.2000 / 0.2125
-                                )
-            scale_value = get(scale_values, adjust_coord_to_img, 0)
-            if scale_value == 0
-                scale_x = maximum(anno_df[!, x_col]) / size(img)[1]
-                scale_y = maximum(anno_df[!, y_col]) / size(img)[2]
-            else
-                scale_x = scale_y = scale_value
-            end
+            scale_factor = get_xn_sf(sp; adjust_coord_to_img=adjust_coord_to_img)
+            scale_x = scale_factor[1]
+            scale_y = scale_factor[2]
             anno_df[!, x_col] = anno_df[!, x_col] ./ scale_x
             anno_df[!, y_col] = anno_df[!, y_col] ./ scale_y
             x_lims = x_lims ./ scale_x
@@ -790,12 +740,6 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
             MK.text!(i, position = (mean(x_ax) - label_offset[1], mean(y_ax) - label_offset[2]),align = (:center, :center),font = "Noto Sans Regular",fontsize = label_size,color = label_color)
         end
     end
-#    MK.xlims!(ax1, x_lims)
-#    MK.ylims!(ax1, y_lims)
-#    MK.xlims!(ax2, x_lims)
-#    MK.ylims!(ax2, y_lims)
-#    MK.xlims!(MK.current_axis(), x_lims)
-#    MK.ylims!(MK.current_axis(), y_lims)
     return MK.current_figure()
 end
 
@@ -1014,6 +958,13 @@ function plot_fov(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,Mer
     else
         df = deepcopy(sp.spmetaData.cell)
     end
+    if isa(sp, XeniumObject)
+        scale_factor = get_xn_sf(sp; adjust_coord_to_img=adjust_coord_to_img)
+        scale_x = scale_factor[1]
+        scale_y = scale_factor[2]
+        df[!, x_col] = df[!, x_col] ./ scale_x
+        df[!, y_col] = df[!, y_col] ./ scale_y
+    end
     pts, centroids=split_field(df, n_fields_x, n_fields_y)
     centroids=convert.(Tuple{Float64, Float64},centroids)
     x_lims=(minimum(df[!, x_col])-0.05*maximum(df[!, x_col]),1.05*maximum(df[!, x_col]))
@@ -1036,26 +987,7 @@ function plot_fov(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,Mer
     end
     if custom_img
         if isa(sp, XeniumObject)
-            img = deepcopy(sp.imageData)   
-            scale_values = Dict(
-                                "level1" => 0.2125 / 0.2125,
-                                "level2" => 0.4250 / 0.2125,
-                                "level3" => 0.8500 / 0.2125,
-                                "level4" => 1.7000 / 0.2125,
-                                "level5" => 3.4000 / 0.2125,
-                                "level6" => 6.8000 / 0.2125,
-                                "level7" => 13.6000 / 0.2125,
-                                "level8" => 27.2000 / 0.2125
-                                )
-            scale_value = get(scale_values, adjust_coord_to_img, 0)
-            if scale_value == 0
-                scale_x = maximum(df[!, x_col]) / size(img)[1]
-                scale_y = maximum(df[!, y_col]) / size(img)[2]
-            else
-                scale_x = scale_y = scale_value
-            end
-            df[!, x_col] = df[!, x_col] ./ scale_x
-            df[!, y_col] = df[!, y_col] ./ scale_y
+            img = deepcopy(sp.imageData)
             x_lims = x_lims ./ scale_x
             y_lims = y_lims ./ scale_y
             MK.image!(img)
