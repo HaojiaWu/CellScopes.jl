@@ -113,8 +113,8 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
             scale_factor = get_vs_sf(sp; img_res = img_res)
             coord_cell[!, x_col] =  coord_cell[!, x_col] .* scale_factor
             coord_cell[!, y_col] =  coord_cell[!, y_col] .* scale_factor
-            coord_limits[1] = coord_limits[1] .* scale_factor
-            coord_limits[2] = coord_limits[2] .* scale_factor
+            coord_limits[1] = round.(Int, coord_limits[1] .* scale_factor)
+            coord_limits[2] = round.(Int, coord_limits[2] .* scale_factor)
         elseif isa(sp, SlideseqObject)
             coord_cell=deepcopy(sp.spmetaData)
         else
@@ -146,7 +146,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
         
         if isa(x_lims, Nothing)
             if isa(sp, VisiumObject)
-                x_lims=round.(Int, coord_limits[1])
+                x_lims=coord_limits[1]
             else
                 x_lims1=(minimum(coord_cell[!, x_col])-0.05*maximum(coord_cell[!, x_col]),1.05*maximum(coord_cell[!, x_col]))
             end
@@ -159,7 +159,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
         end
         if isa(y_lims, Nothing)
             if isa(sp, VisiumObject)
-                y_lims=round.(Int, coord_limits[2])
+                y_lims=coord_limits[2]
             else
                 y_lims1=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
             end
@@ -642,8 +642,8 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
         scale_factor = get_vs_sf(sp; img_res = img_res)
         anno_df[!, x_col] =  anno_df[!, x_col] .* scale_factor
         anno_df[!, y_col] =  anno_df[!, y_col] .* scale_factor
-        coord_limits[1] = coord_limits[1] .* scale_factor
-        coord_limits[2] = coord_limits[2] .* scale_factor
+        coord_limits[1] = round.(Int, coord_limits[1] .* scale_factor)
+        coord_limits[2] = round.(Int, coord_limits[2] .* scale_factor)
     elseif isa(sp, SlideseqObject)
         anno_df = deepcopy(sp.spmetaData)
         anno_df[!, anno] = string.(sp.metaData[!, anno])
