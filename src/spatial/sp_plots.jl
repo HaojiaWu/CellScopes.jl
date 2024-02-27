@@ -761,9 +761,9 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
             MK.image!(ax1, img2)
         end
     end
-    df_plt = filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], df_plt)
-    df_plt[!, x_col] = df_plt[!, x_col] .- x_lims[1]
-    df_plt[!, y_col] = df_plt[!, y_col] .- y_lims[1]
+    anno_df = filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], anno_df)
+    anno_df[!, x_col] = anno_df[!, x_col] .- x_lims[1]
+    anno_df[!, y_col] = anno_df[!, y_col] .- y_lims[1]
     for i in cell_anno
         anno_df2=filter(anno => ==(i), anno_df)
         x_ax = anno_df2[!, x_col]
