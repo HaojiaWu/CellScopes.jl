@@ -1071,7 +1071,7 @@ function plot_fov(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,Mer
         df[!,group_label]=string.(df[!,group_label])
         df=DataFrames.transform(df, group_label => ByRow(name -> name == cell_highlight ? name : "others") => :newcell)
         df=DataFrames.transform(df, :newcell => ByRow(name -> name =="others" ? "gray98" : "black") => :newcolor)
-        df.new_color = [(i, alpha) for i in df.new_color]
+        df.newcolor = [(i, alpha) for i in df.newcolor]
         MK.scatter!(df[!, x_col],df[!, y_col]; strokecolor="black", color=df.newcolor, strokewidth=0.5,label="", markersize=marker_size)
     end
     if shield
