@@ -102,6 +102,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
         n_cols = 3
     end
     if layer === "cells"
+        coord_limits = spatial_range(sp)
         if isa(sp, VisiumObject)
             coord_cell = deepcopy(sp.spmetaData)
             x_col = Symbol(x_col)
@@ -112,6 +113,8 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
             scale_factor = get_vs_sf(sp; img_res = img_res)
             coord_cell[!, x_col] =  coord_cell[!, x_col] .* scale_factor
             coord_cell[!, y_col] =  coord_cell[!, y_col] .* scale_factor
+            coord_limits[1] = coord_limits[1] .* scale_factor
+            coord_limits[2] = coord_limits[2] .* scale_factor
         elseif isa(sp, SlideseqObject)
             coord_cell=deepcopy(sp.spmetaData)
         else
@@ -140,7 +143,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
                 error("Please normalize the data first!")
             end
         end
-        coord_limits = spatial_range(sp)
+        
         if isa(x_lims, Nothing)
             if isa(sp, VisiumObject)
                 x_lims=coord_limits[1]
@@ -623,6 +626,7 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
         legend_size = 10, legend_fontsize = 16, legend_ncol = 1,img_res::String = "low", custom_img=false, adjust_coord_to_img="auto",
         adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3
     )
+    coord_limits = spatial_range(sp)
     if isa(sp, VisiumObject)
         anno_df = deepcopy(sp.spmetaData)
         anno_df[!, anno] = sp.metaData[!, anno]
@@ -638,6 +642,8 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
         scale_factor = get_vs_sf(sp; img_res = img_res)
         anno_df[!, x_col] =  anno_df[!, x_col] .* scale_factor
         anno_df[!, y_col] =  anno_df[!, y_col] .* scale_factor
+        coord_limits[1] = coord_limits[1] .* scale_factor
+        coord_limits[2] = coord_limits[2] .* scale_factor
     elseif isa(sp, SlideseqObject)
         anno_df = deepcopy(sp.spmetaData)
         anno_df[!, anno] = string.(sp.metaData[!, anno])
@@ -645,7 +651,6 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
         anno_df=deepcopy(sp.spmetaData.cell)
         anno_df[!, anno] = string.(anno_df[!, anno])
     end
-    coord_limits = spatial_range(sp)
     if isa(x_lims, Nothing)
         if isa(sp, VisiumObject)
             x_lims = coord_limits[1]
