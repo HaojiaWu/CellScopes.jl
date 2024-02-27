@@ -999,8 +999,8 @@ function sp_feature_plot_group(sp_list::Union{ Vector{ImagingSpatialObject}, Vec
 end
 
 function plot_fov(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,MerfishObject, STARmapObject, seqFishObject, StereoSeqObject, VisiumObject}, n_fields_x::Int64, n_fields_y::Int64; 
-    x_col::Union{String, Symbol}="x", y_col::Union{String, Symbol}="y", group_label::Union{Nothing, String}=nothing, 
-    width=4000, height=4000, cell_highlight::Union{Nothing, String, Number}=nothing, shield::Bool= false, marker_size::Union{Int64, Float64}=10)
+    x_col::Union{String, Symbol}="x", y_col::Union{String, Symbol}="y", group_label::Union{Nothing, String}=nothing, alpha = 1, adjust_coord_to_img = "auto",
+    custom_img=false, width=4000, height=4000, cell_highlight::Union{Nothing, String, Number}=nothing, shield::Bool= false, marker_size::Union{Int64, Float64}=10)
     if isa(sp, VisiumObject)
         df = deepcopy(sp.spmetaData)
         if !isa(group_label, Nothing)
@@ -1029,11 +1029,40 @@ function plot_fov(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,Mer
                 xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
                 xgridvisible = false,ygridvisible = false)
     if isa(sp, VisiumObject)
+        marker_size = 50
+        alpha = 0.5
         img = deepcopy(sp.imageData.highresImage)
         MK.image!(img)
     end
+    if custom_img
+        if isa(sp, XeniumObject)
+            img = deepcopy(sp.imageData)   
+            scale_values = Dict(
+                                "level1" => 0.2125 / 0.2125,
+                                "level2" => 0.4250 / 0.2125,
+                                "level3" => 0.8500 / 0.2125,
+                                "level4" => 1.7000 / 0.2125,
+                                "level5" => 3.4000 / 0.2125,
+                                "level6" => 6.8000 / 0.2125,
+                                "level7" => 13.6000 / 0.2125,
+                                "level8" => 27.2000 / 0.2125
+                                )
+            scale_value = get(scale_values, adjust_coord_to_img, 0)
+            if scale_value == 0
+                scale_x = maximum(df[!, x_col]) / size(img)[1]
+                scale_y = maximum(df[!, y_col]) / size(img)[2]
+            else
+                scale_x = scale_y = scale_value
+            end
+            df[!, x_col] = df[!, x_col] ./ scale_x
+            df[!, y_col] = df[!, y_col] ./ scale_y
+            x_lims = x_lims ./ scale_x
+            y_lims = y_lims ./ scale_y
+            MK.image!(img)
+        end
+    end
     if isa(group_label, Nothing) && isa(cell_highlight, Nothing)
-        MK.scatter!(df[!,x_col],df[!, y_col]; strokecolor="black", color=:gray98, strokewidth=0.5,label="", markersize=marker_size)
+        MK.scatter!(df[!,x_col],df[!, y_col]; strokecolor="black", color=(:gray98, alpha), strokewidth=0.5,label="", markersize=marker_size)
     elseif isa(group_label, Nothing) && isa(cell_highlight, String)
         error("Please indicate the group name that contains cell type info!")
     elseif isa(group_label, String) && isa(cell_highlight, Nothing)
@@ -1042,6 +1071,7 @@ function plot_fov(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,Mer
         df[!,group_label]=string.(df[!,group_label])
         df=DataFrames.transform(df, group_label => ByRow(name -> name == cell_highlight ? name : "others") => :newcell)
         df=DataFrames.transform(df, :newcell => ByRow(name -> name =="others" ? "gray98" : "black") => :newcolor)
+        df.new_color = [(i, alpha) for i in df.new_color]
         MK.scatter!(df[!, x_col],df[!, y_col]; strokecolor="black", color=df.newcolor, strokewidth=0.5,label="", markersize=marker_size)
     end
     if shield

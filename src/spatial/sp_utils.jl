@@ -231,8 +231,13 @@ function slope2deg(slope::Float64)
     return degree
 end
 
-function subset_fov(sp::Union{ImagingSpatialObject, CartanaObject, XeniumObject,MerfishObject, seqFishObject, STARmapObject, StereoSeqObject}, fov::Vector{Int64}, n_fields_x::Int64, n_fields_y::Int64)
-    df=sp.spmetaData.cell
+function subset_fov(sp::Union{ImagingSpatialObject, CartanaObject, XeniumObject,MerfishObject, seqFishObject, STARmapObject, StereoSeqObject, VisiumObject}, fov::Vector{Int64}, n_fields_x::Int64, n_fields_y::Int64)
+    if isa(sp, VisiumObject)
+        df = deepcopy(sp.spmetaData)
+        rename!(df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, :x, :y])
+    else
+        df = deepcopy(sp.spmetaData.cell)
+    end
     pts, centroids = split_field(df, n_fields_x, n_fields_y)
     pts_sub=pts[fov]
     min_pt=minimum(minimum(pts_sub))
