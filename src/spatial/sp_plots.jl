@@ -1004,7 +1004,7 @@ function plot_fov(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,Mer
     if isa(sp, VisiumObject)
         df = sp.spmetaData
         if !isa(group_label, Nothing)
-            df[,group_label] = sp.metaData[, group_label]
+            df[!,group_label] = sp.metaData[!, group_label]
         end
         rename!(df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
     else
