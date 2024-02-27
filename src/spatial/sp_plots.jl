@@ -950,6 +950,7 @@ end
 function plot_fov(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,MerfishObject, STARmapObject, seqFishObject, StereoSeqObject, VisiumObject}, n_fields_x::Int64, n_fields_y::Int64; 
     x_col::Union{String, Symbol}="x", y_col::Union{String, Symbol}="y", group_label::Union{Nothing, String}=nothing, alpha = 1, adjust_coord_to_img = "auto",
     custom_img=false, width=4000, height=4000, cell_highlight::Union{Nothing, String, Number}=nothing, shield::Bool= false, marker_size::Union{Int64, Float64}=10)
+    coord_limits = spatial_range(sp)
     if isa(sp, VisiumObject)
         df = deepcopy(sp.spmetaData)
         if !isa(group_label, Nothing)
@@ -960,6 +961,8 @@ function plot_fov(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,Mer
         scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
         df[!, x_col] =  df[!, x_col] .* scale_factor
         df[!, y_col] =  df[!, y_col] .* scale_factor
+        coord_limits[1] = round.(Int, coord_limits[1] .* scale_factor)
+        coord_limits[2] = round.(Int, coord_limits[2] .* scale_factor)
     else
         df = deepcopy(sp.spmetaData.cell)
     end
@@ -972,8 +975,16 @@ function plot_fov(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,Mer
     end
     pts, centroids=split_field(df, n_fields_x, n_fields_y)
     centroids=convert.(Tuple{Float64, Float64},centroids)
-    x_lims=(minimum(df[!, x_col])-0.05*maximum(df[!, x_col]),1.05*maximum(df[!, x_col]))
-    y_lims=(minimum(df[!, y_col])-0.05*maximum(df[!, y_col]),1.05*maximum(df[!, y_col]))
+    if isa(sp, VisiumObject)
+        x_lims = coord_limits[1]
+    else
+        x_lims=(minimum(df[!, x_col])-0.05*maximum(df[!, x_col]),1.05*maximum(df[!, x_col]))
+    end
+    if isa(sp, VisiumObject)
+        y_lims = coord_limits[2]
+    else
+        y_lims=(minimum(df[!, y_col])-0.05*maximum(df[!, y_col]),1.05*maximum(df[!, y_col]))
+    end
     label_size= 800 * 16/length(centroids)
     if label_size < 35
        label_size = 35
@@ -993,8 +1004,6 @@ function plot_fov(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,Mer
     if custom_img
         if isa(sp, XeniumObject)
             img = deepcopy(sp.imageData)
-            x_lims = x_lims ./ scale_x
-            y_lims = y_lims ./ scale_y
             MK.image!(img)
         end
     end
