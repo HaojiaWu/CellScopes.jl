@@ -8,13 +8,13 @@ Since SpaceRanger outputs a high-resolution tiff image, to avoid confusion on th
 For this tutorial, we will be analyzing a breast cancer Visium dataset from 10x Genomics. https://www.10xgenomics.com/products/xenium-in-situ/preview-dataset-human-breast.
 We start by reading the data into Julia, creating a CellScopes VisiumObject, and further processing the object for data normalization, dimensional reduction and clustering. For more details, please refer to https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/visium_tutorial
 ```julia
-breast_visium = cs.read_visium("/mnt/sdb/breast_cancer_visium/")
-breast_visium = cs.normalize_object(breast_visium; scale_factor = 10000)
-breast_visium = cs.scale_object(breast_visium)
-breast_visium = cs.find_variable_genes(breast_visium; nFeatures = 1000)
-breast_visium = cs.run_pca(breast_visium;  method=:svd, pratio = 1, maxoutdim = 10)
-breast_visium = cs.run_umap(breast_visium; min_dist=0.2, n_neighbors=20)
-breast_visium = cs.run_clustering(breast_visium; res=0.01, n_neighbors=20)
+visium = cs.read_visium("/mnt/sdb/breast_cancer_visium/")
+visium = cs.normalize_object(visium; scale_factor = 10000)
+visium = cs.scale_object(visium)
+visium = cs.find_variable_genes(visium; nFeatures = 1000)
+visium = cs.run_pca(visium;  method=:svd, pratio = 1, maxoutdim = 10)
+visium = cs.run_umap(visium; min_dist=0.2, n_neighbors=20)
+visium = cs.run_clustering(visium; res=0.01, n_neighbors=20)
 ```
 
 ### 3. Add the aligned full-resolution image into a Visium CellScopes object
@@ -24,12 +24,19 @@ curl -O https://cf.10xgenomics.com/samples/spatial-exp/2.0.0/CytAssist_FFPE_Huma
 ```
 This tiff image is in 16-bit format. It can be converted into 8-bit format with Fiji to reduce the file size. Since the image has been aligned to the visium fiducials, we can directly add it to the VisiumObject using the CellScopes function ```add_visium_img```.
 ```julia
-breast_visium = cs.add_visium_img(breast_visium, 
+visium = cs.add_visium_img(visium, 
         "/mnt/sdb/breast_cancer_visium/CytAssist_FFPE_Human_Breast_Cancer_tissue_image_8bit.tif")
 ```
 
 ### 4. Visualize gene expression on the full-res H&E image
-
+Now the Visium object in CellScopes should have three H&E images: low res, high res and full res. They are stored in the ```imageData``` slot. The low and high resolution images were from the Space Ranger output. For visualizing genes in the entire organ, we recommend to use the low resolution image (by setting ```img_res = "low"```) since this can save time and there is minimal noticeable difference to the naked eye between low and full resolution when showing genes in large view.
+```julia
+cs.sp_feature_plot(visium, ["CEACAM6"]; 
+    marker_size = 7, color_keys=["azure1", "lightsteelblue1" ,"blue"], 
+    adjust_contrast=1, adjust_brightness = 0.0, scale=true, alpha=[0,0.6],clip=0.5,
+    height=500, width=800,img_res="low"
+)
+```
 
 
 
