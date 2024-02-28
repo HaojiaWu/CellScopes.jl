@@ -1,6 +1,6 @@
 function dim_plot(sc_obj::Union{scRNAObject, VisiumObject,ImagingSpatialObject, CartanaObject, XeniumObject,scATACObject, MerfishObject, SlideseqObject, seqFishObject, STARmapObject,StereoSeqObject}; anno::Union{Symbol, String}="cluster", dim_type::String="umap",
     anno_color::Union{Nothing, Dict} = nothing, cell_order::Union{Vector{String}, Nothing}=nothing,
-    x_lims=nothing, y_lims=nothing,canvas_size=(600,500),stroke_width=0.5,stroke_color=:transparent, 
+    x_lims=nothing, y_lims=nothing, width= 600, height = 500,stroke_width=0.5,stroke_color=:transparent, 
         marker_size=2, label_size=20, label_color="black", label_offset=(0,0), do_label=true, do_legend=true,
         legend_size = 10, legend_fontsize = 16, legend_ncol=1)   
         dim_data,x_col, y_col = get_dim_data(sc_obj.dimReduction, dim_type)
@@ -23,7 +23,7 @@ function dim_plot(sc_obj::Union{scRNAObject, VisiumObject,ImagingSpatialObject, 
         else
             dim_data.new_color .= "springgreen3"
         end
-        fig = MK.Figure(resolution=canvas_size)
+        fig = MK.Figure(resolution=(width, height))
         ax1 = MK.Axis(fig[1,1]; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
             xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
             xgridvisible = false, ygridvisible = false, xlabel = names(dim_data)[1], ylabel = names(dim_data)[2]);

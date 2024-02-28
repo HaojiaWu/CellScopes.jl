@@ -621,7 +621,7 @@ end
 
 function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject,XeniumObject,MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject}, anno::Union{Symbol, String}; 
     anno_color::Union{Nothing, Dict} = nothing, x_col::String = "x", y_col::String = "y", cell_order::Union{Vector{String}, Nothing}=nothing,
-    x_lims=nothing, y_lims=nothing,canvas_size=(900,1000),stroke_width=0.5,stroke_color=:transparent,  bg_color=:white,
+    x_lims=nothing, y_lims=nothing,width=900, height=1000,stroke_width=0.5,stroke_color=:transparent,  bg_color=:white,
         marker_size=2, label_size=50, label_color="black", label_offset=(0,0), do_label=false, do_legend=true, alpha::Real = 1,
         legend_size = 10, legend_fontsize = 16, legend_ncol = 1,img_res::String = "low", custom_img=false, adjust_coord_to_img="auto",
         adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3
@@ -657,12 +657,24 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
         else
             x_lims=(minimum(anno_df[!,x_col])-0.05*maximum(anno_df[!,x_col]),1.05*maximum(anno_df[!,x_col]))
         end
+    else 
+        if isa(sp, VisiumObject)
+            x_lims = x_lims .* scale_factor
+        else
+            x_lims = x_lims
+        end
     end
     if isa(y_lims, Nothing)
         if isa(sp, VisiumObject)
             y_lims = coord_limits[2]
         else
             y_lims=(minimum(anno_df[!,y_col])-0.05*maximum(anno_df[!,y_col]),1.05*maximum(anno_df[!,y_col]))
+        end
+    else 
+        if isa(sp, VisiumObject)
+            y_lims = y_lims .* scale_factor
+        else
+            y_lims = y_lims
         end
     end
     if isa(anno, String)
@@ -676,7 +688,7 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
     end
     anno_df=DataFrames.transform(anno_df, anno => ByRow(x -> anno_color[x]) => :new_color)
     anno_df.new_color = [(i, alpha) for i in anno_df.new_color]
-    fig = MK.Figure(resolution=canvas_size)
+    fig = MK.Figure(resolution=(width, height))
     ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
         xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
         xgridvisible = false,ygridvisible = false);
