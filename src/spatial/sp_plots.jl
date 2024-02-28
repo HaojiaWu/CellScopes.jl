@@ -695,11 +695,6 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
     ax2 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
         xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
         xgridvisible = false,ygridvisible = false);
-    if isa(cell_order, Nothing)
-        cell_anno=unique(anno_df[!,anno])
-    else
-        cell_anno=cell_order
-    end
     if isa(sp, VisiumObject)
         if img_res == "high"
             img = deepcopy(sp.imageData.highresImage)
@@ -731,6 +726,11 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
     anno_df = filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], anno_df)
     anno_df[!, x_col] = anno_df[!, x_col] .- x_lims[1]
     anno_df[!, y_col] = anno_df[!, y_col] .- y_lims[1]
+    if isa(cell_order, Nothing)
+        cell_anno=unique(anno_df[!,anno])
+    else
+        cell_anno=cell_order
+    end
     for i in cell_anno
         anno_df2=filter(anno => ==(i), anno_df)
         x_ax = anno_df2[!, x_col]
