@@ -620,7 +620,7 @@ function plot_transcript_polygons(sp::Union{ImagingSpatialObject, CartanaObject,
 end
 
 function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject,XeniumObject,MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject}, anno::Union{Symbol, String}; 
-    anno_color::Union{Nothing, Dict} = nothing, x_col::String = "x", y_col::String = "y", cell_order::Union{Vector{String}, Nothing}=nothing,
+    anno_color::Union{Nothing, Dict} = nothing, x_col::String = "x", y_col::String = "y", cell_order::Union{Vector{String}, Nothing}=nothing, cell_highlight::Union{String, Nothing}=nothing,
     x_lims=nothing, y_lims=nothing,width=900, height=1000,stroke_width=0.5,stroke_color=:transparent,  bg_color=:white,
         marker_size=2, label_size=50, label_color="black", label_offset=(0,0), do_label=false, do_legend=true, alpha::Real = 1,
         legend_size = 10, legend_fontsize = 16, legend_ncol = 1,img_res::String = "low", custom_img=false, adjust_coord_to_img="auto",
@@ -726,24 +726,40 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
     anno_df = filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], anno_df)
     anno_df[!, x_col] = anno_df[!, x_col] .- x_lims[1]
     anno_df[!, y_col] = anno_df[!, y_col] .- y_lims[1]
-    if isa(cell_order, Nothing)
-        cell_anno=unique(anno_df[!,anno])
-    else
-        cell_anno=cell_order
-    end
-    for i in cell_anno
-        anno_df2=filter(anno => ==(i), anno_df)
+    if !isa(cell_highlight, Nothing)
+        anno_df2=filter(anno => ==(cell_highlight), anno_df)
         x_ax = anno_df2[!, x_col]
         y_ax = anno_df2[!, y_col]
         colors = unique(anno_df2.new_color)
         if do_legend
             MK.scatter!(ax2, x_ax , y_ax; strokecolor=stroke_color, visible=false,
-                color=colors[1], strokewidth=0, markersize=2*legend_size, label=i)
+                color=colors[1], strokewidth=0, markersize=2*legend_size, label=cell_highlight)
             MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
-                color=colors[1], strokewidth=0, markersize=marker_size, label=i)
+                color=colors[1], strokewidth=0, markersize=marker_size, label=cell_highlight)
         else
             MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
                 color=colors[1], strokewidth=0, markersize=marker_size)
+        end
+    else
+        if isa(cell_order, Nothing)
+            cell_anno=unique(anno_df[!,anno])
+        else
+            cell_anno=cell_order
+        end
+        for i in cell_anno
+            anno_df2=filter(anno => ==(i), anno_df)
+            x_ax = anno_df2[!, x_col]
+            y_ax = anno_df2[!, y_col]
+            colors = unique(anno_df2.new_color)
+            if do_legend
+                MK.scatter!(ax2, x_ax , y_ax; strokecolor=stroke_color, visible=false,
+                    color=colors[1], strokewidth=0, markersize=2*legend_size, label=i)
+                MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
+                    color=colors[1], strokewidth=0, markersize=marker_size, label=i)
+            else
+                MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
+                    color=colors[1], strokewidth=0, markersize=marker_size)
+            end
         end
     end
     if do_legend
