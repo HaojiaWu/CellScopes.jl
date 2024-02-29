@@ -101,7 +101,7 @@ You can also highlight a particular cell type in the background to help you bett
 cs.plot_fov(visium, 10, 10; group_label="cluster", cell_highlight="10", alpha=0.7)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/visium_he/fov_highlight.jpg" width="600"> <br>
-Then simply select the numbers, or the numbers at the 4 corners (in numerical order), of a square or rectangle to crop the your fov of interest. Here is an example how we get the x_lims and y_lims to visualize the structure provided in this tutorial.
+Then simply select the numbers, or the numbers at the 4 corners (in numerical order) of a square or rectangle to crop your fov of interest. Here is an example how we get the x_lims and y_lims to visualize the structure provided in this tutorial.
 ```julia
 df = cs.subset_fov(visium, [26,27], 10, 10)
 x1 = minimum(df.x)
