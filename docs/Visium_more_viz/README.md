@@ -93,7 +93,7 @@ cs.sp_dim_plot(visium, "cluster";
 ### 6. Select the region of interest to visualize
 Now you might be curious about how to easily obtain the ```x_lims``` and ```y_lims``` parameters to zoom into your area of interest for a closer lookup. The ```plot_fov``` and ```subset_fov``` functions we developped are designed to assist you in achieving this.
 ```julia
-cs.plot_fov(visium, 10, 10)
+cs.plot_fov(visium, 10, 10; marker_size=0)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/visium_he/fov_he.jpg" width="600"> <br>
 You can also highlight a particular cell type in the background to help you better locate the field of view (fov). Again, just feed the cell type name to the ```cell_highlight``` parameter.
