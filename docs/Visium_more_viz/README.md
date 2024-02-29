@@ -73,7 +73,7 @@ cs.sp_feature_plot(visium, ["KRT17","TACSTD2"];
 In the ```sp_feature_plot``` function provided above, there are several parameters that could be changed to create a figure that is easier to interpret. The ```img_res``` parameter specifies the resolution of the images to be used. The ```adjust_contrast``` and ```adjust_brightness``` parameters allow for the adjustment of the contrast and brightness of the H&E image, respectively. The ```alpha``` parameter is used to adjust the transparency of the spots to allow the underlying tissue structure to be seen. The ```clip``` parameter (0,1) is designed to hide spots below a certain threshold, and show only those spots whose expression is above the clip threshold. Users can play around those parameters to get a better output image.
 
 ### 5. Visualize cell annotation on the full-res H&E image
-Cell type annotation can also be plotted on the high-res H&E image too. Here is the way to do it:
+Cell type annotation can also be plotted on the full-res H&E image too. Here is the way to do it:
 ```julia
 cs.sp_dim_plot(visium, "cluster"; 
     marker_size = 50, height=600, width=400, img_res="full", alpha=0.5,
