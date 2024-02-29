@@ -39,7 +39,7 @@ cs.sp_feature_plot(visium, ["CEACAM6"];
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/visium_he/gene_whole.png" width="600"> <br>
 
-When we zoom in a particular view of field, the full resolution image offers more clear histological detail on the tissue. When we focus on a specific area of the field, the image at full resolution provides clearer histological details of the tissue. Here, we have placed low, high, and full resolution images side by side to highlight the differences.
+When we focus on a specific area of the field, the image at full resolution provides clearer histological details of the tissue. Here, we have placed low, high, and full resolution images side by side to highlight the differences.
 #### 4a. Gene expression on low-res image
 The low-res image is from the Space Ranger output and has been incorporated in the VisiumObject by default (in the ```read_visium``` step).
 ```julia
