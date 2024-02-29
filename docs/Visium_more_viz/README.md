@@ -8,6 +8,7 @@ Since SpaceRanger outputs a high-resolution tiff image, to avoid confusion on th
 For this tutorial, we will be analyzing a breast cancer Visium dataset from 10x Genomics. https://www.10xgenomics.com/products/xenium-in-situ/preview-dataset-human-breast.
 We start by reading the data into Julia, creating a CellScopes VisiumObject, and further processing the object for data normalization, dimensional reduction and clustering. For more details, please refer to https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/visium_tutorial
 ```julia
+import CellScopes as cs
 visium = cs.read_visium("/mnt/sdb/breast_cancer_visium/")
 visium = cs.normalize_object(visium; scale_factor = 10000)
 visium = cs.scale_object(visium)
