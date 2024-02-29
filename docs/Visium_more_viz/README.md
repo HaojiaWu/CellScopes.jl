@@ -29,7 +29,7 @@ visium = cs.add_visium_img(visium,
 ```
 
 ### 4. Visualize gene expression on the full-res H&E image
-Now the Visium object in CellScopes should have three H&E images: low res, high res and full res. They are stored in the ```imageData``` slot. The low and high resolution images were from the Space Ranger output. For visualizing genes in the entire organ, we recommend to use the low resolution image (by setting ```img_res = "low"```) since this can save time and there is minimal noticeable difference to the naked eye between low and full resolution when showing genes in large view.
+Now the Visium object in CellScopes should have three H&E images: low res, high res and full res. They are stored in the ```imageData``` slot. The low and high resolution images were from the Space Ranger output. For visualizing genes in the entire organ, we recommend to use the low resolution image (by setting ```img_res = "low"```) since this can save time and there is minimal noticeable difference to the naked eye between low and full resolution when showing genes in a large view.
 ```julia
 cs.sp_feature_plot(visium, ["CEACAM6"]; 
     marker_size = 7, color_keys=["azure1", "lightsteelblue1" ,"blue"], 
@@ -37,6 +37,38 @@ cs.sp_feature_plot(visium, ["CEACAM6"];
     height=500, width=800,img_res="low"
 )
 ```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/visium_he/gene_whole.png" width="600"> <br>
 
-
+When we zoom in a particular view of field, the full resolution image offers more clear histological detail on the tissue. When we focus on a specific area of the field, the image at full resolution provides clearer histological details of the tissue. Here, we have placed low, high, and full resolution images side by side to highlight the differences.
+### 4a. Gene expression on low-res image
+The image is from the Space Ranger output and has been incorporated in the VisiumObject by default (in the ```read_visium``` step).
+```julia
+cs.sp_feature_plot(visium, ["KRT17","TACSTD2"]; 
+    marker_size = 50, color_keys=["azure1", "lightsteelblue1" ,"blue"], 
+    adjust_contrast=1, adjust_brightness = 0.0, scale=true, alpha=[0,0.6],clip=0.6,
+    height=600, width=400,img_res="low", x_lims = (7119, 8246), y_lims=(9539, 11828)
+)
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/visium_he/gene_low.png" width="600"> <br>
+### 4b. Gene expression on high-res image
+Similar to the low-res image, the high-res image is also included in the VisiumObject by default in the ```read_visium``` step. The figure below demonstrates that even the high-resolution image offered by Visium does not adequately reveal the tissue structure. I
+```julia
+cs.sp_feature_plot(visium, ["KRT17","TACSTD2"]; 
+    marker_size = 50, color_keys=["azure1", "lightsteelblue1" ,"blue"], 
+    adjust_contrast=1, adjust_brightness = 0.0, scale=true, alpha=[0,0.6],clip=0.6,
+    height=600, width=400,img_res="high", x_lims = (7119, 8246), y_lims=(9539, 11828)
+)
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/visium_he/gene_high.png" width="600"> <br>
+### 4c. Gene expression on full-res image
+In contrast, the full-res image captured by confocal delivers a significantly clearer resolution.
+```julia
+cs.sp_feature_plot(visium, ["KRT17","TACSTD2"]; 
+    marker_size = 50, color_keys=["azure1", "lightsteelblue1" ,"blue"], 
+    adjust_contrast=1, adjust_brightness = 0.0, scale=true, alpha=[0,0.6], clip=0.6,
+    height=600, width=400,img_res="full", x_lims = (7119, 8246), y_lims=(9539, 11828)
+)
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/visium_he/gene.png" width="600"> <br>
+In the ```sp_feature_plot``` function provided above, there are several parameters that could be changed to create a figure that is easier to interpret. The ```img_res``` parameter specifies the resolution of the images to be used. The ```adjust_contrast``` and ```adjust_brightness``` parameters allow for the adjustment of the contrast and brightness of the H&E image, respectively. The ```alpha``` parameter is used to adjust the transparency of the spots to allow the underlying tissue structure to be seen. The ```clip``` parameter (0,1) is designed to hide spots below a certain threshold, and show only those spots whose expression is above the clip threshold. Users can play around those parameters to get a better output image.
 
