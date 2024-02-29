@@ -40,8 +40,8 @@ cs.sp_feature_plot(visium, ["CEACAM6"];
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/visium_he/gene_whole.png" width="600"> <br>
 
 When we zoom in a particular view of field, the full resolution image offers more clear histological detail on the tissue. When we focus on a specific area of the field, the image at full resolution provides clearer histological details of the tissue. Here, we have placed low, high, and full resolution images side by side to highlight the differences.
-### 4a. Gene expression on low-res image
-The image is from the Space Ranger output and has been incorporated in the VisiumObject by default (in the ```read_visium``` step).
+#### 4a. Gene expression on low-res image
+The low-res image is from the Space Ranger output and has been incorporated in the VisiumObject by default (in the ```read_visium``` step).
 ```julia
 cs.sp_feature_plot(visium, ["KRT17","TACSTD2"]; 
     marker_size = 50, color_keys=["azure1", "lightsteelblue1" ,"blue"], 
@@ -50,7 +50,7 @@ cs.sp_feature_plot(visium, ["KRT17","TACSTD2"];
 )
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/visium_he/gene_low.png" width="600"> <br>
-### 4b. Gene expression on high-res image
+#### 4b. Gene expression on high-res image
 Similar to the low-res image, the high-res image is also included in the VisiumObject by default in the ```read_visium``` step. The figure below demonstrates that even the high-resolution image offered by Visium does not adequately reveal the tissue structure. I
 ```julia
 cs.sp_feature_plot(visium, ["KRT17","TACSTD2"]; 
@@ -60,7 +60,7 @@ cs.sp_feature_plot(visium, ["KRT17","TACSTD2"];
 )
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/visium_he/gene_high.png" width="600"> <br>
-### 4c. Gene expression on full-res image
+#### 4c. Gene expression on full-res image
 In contrast, the full-res image captured by confocal delivers a significantly clearer resolution.
 ```julia
 cs.sp_feature_plot(visium, ["KRT17","TACSTD2"]; 
@@ -71,4 +71,45 @@ cs.sp_feature_plot(visium, ["KRT17","TACSTD2"];
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/visium_he/gene.png" width="600"> <br>
 In the ```sp_feature_plot``` function provided above, there are several parameters that could be changed to create a figure that is easier to interpret. The ```img_res``` parameter specifies the resolution of the images to be used. The ```adjust_contrast``` and ```adjust_brightness``` parameters allow for the adjustment of the contrast and brightness of the H&E image, respectively. The ```alpha``` parameter is used to adjust the transparency of the spots to allow the underlying tissue structure to be seen. The ```clip``` parameter (0,1) is designed to hide spots below a certain threshold, and show only those spots whose expression is above the clip threshold. Users can play around those parameters to get a better output image.
+
+### 5. Visualize cell annotation on the full-res H&E image
+Cell type annotation can also be plotted on the high-res H&E image too. Here is the way to do it:
+```julia
+cs.sp_dim_plot(visium, "cluster"; 
+    marker_size = 50, height=600, width=400, img_res="full", alpha=0.5,
+    do_label=false, adjust_contrast=1, adjust_brightness = 0, 
+    x_lims = (7119, 8246), y_lims=(9539, 11828))
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/visium_he/cell_he.png" width="400"> <br>
+If you want to highlight only a particular cell type, just feed the cell type name into the ```cell_highlight``` parameter. For example:
+```julia
+cs.sp_dim_plot(visium, "cluster"; 
+    marker_size = 50, height=600, width=400, img_res="full", cell_highlight="10",
+    do_label=false, adjust_contrast=1, adjust_brightness = 0, alpha=0.5,
+    x_lims = (7119, 8246), y_lims=(9539, 11828))
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/visium_he/cell_he_highlight.png" width="400"> <br>
+
+### 6. Select the region of interest to visualize
+Now you might be curious about how to easily obtain the ```x_lims``` and ```y_lims``` parameters to zoom into your area of interest for a closer lookup. The ```plot_fov``` and ```subset_fov``` functions we developped are designed to assist you in achieving this.
+```julia
+cs.plot_fov(visium, 10, 10)
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/visium_he/fov_he.jpg" width="600"> <br>
+You can also highlight a particular cell type in the background to help you better locate the field of view (fov). Again, just feed the cell type name to the ```cell_highlight``` parameter.
+```julia
+cs.plot_fov(visium, 10, 10; group_label="cluster", cell_highlight="10", alpha=0.7)
+```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/visium_he/fov_highlight.jpg" width="600"> <br>
+Then simply select the numbers, or the numbers at the 4 corners (in numerical order), of a square or rectangle to crop the your fov of interest. Here is an example how we get the x_lims and y_lims to visualize the structure provided in this tutorial.
+```julia
+df = cs.subset_fov(visium, [26,27], 10, 10)
+x1 = minimum(df.x)
+x2 = maximum(df.x)
+y1 = minimum(df.y)
+y2 = maximum(df.y)
+x_lims = (x1, x2)
+y_lims = (y1, y2)
+```
+
 
