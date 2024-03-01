@@ -84,6 +84,7 @@ In addition to these standalone CellScopes analyses, we also provide tutorials h
 <br>
 
 Finally, we also provide tutorials for incorporating the H&E and nuclei staining images for Visium and Xenium data visualization.
+<br>
 ***m. Visium data visualization with a high-resolution H&E image***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/Visium_more_viz
 <br>
 ***n. Xenium data visualization with a high-resolution H&E/DAPI image***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/Xenium_more_viz
