@@ -17,7 +17,7 @@ he_file = "he.tif"
 dapi_file = "if.tif"
 ```
 
-### 3. Add the H&E image to the xenium object.
+### 3. Add H&E image to the xenium object.
 We provide a function that can add any pre-aligned image taken by confocal microscope to the existing xenium object. Here is an example to add the H&E image.
 ```julia
 breast_cancer = cs.add_xenium_img(breast_cancer;img_path=he_file)
@@ -50,13 +50,23 @@ cs.sp_dim_plot(breast_cancer, "cluster";
 <br>
 The image above has no H&E image. To add the H&E image to the background, we can do:
 ```julia
+### Cell annotation on H&E
 cs.sp_dim_plot(breast_cancer, "cluster"; 
     do_label = false, marker_size = 8, x_lims = (x1, x2),
     y_lims = (y1, y2), width=600, height=650, do_legend=false, alpha=0.5,
     custom_img=true, adjust_coord_to_img="auto", adjust_contrast = 1.0, adjust_brightness = 0.0
     )
+### H&E only
+cs.sp_dim_plot(breast_cancer, "cluster"; 
+    do_label = false, marker_size = 0, x_lims = (x1, x2),
+    y_lims = (y1, y2), width=600, height=650, do_legend=false, alpha=0.5,
+    custom_img=true, adjust_coord_to_img="auto", adjust_contrast = 1.0, adjust_brightness = 0.0
+    )
 ```
-<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_he/cell_he.png" width="600"> <br>
+<p float="left">
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_he/cell_he.png" width=400>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_he/he.png" width=400>
+</p>
 
 #### 3c. How to find the limits of x, y coordinates?
 In most cases, determining the precise x and y coordinate limits for the field of view (FOV) to be cropped can be quite challenging. ```CellScopes``` provides functions designed to simplify this process. The approach involves creating a numbered grid system over the graph, with each square of the grid assigned a unique number. The following image illustrates how this grid system works.
@@ -72,4 +82,103 @@ x2 = maximum(fov1.x)
 y1 = minimum(fov1.y)
 y2 = maximum(fov1.y)
 ```
+### 4. Add the DAPI image to the xenium object.
+Similarly, we can add the DAPI image to the xenium object and project the cells or gene expression on the DAPI image.
+```julia
+breast_cancer = cs.add_xenium_img(breast_cancer;img_path=dapi_file)
+```
+The subsequent sections of this tutorial will use this DAPI image to demonstrate how to overlay various layers of spatial information, including cell annotations, gene expression, and transcripts, onto the image. Note that the codes provided below are applicable to any type of pre-aligned images that have been added to the Xenium object.
 
+#### 4a. Visualize cell type annotation on the DAPI image.
+Below are the example codes to show cell annotations within the same cropped area  highlighted prevsiously.
+```julia
+### Cell annotations on DAPI
+cs.sp_dim_plot(breast_cancer, "cluster"; 
+    do_label = false, marker_size = 8, x_lims = (x1, x2),
+    y_lims = (y1, y2), width=600, height=650, do_legend=false, alpha=0.5,
+    custom_img=true, adjust_coord_to_img="auto", adjust_contrast = 4.0, adjust_brightness = 0.3
+    )
+### DAPI only
+cs.sp_dim_plot(breast_cancer, "cluster"; 
+    do_label = false, marker_size = 8, x_lims = (x1, x2),
+    y_lims = (y1, y2), width=600, height=650, do_legend=false, alpha=0.5,
+    custom_img=true, adjust_coord_to_img="auto", adjust_contrast = 4.0, adjust_brightness = 0.3
+    )
+```
+<p float="left">
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_he/cell_dapi.png" width=400>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_he/dapi.png" width=400>
+</p>
+
+#### 4b. Visualize gene expression on the DAPI image.
+With the function ```sp_feature_plot```, we can overlay gene expression on the DAPI image. Here is the way to do this.
+```julia
+### DAPI off
+cs.sp_feature_plot(breast_cancer, "TACSTD2"; x_lims = (x1, x2),y_lims = (y1, y2),
+    color_keys=["gray94", "thistle1", "magenta"], 
+    height=650, width=600, marker_size = 8)
+### DAPI on
+cs.sp_feature_plot(breast_cancer, "TACSTD2"; x_lims = (x1, x2),y_lims = (y1, y2),
+    color_keys=["gray94", "thistle1", "magenta"], 
+    height=650, width=600, marker_size = 8, clip=4,
+    custom_img=true, adjust_coord_to_img="auto", adjust_contrast = 4.0, adjust_brightness = 0.3)
+```
+<p float="left">
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_he/gene.png" width=400>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_he/gene_dapi.png" width=400>
+</p>
+
+Visualization of multiple genes simultaneously is also possible. Simply provide a list of genes, rather than a single gene, to the ```sp_feature_plot``` function.
+```julia
+### DAPI off
+cs.sp_feature_plot(breast_cancer, ["ACTA2","TACSTD2"]; x_lims = (x1, x2),y_lims = (y1, y2),
+    color_keys=["gray94", "thistle1", "magenta"], 
+    height=650, width=600, marker_size = 8)
+### DAPI on
+cs.sp_feature_plot(breast_cancer, ["ACTA2","TACSTD2"]; x_lims = (x1, x2),y_lims = (y1, y2),
+    color_keys=["gray94", "thistle1", "magenta"], 
+    height=650, width=600, marker_size = 8, clip=4,
+    custom_img=true, adjust_coord_to_img="auto", adjust_contrast = 4.0, adjust_brightness = 0.3)
+```
+<p float="top">
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_he/two%20genes.png" height=400>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_he/twogenes_dapi.png" height=400>
+</p>
+
+#### 4c. Visualize transcripts on the DAPI image.
+Finally, we can visualize the transcripts directly on the DAPI image. Given that transcripts are individual spots, we have the option to overlay multiple transcripts on a single graph or to distribute the transcripts across multiple graphs. To combine multiple transcripts within a single graph, please follow the codes below.
+```julia
+### DAPI off
+cs.sp_feature_plot(breast_cancer, ["ACTA2","TACSTD2"]; layer="transcripts",
+    x_lims = (x1, x2),y_lims = (y1, y2), alpha=0.5,
+    gene_colors=["cyan", "magenta"], 
+    height=650, width=600, marker_size = 2)
+### DAPI on
+cs.sp_feature_plot(breast_cancer, ["ACTA2","TACSTD2"]; layer="transcripts",
+    x_lims = (x1, x2),y_lims = (y1, y2), alpha=0.5,
+    gene_colors=["cyan", "magenta"], 
+    height=650, width=600, marker_size = 2,
+custom_img=true, adjust_coord_to_img="auto", adjust_contrast = 4.0, adjust_brightness = 0.3)
+```
+<p float="left">
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_he/transcripts.png" width=500>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_he/transcript_dapi.png" width=500>
+</p>
+
+To split them, please use the following codes.
+```julia
+### DAPI off
+cs.sp_feature_plot(breast_cancer, ["ACTA2","TACSTD2"]; layer="transcripts",
+    x_lims = (x1, x2),y_lims = (y1, y2), alpha=0.5, combine=false,
+    gene_colors=["gray94", "chartreuse"], height=650, width=600, marker_size = 2)
+### DAPI on
+cs.sp_feature_plot(breast_cancer, ["ACTA2","TACSTD2"]; layer="transcripts",
+    x_lims = (x1, x2),y_lims = (y1, y2), alpha=0.5, combine=false,
+    height=650, width=600, marker_size = 2, gene_colors=["gray94", "chartreuse"],
+    custom_img=true, adjust_coord_to_img="auto", adjust_contrast = 4.0, adjust_brightness = 0.3
+)
+```
+<p float="top">
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_he/transcript_split2.png" height=400>
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_he/transcript_split_dapi.png" height=400>
+</p>
