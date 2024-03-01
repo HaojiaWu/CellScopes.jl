@@ -82,15 +82,15 @@ x2 = maximum(fov1.x)
 y1 = minimum(fov1.y)
 y2 = maximum(fov1.y)
 ```
-### 4. Add the DAPI image to the xenium object.
-Similarly, we can add the DAPI image to the xenium object and project the cells or gene expression on the DAPI image.
+### 4. Add the DAPI image to the Xenium object.
+Similarly, we can add the DAPI image to the xenium object and project the cell annotation or gene expression on it.
 ```julia
 breast_cancer = cs.add_xenium_img(breast_cancer;img_path=dapi_file)
 ```
 The subsequent sections of this tutorial will use this DAPI image to demonstrate how to overlay various layers of spatial information, including cell annotations, gene expression, and transcripts, onto the image. Note that the codes provided below are applicable to any type of pre-aligned images that have been added to the Xenium object.
 
 #### 4a. Visualize cell type annotation on the DAPI image.
-Below are the example codes to show cell annotations within the same cropped area  highlighted prevsiously.
+Below are the example codes to show cell annotations within the same cropped area highlighted prevsiously.
 ```julia
 ### Cell annotations on DAPI
 cs.sp_dim_plot(breast_cancer, "cluster"; 
