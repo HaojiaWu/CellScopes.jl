@@ -84,7 +84,7 @@ celltypes = string.(unique(brain.metaData.cluster))
 anno_color=Dict(celltypes .=> colors)
 cs.sp_dim_plot(brain, "cluster"; anno_color = anno_color,
     do_label = false,marker_size = 5, 
-    canvas_size = (2500, 2000), do_legend=false
+    width=2500, height=2000, do_legend=false
     )
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/xenium_celltype.jpg" width="600"> 
@@ -106,7 +106,7 @@ y2 = maximum(hippo.y)
 cs.sp_dim_plot(brain, "cluster"; anno_color = anno_color,
     do_label = false,marker_size = 7, x_lims = (x1, x2),
     y_lims = (y1, y2),
-    canvas_size = (700, 600), do_legend=false
+    width=700, height=600, do_legend=false
     )
 ```
 
