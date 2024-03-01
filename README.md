@@ -83,7 +83,7 @@ In addition to these standalone CellScopes analyses, we also provide tutorials h
 ***l. Gene imputation using SpaGE, tangram and gimVI***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/gene_imputation
 <br>
 
-Finally, we also provide tutorials for incorporating the H&E and nuclei staining images for Visium and Xenium data visualization.
+Finally, we also provide tutorials for incorporating high-resolution H&E and nuclei staining images for Visium and Xenium data visualization.
 <br>
 ***m. Visium data visualization with a high-resolution H&E image***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/Visium_more_viz
 <br>
