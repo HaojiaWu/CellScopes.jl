@@ -85,7 +85,7 @@ cs.dim_plot(brain; dim_type = "umap", marker_size = 4)
 ```julia
 cs.sp_dim_plot(brain, "cluster"; #anno_color = anno_color,
     do_label = false,marker_size = 8, 
-    canvas_size = (800, 300), do_legend=false
+    width=800, height=300, do_legend=false
     )
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/starmap_cell_tissue.png" width="600"> 
