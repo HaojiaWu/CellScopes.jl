@@ -79,7 +79,7 @@ celltypes = string.(unique(merfish.metaData.cluster))
 anno_color=Dict(celltypes .=> colors)
 cs.sp_dim_plot(merfish, "cluster"; anno_color = anno_color,
     do_label = false,marker_size = 5, 
-    canvas_size = (2500, 2000), do_legend=false
+    width=2500, height=2000, do_legend=false
     )
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/merfish_tissue.png" width="600"> 
@@ -101,7 +101,7 @@ y2 = maximum(crop_fov.y)
 cs.sp_dim_plot(merfish, "cluster"; anno_color = anno_color,
     do_label = false,marker_size = 4, x_lims = (x1, x2),
     y_lims = (y1, y2),
-    canvas_size = (500, 400), do_legend=false
+    width=500, height=400, do_legend=false
     )
 ```
 
