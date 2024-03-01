@@ -57,7 +57,7 @@ celltypes = string.(unique(slide.metaData.cluster))
 anno_color=Dict(celltypes .=> colors)
 
 cs.sp_dim_plot(slide, "cluster"; anno_color=anno_color,
-    marker_size = 2, canvas_size = (600,500), 
+    marker_size = 2, width=600, height=500, 
     do_label=false)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/slide_tissue.png" width="600"> 
