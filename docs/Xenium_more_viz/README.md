@@ -8,7 +8,7 @@ This tutorial requires a pre-registered H&E/DAPI image that has been accurately 
 For this tutorial, we will analyze a breast cancer Xenium dataset from 10x Genomics. The dataset can be downloaded from here: https://www.10xgenomics.com/products/xenium-in-situ/preview-dataset-human-breast. 
 ```julia
 import CellScopes as cs
-breast_cancer = read_xenium("/mnt/sdb/breast_cancer_xenium/")
+breast_cancer = cs.read_xenium("/mnt/sdb/breast_cancer_xenium/")
 ```
 This dataset come with a H&E image taken on that same Xenium slide. Xenium analyzer also output a DAPI tiff image that has been aligned to the xenium transcript coordinates. We will use these two images to showcase the ploting functions provided by CellScopes. 
 
