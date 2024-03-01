@@ -1,4 +1,4 @@
-# Use a high-resolution histology/DAPI image for Xesium data visualization
+# Use a high-resolution histology/DAPI image for Xenium data visualization
 ```CellScopes.jl``` provides functions that allow for the integration of an external histology or immunofluorescence image for visualizing Xenium data. Given that Xenium data provide three layers of spatial information (transcripts, genes, and cells), this tutorial will walk you through how to visualize this information on top of a high-resolution histology or DAPI image.
 
 ### 1. Input image: a registered H&E or DAPI image
