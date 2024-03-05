@@ -49,7 +49,7 @@ docker pull thehumphreyslab/cellscopes
 ```
 docker run -it --rm thehumphreyslab/cellscopes
 ```
-The container's Port ID for ```cellscopes``` is 5237. A tutorial for connecting to Docker Jupyter Notebook on the remote server from a local terminal will be provided soon.
+The container's Port ID for ```cellscopes``` is 5237. A tutorial for connecting to Docker Jupyter Notebook on the remote server from a local terminal [can be found here](https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/docker_tutorial/CellScopes_for_Docker24.0.5.md#option-2-directly-load-cellscopes-in-os_1-and-mount-a-volume-for-data-access).
 
 
 ## 2. Tutorials
