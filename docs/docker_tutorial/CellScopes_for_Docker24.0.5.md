@@ -4,7 +4,7 @@ OS_1: 22.04.1-Ubuntu x86_64\
 OS_2: macOS Monterey 12.7.3\
 Julia Version: 1.7.4\
 CellScopes Version: CellScopes.jl v1.0.0\
-Contact: dianli at wustl dot edu
+Contact: Dian Li
 
 - [CellScopes Docker Installation notes](#cellscopes-docker-installation-notes)
   - [Part 0. Introduction](#part-0-introduction)
@@ -20,20 +20,20 @@ Contact: dianli at wustl dot edu
 
 ## Part 0. Introduction
 
-<span style="color:red">*WARNING: sudo required* </span>
+<span style="color:red">*WARNING: sudo is required for installation* </span>
 
 - The Docker installation in this notes was tested on both Mac and Ubuntu operating systems.
-- **Sudo access is necessary**.
-- OS_1 (remote) serves as the host for the [CellScopes Docker image](https://hub.docker.com/r/thehumphreyslab/cellscopes).
-- While OS_2 (optional and potentially the same as OS_1) is utilized for accessing [CellScopes](https://github.com/HaojiaWu/CellScopes.jl) through Jupyter Notebook.
+- **Sudo access is necessary for installation**.
+- OS_1 (remote) serves as the host for the <a href="https://hub.docker.com/r/thehumphreyslab/cellscopes" target="_blank">CellScopes Docker image</a>
+- While OS_2 (optional and potentially the same as OS_1) is utilized for accessing <a href="https://github.com/HaojiaWu/CellScopes.jl" target="_blank">CellScopes</a> through Jupyter Notebook.
 
 ## Part 1. Install Docker on Ubuntu (OS_1)
 
-- Please refer to the Docker website at: https://docs.docker.com/engine/install/ubuntu/
+- Please refer to the <a href="https://docs.docker.com/engine/install/ubuntu/" target="_blank">Docker website</a> for guidance. 
 
 ## Part 2. Pull CellScopes Docker Image
 
-- The CellScopes docker image can be found at: https://hub.docker.com/r/thehumphreyslab/cellscopes
+- The <a href="https://hub.docker.com/r/thehumphreyslab/cellscopes" target="_blank">CellScopes Docker image</a> can be found at the Docker Hub website. 
 
 - To pull the image
 
@@ -71,7 +71,7 @@ Here is a snapshot for the operations mentioned above
 To connect a directory on OS_1 with the Docker container, we can:
 
 ```
-sudo docker run -it \
+docker run -it \
 --rm \
 -v /Directory_To_Mount:/usr/local/data \
 thehumphreyslab/cellscopes
@@ -89,7 +89,7 @@ Here is a snapshot for the operations mentioned above
 
 In some cases, we might need to remotely access the CellScopes Docker container from a second machine OS_2.
 
-This section is inspired by: https://hackmd.io/@edinhon/BkvdVGDeP
+Option 3 is inspired by <a href="https://hackmd.io/@edinhon/BkvdVGDeP" target="_blank">this tutorial written by edinhon</a>.
 
 #### Three port numbers
 
@@ -115,7 +115,7 @@ Here are the code for making the connection
 ### doe@10.10.1.1
 
 ### On OS_1
-sudo docker run -it \
+docker run -it \
 --name cellscopes \
 --rm \
 -p 5237:5237 \
