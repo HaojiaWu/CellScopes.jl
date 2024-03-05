@@ -92,7 +92,7 @@ Option 3 is inspired by <a href="https://hackmd.io/@edinhon/BkvdVGDeP" target="_
 
 #### Three port numbers
 
-To begin with, we describe the meaning for 3 ports to be used for this connection
+To begin with, we describe the meaning for 3 ports to be used for setting this connections.
 
 - port2:5237
   - Port reserved on the remote machine OS_1 to convey information among the Docker container, OS_1, and OS_2
