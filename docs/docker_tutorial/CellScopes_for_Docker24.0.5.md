@@ -3,7 +3,7 @@ Updated: March 4th, 2024\
 OS_1: 22.04.1-Ubuntu x86_64\
 OS_2: macOS Monterey 12.7.3\
 Julia Version: 1.7.4\
-CellScopes Version: CellScopes.jl v1.0.0\
+CellScopes Version: CellScopes.jl v1.0.0
 
 - [CellScopes Docker Installation notes](#cellscopes-docker-installation-notes)
   - [Part 0. Introduction](#part-0-introduction)
