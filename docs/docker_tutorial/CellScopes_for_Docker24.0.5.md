@@ -12,7 +12,7 @@ CellScopes Version: CellScopes.jl v1.0.0
   - [Part 3. Run CellScopes in Docker](#part-3-run-cellscopes-in-docker)
     - [Option 1. Directly load CellScopes in OS\_1](#option-1-directly-load-cellscopes-in-os_1)
     - [Option 2. Directly load CellScopes in OS\_1 and mount a volume for data access](#option-2-directly-load-cellscopes-in-os_1-and-mount-a-volume-for-data-access)
-    - [Option 3. Remotely load CellScopes in OS\_1 via Jupyter Notebook from OS\_2](#option-3-remotely-load-cellscopes-in-os_1-via-jupyter-notebook-from-os_2)
+    - [Option 3. Load CellScopes in a remote server OS\_1 and access the container from a local terminal OS\_2 via Jupyter Notebook](#option-3-load-cellscopes-in-a-remote-server-os_1-and-access-the-container-from-a-local-terminal-os_2-via-jupyter-notebook)
       - [Three port numbers](#three-port-numbers)
       - [Port 5237 was predefined](#port-5237-was-predefined)
       - [Connect via Jupyter Notebook](#connect-via-jupyter-notebook)
@@ -84,7 +84,7 @@ Here is a snapshot for the operations mentioned above
 
 <img src="./images/option_2_directly_load_cs_and_mount_a_volume.png" alt="drawing" width="600"/>
 
-### Option 3. Remotely load CellScopes in OS_1 via Jupyter Notebook from OS_2
+### Option 3. Load CellScopes in a remote server OS_1 and access the container from a local terminal OS_2 via Jupyter Notebook 
 
 In some cases, we might need to remotely access the CellScopes Docker container from a second machine OS_2.
 
