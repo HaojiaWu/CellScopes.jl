@@ -68,6 +68,7 @@ matchtype(field) = @match field begin
     scale::ScaleCountObject => println("- Scaled count")
     meta::DataFrame => println("- Metadata")
     vargene::VariableGeneObject => println("- Variable genes")
+    reduce::ReductionObject => println("- Dimensional reduction")
     pca::PCAObject => println("- PCA data")
     tsne::tSNEObject => println("- tSNE data")
     umap::UMAPObject => println("- UMAP data")
