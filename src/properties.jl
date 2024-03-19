@@ -66,6 +66,7 @@ matchtype(field) = @match field begin
     raw::RawCountObject => println("- Raw count")
     norm::NormCountObject => println("- Normalized count")
     scale::ScaleCountObject => println("- Scaled count")
+    meta::DataFrame => println("- Metadata")
     vargene::VariableGeneObject => println("- Variable genes")
     pca::PCAObject => println("- PCA data")
     tsne::tSNEObject => println("- tSNE data")
