@@ -207,7 +207,6 @@ function run_gimVI(sp_obj::Union{ImagingSpatialObject, CartanaObject, XeniumObje
     return sp_obj
 end
 
-
 function run_cell_pairing(df::DataFrame, cell_col::Union{Symbol, String}, celltype_col::Union{Symbol, String}; radius::Union{Int64, Float64, Nothing}=nothing)
     cells=df[!,cell_col]
     Sum = 0

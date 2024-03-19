@@ -628,7 +628,8 @@ end
 function from_seurat(seurat_file; data_type::String = "scRNA", 
                 tech::Union{String, Nothing} = nothing,  
                 anno::String = "cluster", 
-                assay::String = "RNA")
+                assay::String = "RNA", 
+                version::String = "v5")
     rbase = rimport("base")
     seu = rimport("Seurat")
     seu_obj = rbase.readRDS(seurat_file)
@@ -636,7 +637,11 @@ function from_seurat(seurat_file; data_type::String = "scRNA",
     meta = rcopy(meta)
     clusters = rcopy(seu_obj["active.ident"])
     meta[!, anno] = clusters
-    counts = rcopy(seu_obj["assays"][assay]["counts"])
+    if version=="v5"
+        counts = rcopy(seu_obj["assays"][assay]["layers"]["counts"])
+    else
+        counts = rcopy(seu_obj["assays"][assay]["counts"])
+    end
     counts = sparse_r_to_jl(counts)
     umap = rcopy(seu_obj["reductions"]["umap"]["cell.embeddings"])
     cells = rcopy(rbase.colnames(seu_obj))
@@ -653,7 +658,11 @@ function from_seurat(seurat_file; data_type::String = "scRNA",
     raw_count = RawCountObject(counts, cells, genes)
     if data_type == "scRNA"
         cs_obj = scRNAObject(raw_count; meta_data=meta)
-        norm_count = rcopy(seu_obj["assays"]["RNA"]["data"])
+        if version=="v5"
+            norm_count = rcopy(seu_obj["assays"][assay]["layers"]["data"])
+        else
+            norm_count = rcopy(seu_obj["assays"][assay]["data"])
+        end
         norm_count = sparse_r_to_jl(norm_count)
         cs_obj = normalize_object(cs_obj)
         cs_obj.normCount.count_mtx = norm_count
