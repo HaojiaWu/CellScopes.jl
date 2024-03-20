@@ -80,6 +80,7 @@ matchtype(field) = @match field begin
     fragment::FragmentObject => println("- Fragment data")
     imgObject::SpaImageObj => println("- Image data")
     uns::UndefinedObject => println("- Undefined slot")
+    emptyObj::Nothing => print("")
 end
 
 function Base.show(io::IO, sp_obj::Union{ImagingSpatialObject, CartanaObject, VisiumObject, XeniumObject, MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject})
