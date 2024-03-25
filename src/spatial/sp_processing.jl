@@ -269,3 +269,80 @@ function add_xenium_img(xen_obj::XeniumObject; img_path::Union{String, Nothing}=
     xen_obj.imageData = flipped_img
     return xen_obj
 end
+
+function read_cosmx_transcript(cosmx_dir::String; fov::Union{Nothing, Int64}=nothing)
+    if isa(fov, Nothing)
+        fov_positions = CSV.read(cosmx_dir * "/RunSummary/latest.fovs.csv", DataFrame; header = false)
+        col_num = length(StatsBase.countmap(fov_positions.Column2))
+        row_num = collect(values(StatsBase.countmap(fov_positions.Column2)))[1]
+        x_pos=generate_repeating_pattern(row_num, col_num)
+        y_pos=generate_alternating_pattern(row_num, col_num)
+        all_fovs = fov_positions.Column7
+        all_transcript = DataFrame()
+        @info("Merging transcipts from all fovs! This may take a while. If you want to analyze a particular fov, please pass the fov number to the fov parameter e.g. \"fov=11\".")
+        p = Progress(length(all_fovs), dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, color=:blue)
+        for i in all_fovs
+            dir_path = cosmx_dir * "AnalysisResults/" 
+            cell_coord = "*/FOV" * lpad(string(i), 3, '0') * "/*_cell_target_call_coord.csv"
+            matched_files = Glob.glob(cell_coord, dir_path)
+            fov_transcript = CSV.read(matched_files[1], DataFrame)
+            fov_transcript.x .+= 4256 .* x_pos[i]
+            fov_transcript.y .+= 4256 .* y_pos[i]
+            fov_transcript.CellId = "fov" * string(i) * "_" .* string.(fov_transcript.CellId)
+            all_transcript = [all_transcript; fov_transcript]
+            next!(p)
+        end
+    elseif length(fov) != 1
+        error("Please select only one fov to analyze!")
+    else
+        dir_path = cosmx_dir * "AnalysisResults/" 
+        cell_coord = "*/FOV" * lpad(string(fov), 3, '0') * "/*_cell_target_call_coord.csv"
+        matched_files = Glob.glob(cell_coord, dir_path)
+        all_transcript = CSV.read(matched_files[1], DataFrame)
+    end
+    all_transcript[!, :target] = String.(all_transcript[!, :target])
+    all_genes = unique(all_transcript[!, :target])
+    filtered_strings = filter(s -> !(startswith(s, "FalseCode") || startswith(s, "NegPrb")), all_genes)
+    all_transcript = filter(:target => ∈(Set(filtered_strings)), all_transcript)
+    return all_transcript
+end
+
+function read_cosmx_image(cosmx_dir; fov::Union{Nothing, Int64}=nothing)
+    if isa(fov, Nothing)
+        fov_positions = CSV.read(cosmx_dir * "/RunSummary/latest.fovs.csv", DataFrame; header = false)
+        col_num = length(StatsBase.countmap(fov_positions.Column2))
+        row_num = collect(values(StatsBase.countmap(fov_positions.Column2)))[1]
+        final_image = zeros(Gray,  4256 * row_num, 4256 * col_num)  
+        x_pos=generate_repeating_pattern(row_num, col_num)
+        y_pos=generate_alternating_pattern(row_num, col_num; is_reverse=false)
+        all_fovs = fov_positions.Column7
+        @info("Merging images from all fovs! This may take a while. If you want to analyze a particular fov, please pass the fov number to the fov parameter e.g. \"fov=11\".")
+        p = Progress(length(all_fovs), dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, color=:blue)
+        for i in all_fovs
+            dir_path = cosmx_dir * "CellStatsDir/Morphology2D/" 
+            img_file = "*_F" * lpad(string(i), 3, '0') * ".TIF"
+            matched_files = Glob.glob(img_file, dir_path)
+            img_stack = FileIO.load(matched_files[1])
+            first_image = img_stack[:,:,1]
+            img = convert(Matrix{Gray{N0f8}}, first_image)
+            img = augment(img, ColorJitter(20, 0))
+            x_start = 4256 .* x_pos[i] + 1
+            x_end = x_start + 4256 - 1
+            y_start = 4256 .* y_pos[i] + 1
+            y_end = y_start + 4256 - 1
+            final_image[y_start:y_end, x_start:x_end] = img
+            next!(p)
+        end
+    elseif length(fov) != 1
+        error("Please select only one fov to analyze!")
+    else
+        dir_path = cosmx_dir * "CellStatsDir/Morphology2D/" 
+        img_file = "*_F" * lpad(string(fov), 3, '0') * ".TIF"
+        matched_files = Glob.glob(img_file, dir_path)
+        img_stack = FileIO.load(matched_files[1])
+        first_image = img_stack[:,:,1]
+        img = convert(Matrix{Gray{N0f8}}, first_image)
+        final_image = Augmentor.augment(img, ColorJitter(20, 0))
+    end
+    return final_image
+end

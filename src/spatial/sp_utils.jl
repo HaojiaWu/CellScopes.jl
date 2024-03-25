@@ -793,3 +793,67 @@ get_vs_sf = function(sp::VisiumObject;img_res="high")
         end
         return scale_factor
 end
+
+function generate_alternating_pattern(n, m; is_reverse::Bool = true)
+    ascending = 0:(n-1)
+    descending = (n-1):-1:0
+    result = Int[]
+    for i = 1:m
+        if is_reverse
+            if isodd(i)
+                append!(result, descending)
+            else
+                append!(result, ascending)
+            end
+        else
+            if isodd(i)
+                append!(result, ascending)
+            else
+                append!(result, descending)
+            end
+        end
+    end
+    return result
+end
+
+function generate_repeating_pattern(n, m)
+    series_num = (m-1):-1:0
+    result = repeat(series_num, inner=n)
+    return result
+end
+
+function invert_y_axis(y_values::Union{Vector{Int64}, Vector{Float64}})
+    min_y, max_y = minimum(y_values), maximum(y_values)
+    inverted_y = max_y + min_y .- y_values
+    return inverted_y
+end
+
+function make_ct_from_tx(tx_df; cell_col="CellId", gene_col="target")
+    if isa(cell_col, String)
+        cell_col = Symbol(cell_col)
+    end
+    if isa(gene_col, String)
+        gene_col = Symbol(gene_col)
+    end
+    tx_df[!, :count] = ones(Int, nrow(tx_df))
+    grouped_data = groupby(tx_df, [cell_col, gene_col])
+    combined_data = combine(grouped_data, :count => sum)
+    gene_count = unstack(combined_data, gene_col, cell_col, :count_sum, fill=0)
+    rename!(gene_count, gene_col => :gene)
+    return gene_count
+end
+
+function make_ct_from_df(df; gene_col = "gene")
+    df[!, gene_col] = String.(df[!, gene_col])
+    test_val = df[!, gene_col][1]
+    if !isa(test_val, String)
+        error("The first column of the dataframe must be set to gene column!")
+    end
+    gene_name = df[!, gene_col]
+    cell_name = names(df)[2:end]
+    count_df = df[!, 2:end]
+    count_df = convert(SparseMatrixCSC{Int64, Int64},Matrix(count_df))
+    raw_count = RawCountObject(count_df, cell_name, gene_name)
+    return raw_count
+end
+
