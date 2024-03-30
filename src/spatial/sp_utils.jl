@@ -857,3 +857,12 @@ function make_ct_from_df(df; gene_col = "gene")
     return raw_count
 end
 
+function read_baysor_loom(loom_path)
+    counts = h5read(loom_path, "matrix")
+    counts = counts'
+    genes = h5read(loom_path, "row_attrs/Name")
+    cells = h5read(loom_path, "col_attrs/CellID")
+    cells = string.(cells)
+    raw_ct = RawCountObject(counts, cells, genes)
+    return raw_ct
+end
