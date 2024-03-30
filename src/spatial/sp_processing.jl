@@ -244,7 +244,7 @@ function gaussian_blur_polygon(polygon::Matrix{Float64}, kernel_size::Int, theta
     return smoothed_polygon
 end
 
-function smooth_polygons_gaussian_blur(polygons::Vector{Matrix{Float64}}, kernel_size::Int, σ::Float64)
+function smooth_polygons_gaussian_blur(polygons::Vector{Matrix{Float64}}, kernel_size::Int, theta::Float64)
     return [gaussian_blur_polygon(polygon, kernel_size, theta) for polygon in polygons]
 end
 

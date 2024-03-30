@@ -131,7 +131,7 @@ function run_clustering_atlas(sc_obj::Union{scRNAObject, VisiumObject, ImagingSp
     cluster_obj = ClusteringObject(df, metric_type, adj_mat, result, res)
     sc_obj.clustData = cluster_obj
     sc_obj.metaData.cluster = df.cluster
-    if isa(sc_obj, Union{MerfishObject, CartanaObject, XeniumObject, seqFishObject, STARmapObject})
+    if isa(sc_obj, Union{MerfishObject, ImagingSpatialObject, CartanaObject, XeniumObject, seqFishObject, STARmapObject})
         sc_obj.spmetaData.cell.cluster = df.cluster
         if sc_obj.spmetaData.polygon !== nothing
             if size(sc_obj.metaData)[1] == size(sc_obj.spmetaData.polygon)[1]
@@ -176,7 +176,7 @@ function run_clustering_small(sc_obj::Union{scRNAObject, VisiumObject, ImagingSp
     cluster_obj = ClusteringObject(df, metric_type, adj_mat, result, res)
     sc_obj.clustData = cluster_obj
     sc_obj.metaData.cluster = df.cluster
-    if isa(sc_obj, Union{MerfishObject, CartanaObject, XeniumObject, seqFishObject, STARmapObject})
+    if isa(sc_obj, Union{MerfishObject, ImagingSpatialObject, CartanaObject, XeniumObject, seqFishObject, STARmapObject})
         sc_obj.spmetaData.cell.cluster = df.cluster
         if sc_obj.spmetaData.polygon !== nothing
             if size(sc_obj.metaData)[1] == size(sc_obj.spmetaData.polygon)[1]

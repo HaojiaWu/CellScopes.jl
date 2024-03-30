@@ -182,6 +182,13 @@ function read_xenium(xenium_dir::String; prefix = "xenium", min_gene::Int64 = 0,
     spObj.metaData.cluster = string.(clustering.Cluster)
     spObj.spmetaData.molecule = map_values(spObj.spmetaData.molecule, :cell, :cluster, clustering.cell, clustering.Cluster)
     spObj.spmetaData.molecule.cluster = string.(spObj.spmetaData.molecule.cluster)
+    polygon_df = DataFrame(polygon_number = 1:length(poly), mapped_cell = count_cells.cell, cluster=count_cells.cluster)
+    spObj.spmetaData.polygon = polygon_df
+    spObj.polygonData = poly
+    reduct_obj = ReductionObject(nothing, nothing, umap_obj)
+    spObj.dimReduction = reduct_obj
+    spObj = normalize_object(spObj)
+    spObj.polynormCount = spObj.normCount
     return spObj
 end
 
@@ -327,3 +334,147 @@ function read_10x_h5(h5file_path)
     return raw_ct
 end
 
+function read_baysor_loom(loom_path)
+    counts = h5read(loom_path, "matrix")
+    counts = counts'
+    genes = h5read(loom_path, "row_attrs/Name")
+    cells = h5read(loom_path, "col_attrs/CellID")
+    cells = string.(cells)
+    raw_ct = RawCountObject(counts, cells, genes)
+    return raw_ct
+end
+
+function read_scanpy_loom(loom_path)
+    counts = h5read(loom_path, "matrix")
+    counts = counts'
+    genes = h5read(loom_path, "row_attrs/var_names")
+    cells = h5read(loom_path, "col_attrs/obs_names")
+    cells = string.(cells)
+    raw_ct = RawCountObject(counts, cells, genes)
+    return raw_ct
+end
+
+function read_seurat_loom(loom_path)
+    counts = h5read(loom_path, "matrix")
+    counts = counts'
+    genes = h5read(loom_path, "row_attrs/Gene")
+    cells = h5read(loom_path, "col_attrs/CellID")
+    cells = string.(cells)
+    raw_ct = RawCountObject(counts, cells, genes)
+    return raw_ct
+end
+
+function read_baysor(baysor_output::String; tech::String="newtech", 
+    prefix::Union{String, Nothing}=nothing, 
+    postfix::Union{String, Nothing}=nothing, 
+    meta_data::Union{DataFrame, Nothing} = nothing,
+    min_gene::Int64=0, min_cell::Int64=0, x_col::Union{String, Symbol} = "x", 
+    y_col::Union{String, Symbol} = "y", cell_col::Union{String, Symbol} = "cell")
+molecules = CSV.read(baysor_output * "/segmentation.csv", DataFrame)
+count_df = CSV.read(baysor_output * "/segmentation_counts.tsv", DataFrame)
+cells = CSV.read(baysor_output * "/segmentation_cell_stats.csv", DataFrame)
+toml_info = TOML.parsefile(baysor_output * "/segmentation_config.toml")
+scale_value = toml_info["Data"]["scale"]
+grid_step = scale_value / 7
+bandwidth= scale_value / 10
+println("Generating cell boundary polygons...")
+poly = baysor_boundary_polygons(molecules, cell_col; grid_step=grid_step, bandwidth=bandwidth)
+println("Cell polygons were created!")
+gene_name = count_df.gene
+cell_name = string.(names(count_df)[2:end])
+count_df = count_df[!, 2:end]
+count_df = convert(SparseMatrixCSC{Int64, Int64},Matrix(count_df))
+raw_count = RawCountObject(count_df, cell_name, gene_name)
+molecules.cell = string.(molecules.cell)
+cells.cell = string.(cells.cell)
+println("Constructing spatial object...")
+if tech == "newtech"
+    spObj = ImagingSpatialObject(molecules, cells, raw_count; 
+                    prefix=prefix, 
+                    postfix=postfix, 
+                    meta_data= meta_data,
+                    min_gene=min_gene, 
+                    min_cell=min_cell, 
+                    x_col = x_col, 
+                    y_col = y_col, 
+                    cell_col = cell_col)
+elseif tech == "cartana"
+    spObj = CartanaObject(molecules, cells, raw_count; 
+                            prefix=prefix, 
+                            postfix=postfix, 
+                            meta_data= meta_data,
+                            min_gene=min_gene, 
+                            min_cell=min_cell, 
+                            x_col = x_col, 
+                            y_col = y_col, 
+                            cell_col = cell_col)
+elseif tech == "xenium"
+    spObj = XeniumObject(molecules, cells, raw_count; 
+                            prefix=prefix, 
+                            postfix=postfix, 
+                            meta_data= meta_data,
+                            min_gene=min_gene, 
+                            min_cell=min_cell, 
+                            x_col = x_col, 
+                            y_col = y_col, 
+                            cell_col = cell_col)
+elseif tech == "merfish"
+    spObj = MerfishObject(molecules, cells, raw_count; 
+                            prefix=prefix, 
+                            postfix=postfix, 
+                            meta_data= meta_data,
+                            min_gene=min_gene, 
+                            min_cell=min_cell, 
+                            x_col = x_col, 
+                            y_col = y_col, 
+                            cell_col = cell_col)
+elseif tech == "starmap"
+    spObj = STARmapObject(molecules, cells, raw_count; 
+                            prefix=prefix, 
+                            postfix=postfix, 
+                            meta_data= meta_data,
+                            min_gene=min_gene, 
+                            min_cell=min_cell, 
+                            x_col = x_col, 
+                            y_col = y_col, 
+                            cell_col = cell_col)
+elseif tech == "seqfish"
+    spObj = seqFishObject(molecules, cells, raw_count; 
+                            prefix=prefix, 
+                            postfix=postfix, 
+                            meta_data= meta_data,
+                            min_gene=min_gene, 
+                            min_cell=min_cell, 
+                            x_col = x_col, 
+                            y_col = y_col, 
+                            cell_col = cell_col)
+elseif tech == "stereoseq"
+    spObj = StereoSeqObject(molecules, cells, raw_count; 
+                            prefix=prefix, 
+                            postfix=postfix, 
+                            meta_data= meta_data,
+                            min_gene=min_gene, 
+                            min_cell=min_cell, 
+                            x_col = x_col, 
+                            y_col = y_col, 
+                            cell_col = cell_col)
+elseif tech == "cosmx"
+    spObj = CosMxObject(molecules, cells, raw_count; 
+                            prefix=prefix, 
+                            postfix=postfix, 
+                            meta_data= meta_data,
+                            min_gene=min_gene, 
+                            min_cell=min_cell, 
+                            x_col = x_col, 
+                            y_col = y_col, 
+                            cell_col = cell_col)
+else
+    error("Please pass the correct spatial technique name to the 'tech' parameter. It can be 'newtech', 'xenium', 'cartana', 'merfish', 'seqfish', 'starmap', 'stereoseq', or 'cosmx', etc. ")
+end
+println("Mapping polygons to the cells...")
+spObj = polygons_cell_mapping(spObj)
+println("Generating new polygon count after cell mapping...")
+spObj = generate_polygon_counts(spObj)
+println("All done!")
+return spObj
+end

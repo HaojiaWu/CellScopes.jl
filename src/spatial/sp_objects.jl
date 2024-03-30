@@ -194,7 +194,7 @@ mutable struct XeniumObject <: AbstractImagingObj
     imageData::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}}
     polygonData::Array{Array{Float64, 2}, 1}
 
-    function XeniumObject(molecule_data::DataFrame, cell_data::DataFrame, counts::RawCountObject, poly_data::Array{Array{Float64, 2}, 1}, umap_obj::UMAPObject; 
+    function XeniumObject(molecule_data::DataFrame, cell_data::DataFrame, counts::RawCountObject; 
         prefix::Union{String, Nothing}=nothing, postfix::Union{String, Nothing}=nothing, meta_data::Union{DataFrame, Nothing} = nothing,
         min_gene::Int64=0, min_cell::Int64=0, x_col::Union{String, Symbol} = "x", 
         y_col::Union{String, Symbol} = "y", cell_col::Union{String, Symbol} = "cell")
@@ -227,19 +227,13 @@ mutable struct XeniumObject <: AbstractImagingObj
         end
         counts = RawCountObject(count_mat, cell_name, gene_name)
         spObj = new(counts)
-        polygon_df = DataFrame(polygon_number = 1:length(poly_data), mapped_cell = cell_data.cell, cluster=cell_data.cluster)
-        meta = SpaMetaObj(cell_data, molecule_data, polygon_df)
+        meta = SpaMetaObj(cell_data, molecule_data, nothing)
         spObj.spmetaData = meta
         cell_coord = cell_data[!, [x_col, y_col]]
         mol_coord = molecule_data[!, [x_col, y_col]]
         coord = SpaCoordObj(cell_coord, mol_coord, nothing, nothing)
         spObj.coordData = coord
         spObj.metaData = meta_data
-        spObj.polygonData = poly_data
-        reduct_obj = ReductionObject(nothing, nothing, umap_obj)
-        spObj.dimReduction = reduct_obj
-        spObj = normalize_object(spObj)
-        spObj.polynormCount = spObj.normCount
         return spObj
         println("XeniumObject was successfully created!")
     end

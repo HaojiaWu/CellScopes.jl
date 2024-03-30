@@ -7,6 +7,7 @@ function __init__()
 end
 
 using Pkg
+using TOML
 using MatrixMarket
 using DataFrames
 using CSV
