@@ -471,10 +471,5 @@ elseif tech == "cosmx"
 else
     error("Please pass the correct spatial technique name to the 'tech' parameter. It can be 'newtech', 'xenium', 'cartana', 'merfish', 'seqfish', 'starmap', 'stereoseq', or 'cosmx', etc. ")
 end
-println("Mapping polygons to the cells...")
-spObj = polygons_cell_mapping(spObj)
-println("Generating new polygon count after cell mapping...")
-spObj = generate_polygon_counts(spObj)
-println("All done!")
 return spObj
 end
