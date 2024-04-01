@@ -378,7 +378,7 @@ scale_value = toml_info["Data"]["scale"]
 grid_step = scale_value / 7
 bandwidth= scale_value / 10
 println("Generating cell boundary polygons...")
-poly = baysor_boundary_polygons(molecules, cell_col; grid_step=grid_step, bandwidth=bandwidth)
+poly = baysor_boundary_polygons(molecules, molecules[!, cell_col]; grid_step=grid_step, bandwidth=bandwidth)
 println("Cell polygons were created!")
 gene_name = count_df.gene
 cell_name = string.(names(count_df)[2:end])
