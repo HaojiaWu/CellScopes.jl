@@ -473,3 +473,49 @@ else
 end
 return spObj
 end
+
+function read_cosmx(cosmx_dir; fov::Union{Nothing, Int64}=nothing, input_type = "fullview",
+    prefix::Union{String, Nothing}=nothing, postfix::Union{String, Nothing}=nothing, 
+    meta_data::Union{DataFrame, Nothing} = nothing,
+    min_gene::Int64=0, min_cell::Int64=0, x_col::Union{String, Symbol} = "x", 
+    y_col::Union{String, Symbol} = "y", cell_col::Union{String, Symbol} = "cell")
+if input_type=="fullview"
+    transcripts = read_cosmx_transcript(cosmx_dir; fov = nothing)
+    cell_coord = DataFrames.combine(groupby(transcripts, [:CellId, :fov]), :x => mean => :x, :y => mean => :y)
+    gene_counts = make_ct_from_tx(transcripts)
+    count_mtx = make_ct_from_df(gene_counts)
+    rename!(transcript, :target => :gene, :CellId => :cell)
+    rename!(cell_coord, :CellId => :cell)
+    fov_img = read_cosmx_image(cosmx_dir; fov=nothing)
+    fov_positions = CSV.read(cosmx_dir * "/RunSummary/latest.fovs.csv", DataFrame; header = false)
+    col_num = length(StatsBase.countmap(fov_positions.Column2))
+    row_num = collect(values(StatsBase.countmap(fov_positions.Column2)))[1]
+    grid_data = DataFrame(:x=generate_repeating_pattern(row_num, col_num), :y=generate_alternating_pattern(row_num, col_num))
+    cosmx_obj = CosMxObject(transcripts, cell_coord, count_mtx; prefix = prefix, postfix=postfix,
+                            meta_data=meta_data, min_gene=min_gene, min_cell=min_cell,x_col=x_col,
+                            y_col=y_col, cell_col=cell_col)
+    img_obj = SpaImageObj(nothing, nothing, fov_img)
+    cosmx_obj.imgObject = img_obj
+    cosmx_obj.gridData = grid_data
+elseif input_type == "singleview"
+    if isa(fov, Nothing)
+        error("Please select a fov to analyze!")
+    end
+    transcripts = read_cosmx_transcript(cosmx_dir; fov = fov)
+    cell_coord = DataFrames.combine(groupby(transcripts, [:CellId, :fov]), :x => mean => :x, :y => mean => :y)
+    gene_counts = make_ct_from_tx(transcripts)
+    count_mtx = make_ct_from_df(gene_counts)
+    rename!(transcript, :target => :gene, :CellId => :cell)
+    rename!(cell_coord, :CellId => :cell)
+    fov_img = read_cosmx_image(cosmx_dir; fov=fov)
+    cosmx_obj = CosMxObject(transcripts, cell_coord, count_mtx; prefix = prefix, postfix=postfix,
+                            meta_data=meta_data, min_gene=min_gene, min_cell=min_cell,x_col=x_col,
+                            y_col=y_col, cell_col=cell_col)
+    img_obj = SpaImageObj(nothing, nothing, fov_img)
+    cosmx_obj.imgObject = img_obj
+else
+    error("input_type can only be \"fullview\" or \"singleview\"!")
+end
+
+return cosmx_obj
+end
