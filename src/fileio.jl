@@ -490,7 +490,7 @@ if input_type=="fullview"
     fov_positions = CSV.read(cosmx_dir * "/RunSummary/latest.fovs.csv", DataFrame; header = false)
     col_num = length(StatsBase.countmap(fov_positions.Column2))
     row_num = collect(values(StatsBase.countmap(fov_positions.Column2)))[1]
-    grid_data = DataFrame(:x=generate_repeating_pattern(row_num, col_num), :y=generate_alternating_pattern(row_num, col_num))
+    grid_data = DataFrame(:x=>generate_repeating_pattern(row_num, col_num), :y=>generate_alternating_pattern(row_num, col_num))
     cosmx_obj = CosMxObject(transcripts, cell_coord, count_mtx; prefix = prefix, postfix=postfix,
                             meta_data=meta_data, min_gene=min_gene, min_cell=min_cell,x_col=x_col,
                             y_col=y_col, cell_col=cell_col)
