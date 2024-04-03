@@ -484,7 +484,7 @@ if input_type=="fullview"
     cell_coord = DataFrames.combine(groupby(transcripts, [:CellId, :fov]), :x => mean => :x, :y => mean => :y)
     gene_counts = make_ct_from_tx(transcripts)
     count_mtx = make_ct_from_df(gene_counts)
-    rename!(transcript, :target => :gene, :CellId => :cell)
+    rename!(transcripts, :target => :gene, :CellId => :cell)
     rename!(cell_coord, :CellId => :cell)
     fov_img = read_cosmx_image(cosmx_dir; fov=nothing)
     fov_positions = CSV.read(cosmx_dir * "/RunSummary/latest.fovs.csv", DataFrame; header = false)
@@ -505,7 +505,7 @@ elseif input_type == "singleview"
     cell_coord = DataFrames.combine(groupby(transcripts, [:CellId, :fov]), :x => mean => :x, :y => mean => :y)
     gene_counts = make_ct_from_tx(transcripts)
     count_mtx = make_ct_from_df(gene_counts)
-    rename!(transcript, :target => :gene, :CellId => :cell)
+    rename!(transcripts, :target => :gene, :CellId => :cell)
     rename!(cell_coord, :CellId => :cell)
     fov_img = read_cosmx_image(cosmx_dir; fov=fov)
     cosmx_obj = CosMxObject(transcripts, cell_coord, count_mtx; prefix = prefix, postfix=postfix,
