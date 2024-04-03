@@ -837,7 +837,7 @@ function make_ct_from_tx(tx_df; cell_col="CellId", gene_col="target")
     end
     tx_df[!, :count] = ones(Int, nrow(tx_df))
     grouped_data = groupby(tx_df, [cell_col, gene_col])
-    combined_data = combine(grouped_data, :count => sum)
+    combined_data = DataFrames.combine(grouped_data, :count => sum)
     gene_count = unstack(combined_data, gene_col, cell_col, :count_sum, fill=0)
     rename!(gene_count, gene_col => :gene)
     return gene_count
