@@ -83,7 +83,7 @@ matchtype(field) = @match field begin
     emptyObj::Nothing => print("")
 end
 
-function Base.show(io::IO, sp_obj::Union{ImagingSpatialObject, CartanaObject, VisiumObject, XeniumObject, MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject})
+function Base.show(io::IO, sp_obj::Union{ImagingSpatialObject, CartanaObject, VisiumObject, XeniumObject, MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject})
     if isa(sp_obj, ImagingSpatialObject)
         println(io, "ImagingSpatialObject in CellScopes.jl")
     elseif isa(sp_obj, CartanaObject)
