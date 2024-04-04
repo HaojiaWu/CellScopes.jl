@@ -538,9 +538,9 @@ mutable struct seqFishObject <: AbstractImagingObj
 end
 
 mutable struct SpaImageObj <: AbstractImagingObj
-    histoImage::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Nothing}
-    ifImage::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Nothing}
-    dapiImage::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Nothing}
+    histoImage::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}},Matrix{Gray{Float32}}, Nothing}
+    ifImage::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Matrix{Gray{Float32}}, Nothing}
+    dapiImage::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Matrix{Gray{Float32}}, Nothing}
     SpaImageObj(histoImage, ifImage, dapiImage) = new(histoImage, ifImage, dapiImage)
 end
 
