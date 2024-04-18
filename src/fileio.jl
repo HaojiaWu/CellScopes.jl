@@ -24,10 +24,13 @@ function read_10x(tenx_dir::String;
         genes = genes[gene_kept]
         cell_kept = (vec ∘ collect)(colSum(counts) .> min_gene)
         cells = cells[cell_kept]
-        counts = counts[gene_kept, cell_kept]
+        #counts = counts[gene_kept, cell_kept]
+        gene_indices = findall(gene_kept)
+        cell_indices = findall(cell_kept)
+        counts = counts[gene_indices, cell_indices]
         gene_kept, gene_removed = check_duplicates(genes)
         gene_removed = collect(values(gene_removed))
-        counts = counts[Not(gene_removed), :]
+        counts = counts[findall(Not(gene_removed)), :]
         rawcount = RawCountObject(counts, cells, gene_kept)
     else
         rawcount = RawCountObject(counts, cells, genes)
