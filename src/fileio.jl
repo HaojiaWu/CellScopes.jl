@@ -11,8 +11,8 @@ function read_10x(tenx_dir::String;
         gene_file = tenx_dir * "/features.tsv.gz"
         cell_file = tenx_dir * "/barcodes.tsv.gz"
         count_file = tenx_dir * "/matrix.mtx.gz"
-        genes = DataFrame(load(File(format"TSV", gene_file); header_exists=false))
-        cells = DataFrame(load(File(format"TSV", cell_file); header_exists=false))
+        genes = DataFrame(CSVFiles.load(CSVFiles.File(format"TSV", gene_file); header_exists=false))
+        cells = DataFrame(CSVFiles.load(CSVFiles.File(format"TSV", cell_file); header_exists=false))
         counts = MatrixMarket.mmread(gunzip(count_file))
     else
         error("version can only be v2 or v3!")
