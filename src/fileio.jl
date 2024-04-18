@@ -19,23 +19,20 @@ function read_10x(tenx_dir::String;
     end
     cells = string.(cells.Column1)
     genes = string.(genes.Column2)
-    if min_gene > 0 || min_cell > 0
-        gene_kept = (vec ∘ collect)(rowSum(counts).> min_cell)
-        genes = genes[gene_kept]
-        cell_kept = (vec ∘ collect)(colSum(counts) .> min_gene)
-        cells = cells[cell_kept]
-        gene_indices = findall(gene_kept)
-        cell_indices = findall(cell_kept)
-        counts = counts[gene_indices, cell_indices]
-        gene_kept, gene_removed = check_duplicates(genes)
-        total_num = collect(1:length(genes))
-        gene_num = total_num[Not(gene_removed)]
-        to_keep = [i ∈ gene_num for i in total_num]
-        counts = counts[findall(to_keep), :]
-        rawcount = RawCountObject(counts, cells, gene_kept)
-    else
-        rawcount = RawCountObject(counts, cells, genes)
-    end
+    gene_kept = (vec ∘ collect)(rowSum(counts).> min_cell)
+    genes = genes[gene_kept]
+    cell_kept = (vec ∘ collect)(colSum(counts) .> min_gene)
+    cells = cells[cell_kept]
+    gene_indices = findall(gene_kept)
+    cell_indices = findall(cell_kept)
+    counts = counts[gene_indices, cell_indices]
+    gene_kept, gene_removed = check_duplicates(genes)
+    gene_removed = collect(values(gene_removed))
+    total_num = collect(1:length(genes))
+    gene_num = total_num[Not(gene_removed)]
+    to_keep = [i ∈ gene_num for i in total_num]
+    counts = counts[findall(to_keep), :]
+    rawcount = RawCountObject(counts, cells, gene_kept)
     return rawcount
 end
 
