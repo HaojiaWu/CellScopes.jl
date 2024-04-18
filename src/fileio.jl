@@ -28,7 +28,9 @@ function read_10x(tenx_dir::String;
         cell_indices = findall(cell_kept)
         counts = counts[gene_indices, cell_indices]
         gene_kept, gene_removed = check_duplicates(genes)
-        to_keep = [i ∈ gene_kept for i in genes]
+        total_num = collect(1:length(genes))
+        gene_num = total_num[Not(gene_removed)]
+        to_keep = [i ∈ gene_num for i in total_num]
         counts = counts[findall(to_keep), :]
         rawcount = RawCountObject(counts, cells, gene_kept)
     else
