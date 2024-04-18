@@ -17,9 +17,9 @@ function read_10x(tenx_dir::String;
     else
         error("version can only be v2 or v3!")
     end
+    cells = string.(cells.Column1)
+    genes = string.(genes.Column2)
     if min_gene > 0 || min_cell > 0
-        cells = string.(cells.Column1)
-        genes = string.(genes.Column2)
         gene_kept = (vec ∘ collect)(rowSum(counts).> min_cell)
         genes = genes[gene_kept]
         cell_kept = (vec ∘ collect)(colSum(counts) .> min_gene)
