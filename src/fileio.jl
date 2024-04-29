@@ -554,8 +554,8 @@ function read_visiumHD(hd_dir::String;
     tenx_dir = hd_dir * "/binned_outputs/square_008um/filtered_feature_bc_matrix"
     pos_file = hd_dir * "/binned_outputs/square_008um/spatial/tissue_positions.parquet"
     json_file = hd_dir * "/binned_outputs/square_008um/spatial/scalefactors_json.json"
-    cluster_file = hd_dir * "/hd_output/outs/binned_outputs/square_008um/analysis/clustering/gene_expression_graphclust/clusters.csv"
-    umap_file = hd_dir * "/hd_output/outs/binned_outputs/square_008um/analysis/umap/gene_expression_2_components/projection.csv"
+    cluster_file = hd_dir * "/binned_outputs/square_008um/analysis/clustering/gene_expression_graphclust/clusters.csv"
+    umap_file = hd_dir * "/binned_outputs/square_008um/analysis/umap/gene_expression_2_components/projection.csv"
     counts = read_10x(tenx_dir; version ="v3", min_gene=min_genes[2], min_cell=min_cells[2])
     layer2 = Layer(counts; prefix = prefix, postfix = postfix)
     layers.layers["8_um"] = layer2
@@ -592,8 +592,8 @@ function read_visiumHD(hd_dir::String;
     tenx_dir = hd_dir * "/binned_outputs/square_016um/filtered_feature_bc_matrix"
     pos_file = hd_dir * "/binned_outputs/square_016um/spatial/tissue_positions.parquet"
     json_file = hd_dir * "/binned_outputs/square_016um/spatial/scalefactors_json.json"
-    cluster_file = hd_dir * "/hd_output/outs/binned_outputs/square_016um/analysis/clustering/gene_expression_graphclust/clusters.csv"
-    umap_file = hd_dir * "/hd_output/outs/binned_outputs/square_016um/analysis/umap/gene_expression_2_components/projection.csv"
+    cluster_file = hd_dir * "/binned_outputs/square_016um/analysis/clustering/gene_expression_graphclust/clusters.csv"
+    umap_file = hd_dir * "/binned_outputs/square_016um/analysis/umap/gene_expression_2_components/projection.csv"
     counts = read_10x(tenx_dir; version ="v3", min_gene=min_genes[3], min_cell=min_cells[3])
     layer3 = Layer(counts; prefix = prefix, postfix = postfix)
     layers.layers["16_um"] = layer3
