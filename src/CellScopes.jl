@@ -37,7 +37,7 @@ using ColorSchemes
 import CairoMakie as MK
 using StatsPlots
 using Folds
-#using PyCall
+using PyCall
 using RCall
 import PlotlyJS as plyjs
 using Images
