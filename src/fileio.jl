@@ -544,11 +544,14 @@ function read_visiumHD(hd_dir::String;
     json_file = hd_dir * "/binned_outputs/square_002um/spatial/scalefactors_json.json"
     counts = read_10x(tenx_dir; version ="v3", min_gene=min_genes[1], min_cell=min_cells[1])
     layer1 = Layer(counts; prefix = prefix, postfix = postfix)
-    layers.layers["2_um"] = layer1
+    all_cells = layer1.rawCount.cell_name
     pos1 = read_hd_pos(pos_file)
+    pos1 = filter(:barcode => ∈(Set(all_cells)), pos1)
+    pos1 = reorder(pos1, "barcode", all_cells)
     layer1.spmetaData = pos1
     json1 = JSON.parsefile(json_file)
     layer1.jsonParameters = json1
+    layers.layers["2_um"] = layer1
     println("1. 2um binned data loaded!")
     println("2. loading 8um binned data...")
     tenx_dir = hd_dir * "/binned_outputs/square_008um/filtered_feature_bc_matrix"
@@ -558,8 +561,10 @@ function read_visiumHD(hd_dir::String;
     umap_file = hd_dir * "/binned_outputs/square_008um/analysis/umap/gene_expression_2_components/projection.csv"
     counts = read_10x(tenx_dir; version ="v3", min_gene=min_genes[2], min_cell=min_cells[2])
     layer2 = Layer(counts; prefix = prefix, postfix = postfix)
-    layers.layers["8_um"] = layer2
+    all_cells = layer2.rawCount.cell_name
     pos2 = read_hd_pos(pos_file)
+    pos2 = filter(:barcode => ∈(Set(all_cells)), pos2)
+    pos2 = reorder(pos2, "barcode", all_cells)
     layer2.spmetaData = pos2
     json2 = JSON.parsefile(json_file)
     layer2.jsonParameters = json2
@@ -572,7 +577,6 @@ function read_visiumHD(hd_dir::String;
     if isa(postfix, String)
         clustering.cell = string.(clustering.cell) .* "_" .* postfix
     end
-    all_cells = layer2.rawCount.cell_name
     clustering = filter(:cell=> ∈(Set(all_cells)), clustering)
     layer2.spmetaData.cluster = string.(clustering.cluster)
     layer2.metaData.cluster = string.(layer2.cluster)
@@ -587,6 +591,7 @@ function read_visiumHD(hd_dir::String;
     umap_obj = UMAPObject(hd_umap, "UMAP", 2, nothing, nothing, nothing, nothing, nothing)
     reduct_obj = ReductionObject(nothing, nothing, umap_obj)
     layer2.dimReduction = reduct_obj
+    layers.layers["8_um"] = layer2
     println("2. 8um binned data loaded!")
     println("3. loading 16um binned data...")
     tenx_dir = hd_dir * "/binned_outputs/square_016um/filtered_feature_bc_matrix"
@@ -596,8 +601,10 @@ function read_visiumHD(hd_dir::String;
     umap_file = hd_dir * "/binned_outputs/square_016um/analysis/umap/gene_expression_2_components/projection.csv"
     counts = read_10x(tenx_dir; version ="v3", min_gene=min_genes[3], min_cell=min_cells[3])
     layer3 = Layer(counts; prefix = prefix, postfix = postfix)
-    layers.layers["16_um"] = layer3
+    all_cells = layer3.rawCount.cell_name
     pos3 = read_hd_pos(pos_file)
+    pos3 = filter(:barcode => ∈(Set(all_cells)), pos3)
+    pos3 = reorder(pos3, "barcode", all_cells)
     layer3.spmetaData = pos3
     json3 = JSON.parsefile(json_file)
     layer3.jsonParameters = json3
@@ -610,7 +617,6 @@ function read_visiumHD(hd_dir::String;
     if isa(postfix, String)
         clustering.cell = string.(clustering.cell) .* "_" .* postfix
     end
-    all_cells = layer3.rawCount.cell_name
     clustering = filter(:cell=> ∈(Set(all_cells)), clustering)
     layer3.spmetaData.cluster = string.(clustering.cluster)
     layer3.metaData.cluster = string.(layer3.cluster)
@@ -625,6 +631,7 @@ function read_visiumHD(hd_dir::String;
     umap_obj = UMAPObject(hd_umap, "UMAP", 2, nothing, nothing, nothing, nothing, nothing)
     reduct_obj = ReductionObject(nothing, nothing, umap_obj)
     layer3.dimReduction = reduct_obj
+    layers.layers["16_um"] = layer3
     println("3. 16um binned data loaded!")
     highres_image_file = hd_dir * "/spatial/tissue_hires_image.png"
     lowres_image_file = hd_dir * "/spatial/tissue_lowres_image.png"
