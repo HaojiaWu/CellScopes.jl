@@ -4,7 +4,7 @@ function run_SpaGCN(sp::AbstractSpaObj, count_path::String; python_path::Union{S
             res::Union{Float64, Nothing}=nothing, 
             start_res=1.0, 
             seed_use::Int64=100)
-            set_python_environment(python_path)
+            #set_python_environment(python_path)
             sc = pyimport("scanpy")
             spg=pyimport("SpaGCN")
             random=pyimport("random")
@@ -55,7 +55,7 @@ end
 function run_tangram(sp_obj::get_object_group("Imaging"), 
     sc_obj::scRNAObject; python_path::Union{String, Nothing}=nothing, gene_list::Union{String, Vector{String}, Nothing}=nothing,
     density_prior="uniform",num_epochs=100,device="cpu")
-    set_python_environment(python_path)
+    #set_python_environment(python_path)
     sc = pyimport("scanpy")
     pd=pyimport("pandas")
     scipy=pyimport("scipy")
@@ -165,7 +165,7 @@ function run_gimVI(sp_obj::get_object_group("Imaging"),
     if isa(gene_list, Nothing)
         gene_list = sc_obj.rawCount.gene_name
     end
-    set_python_environment(python_path)
+    #set_python_environment(python_path)
     sc = pyimport("scanpy")
     pd=pyimport("pandas")
     scvi=pyimport("scvi.external")

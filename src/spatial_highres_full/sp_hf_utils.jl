@@ -41,7 +41,7 @@ function set_python_environment(python_path::Union{String, Nothing})
 end
 
 function read_parquet(parquet_file; python_path::Union{String, Nothing} = nothing)
-    set_python_environment(python_path)
+#    set_python_environment(python_path)
     pd = pyimport("pandas")
     parquet_df = pd.read_parquet(parquet_file)
     parquet_df = pd_to_df(parquet_df)
