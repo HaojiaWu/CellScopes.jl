@@ -548,6 +548,7 @@ function read_visiumHD(hd_dir::String;
     pos1 = read_hd_pos(pos_file)
     pos1 = filter(:barcode => ∈(Set(all_cells)), pos1)
     pos1 = reorder(pos1, "barcode", all_cells)
+    rename!(pos1, :barcode => :cell)
     layer1.spmetaData = pos1
     json1 = JSON.parsefile(json_file)
     layer1.jsonParameters = json1
@@ -565,6 +566,7 @@ function read_visiumHD(hd_dir::String;
     pos2 = read_hd_pos(pos_file)
     pos2 = filter(:barcode => ∈(Set(all_cells)), pos2)
     pos2 = reorder(pos2, "barcode", all_cells)
+    rename!(pos2, :barcode => :cell)
     layer2.spmetaData = pos2
     json2 = JSON.parsefile(json_file)
     layer2.jsonParameters = json2
@@ -605,6 +607,7 @@ function read_visiumHD(hd_dir::String;
     pos3 = read_hd_pos(pos_file)
     pos3 = filter(:barcode => ∈(Set(all_cells)), pos3)
     pos3 = reorder(pos3, "barcode", all_cells)
+    rename!(pos3, :barcode => :cell)
     layer3.spmetaData = pos3
     json3 = JSON.parsefile(json_file)
     layer3.jsonParameters = json3
