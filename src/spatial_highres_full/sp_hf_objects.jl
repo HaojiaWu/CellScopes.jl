@@ -37,6 +37,7 @@ mutable struct Layer <: AbstractLayers
         end
         count_obj = RawCountObject(count_mat, cells, genes)
         layer_obj = new(count_obj, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
+        layer_obj.metaData = meta_data
         return layer_obj
     end
 end
