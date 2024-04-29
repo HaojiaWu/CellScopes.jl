@@ -386,8 +386,7 @@ function read_seurat_data(file_name; file_format="rda")
     end
 end
 
-function read_scanpy_data(file_name; python_path::Union{String, Nothing} = nothing)
-    set_python_environment(python_path)
+function read_scanpy_data(file_name)
     sc = pyimport("scanpy")
     adata = sc.read(file_name)
     return adata
@@ -542,10 +541,9 @@ function log_norm_cpm(x)
     return log.(((x ./ sum(x)) .* 1000000) .+ 1)
 end
 
-function from_scanpy(adata::Union{String, PyObject}; python_path::Union{String, Nothing} = nothing, data_type = "scRNA", 
+function from_scanpy(adata::Union{String, PyObject}; data_type = "scRNA", 
     tech::Union{String, Nothing}=nothing,
     sp_coord_name="spatial", anno="leiden")
-    set_python_environment(python_path)
     sc = pyimport("scanpy")
     if isa(adata, String)
         adata = sc.read(adata)

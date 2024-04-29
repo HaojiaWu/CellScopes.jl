@@ -1,10 +1,9 @@
-function run_SpaGCN(sp::AbstractSpaObj, count_path::String; python_path::Union{String, Nothing}=nothing,
+function run_SpaGCN(sp::AbstractSpaObj, count_path::String;
             n_cluster::Int64=20, 
             l_val::Union{Float64, Nothing}=nothing, 
             res::Union{Float64, Nothing}=nothing, 
             start_res=1.0, 
             seed_use::Int64=100)
-            #set_python_environment(python_path)
             sc = pyimport("scanpy")
             spg=pyimport("SpaGCN")
             random=pyimport("random")
@@ -53,9 +52,8 @@ function run_SpaGCN(sp::AbstractSpaObj, count_path::String; python_path::Union{S
 end
 
 function run_tangram(sp_obj::get_object_group("Imaging"), 
-    sc_obj::scRNAObject; python_path::Union{String, Nothing}=nothing, gene_list::Union{String, Vector{String}, Nothing}=nothing,
+    sc_obj::scRNAObject; gene_list::Union{String, Vector{String}, Nothing}=nothing,
     density_prior="uniform",num_epochs=100,device="cpu")
-    #set_python_environment(python_path)
     sc = pyimport("scanpy")
     pd=pyimport("pandas")
     scipy=pyimport("scipy")
@@ -158,14 +156,13 @@ function run_spaGE(sp::get_object_group("Imaging"),
 end
 
 function run_gimVI(sp_obj::get_object_group("Imaging"), 
-    sc_obj::scRNAObject; python_path::Union{String, Nothing}=nothing, gene_list::Union{String, Vector{String}, Nothing}=nothing, epochs::Int64=200)
+    sc_obj::scRNAObject; gene_list::Union{String, Vector{String}, Nothing}=nothing, epochs::Int64=200)
     if isa(gene_list, String)
         gene_list = [gene_list]
     end
     if isa(gene_list, Nothing)
         gene_list = sc_obj.rawCount.gene_name
     end
-    #set_python_environment(python_path)
     sc = pyimport("scanpy")
     pd=pyimport("pandas")
     scvi=pyimport("scvi.external")

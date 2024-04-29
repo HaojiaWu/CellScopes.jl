@@ -533,7 +533,6 @@ end
 function read_visiumHD(hd_dir::String; 
     min_genes::Union{Vector{Int64}, Tuple{Int64} }= [0, 0, 0], 
     min_cells::Union{Vector{Int64}, Tuple{Int64} }= [0, 0, 0],
-    python_path::Union{String, Nothing} = nothing,
     prefix::Union{String, Nothing} = nothing,
     postfix::Union{String, Nothing} = nothing,
     default_bin = "8_um"
@@ -546,7 +545,7 @@ function read_visiumHD(hd_dir::String;
     counts = read_10x(tenx_dir; version ="v3", min_gene=min_genes[1], min_cell=min_cells[1])
     layer1 = Layer(counts; prefix = prefix, postfix = postfix)
     layers.layers["2_um"] = layer1
-    pos1 = read_hd_pos(pos_file; python_path=python_path)
+    pos1 = read_hd_pos(pos_file)
     layer1.spmetaData = pos1
     json1 = JSON.parsefile(json_file)
     layer1.jsonParameters = json1
@@ -558,7 +557,7 @@ function read_visiumHD(hd_dir::String;
     counts = read_10x(tenx_dir; version ="v3", min_gene=min_genes[2], min_cell=min_cells[2])
     layer2 = Layer(counts; prefix = prefix, postfix = postfix)
     layers.layers["8_um"] = layer2
-    pos2 = read_hd_pos(pos_file; python_path=python_path)
+    pos2 = read_hd_pos(pos_file)
     layer2.spmetaData = pos2
     json2 = JSON.parsefile(json_file)
     layer2.jsonParameters = json2
@@ -570,7 +569,7 @@ function read_visiumHD(hd_dir::String;
     counts = read_10x(tenx_dir; version ="v3", min_gene=min_genes[3], min_cell=min_cells[3])
     layer3 = Layer(counts; prefix = prefix, postfix = postfix)
     layers.layers["16_um"] = layer3
-    pos3 = read_hd_pos(pos_file; python_path=python_path)
+    pos3 = read_hd_pos(pos_file)
     layer3.spmetaData = pos3
     json3 = JSON.parsefile(json_file)
     layer3.jsonParameters = json3
