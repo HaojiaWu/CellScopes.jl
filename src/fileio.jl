@@ -579,7 +579,7 @@ function read_visiumHD(hd_dir::String;
     end
     clustering = filter(:cell=> ∈(Set(all_cells)), clustering)
     layer2.spmetaData.cluster = string.(clustering.cluster)
-    layer2.metaData.cluster = string.(layer2.cluster)
+    layer2.metaData.cluster = string.(clustering.cluster)
     if isa(prefix, String)
         hd_umap.Barcode = prefix .*  "_" .* string.(hd_umap.Barcode)
     end
@@ -619,7 +619,7 @@ function read_visiumHD(hd_dir::String;
     end
     clustering = filter(:cell=> ∈(Set(all_cells)), clustering)
     layer3.spmetaData.cluster = string.(clustering.cluster)
-    layer3.metaData.cluster = string.(layer3.cluster)
+    layer3.metaData.cluster = string.(clustering.cluster)
     if isa(prefix, String)
         hd_umap.Barcode = prefix .*  "_" .* string.(hd_umap.Barcode)
     end
