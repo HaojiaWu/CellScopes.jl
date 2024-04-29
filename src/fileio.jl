@@ -554,6 +554,8 @@ function read_visiumHD(hd_dir::String;
     tenx_dir = hd_dir * "/binned_outputs/square_008um/filtered_feature_bc_matrix"
     pos_file = hd_dir * "/binned_outputs/square_008um/spatial/tissue_positions.parquet"
     json_file = hd_dir * "/binned_outputs/square_008um/spatial/scalefactors_json.json"
+    cluster_file = hd_dir * "/hd_output/outs/binned_outputs/square_008um/analysis/clustering/gene_expression_graphclust/clusters.csv"
+    umap_file = hd_dir * "/hd_output/outs/binned_outputs/square_008um/analysis/umap/gene_expression_2_components/projection.csv"
     counts = read_10x(tenx_dir; version ="v3", min_gene=min_genes[2], min_cell=min_cells[2])
     layer2 = Layer(counts; prefix = prefix, postfix = postfix)
     layers.layers["8_um"] = layer2
@@ -561,11 +563,37 @@ function read_visiumHD(hd_dir::String;
     layer2.spmetaData = pos2
     json2 = JSON.parsefile(json_file)
     layer2.jsonParameters = json2
+    hd_umap =  DataFrame(CSV.File(umap_file))
+    clustering =  DataFrame(CSV.File(cluster_file))
+    rename!(clustering, ["cell", "cluster"]) 
+    if isa(prefix, String)
+        clustering.cell = prefix .*  "_" .* string.(clustering.cell)
+    end
+    if isa(postfix, String)
+        clustering.cell = string.(clustering.cell) .* "_" .* postfix
+    end
+    all_cells = layer2.rawCount.cell_name
+    clustering = filter(:cell=> ∈(Set(all_cells)), clustering)
+    layer2.spmetaData.cluster = string.(clustering.cluster)
+    layer2.metaData.cluster = string.(layer2.cluster)
+    if isa(prefix, String)
+        hd_umap.Barcode = prefix .*  "_" .* string.(hd_umap.Barcode)
+    end
+    if isa(postfix, String)
+        hd_umap.Barcode = string.(hd_umap.Barcode) .* "_" .* postfix
+    end
+    hd_umap = filter(:Barcode => ∈(Set(all_cells)), hd_umap)
+    hd_umap = Matrix(hd_umap[!, 2:end])
+    umap_obj = UMAPObject(hd_umap, "UMAP", 2, nothing, nothing, nothing, nothing, nothing)
+    reduct_obj = ReductionObject(nothing, nothing, umap_obj)
+    layer2.dimReduction = reduct_obj
     println("2. 8um binned data loaded!")
     println("3. loading 16um binned data...")
     tenx_dir = hd_dir * "/binned_outputs/square_016um/filtered_feature_bc_matrix"
     pos_file = hd_dir * "/binned_outputs/square_016um/spatial/tissue_positions.parquet"
     json_file = hd_dir * "/binned_outputs/square_016um/spatial/scalefactors_json.json"
+    cluster_file = hd_dir * "/hd_output/outs/binned_outputs/square_016um/analysis/clustering/gene_expression_graphclust/clusters.csv"
+    umap_file = hd_dir * "/hd_output/outs/binned_outputs/square_016um/analysis/umap/gene_expression_2_components/projection.csv"
     counts = read_10x(tenx_dir; version ="v3", min_gene=min_genes[3], min_cell=min_cells[3])
     layer3 = Layer(counts; prefix = prefix, postfix = postfix)
     layers.layers["16_um"] = layer3
@@ -573,6 +601,30 @@ function read_visiumHD(hd_dir::String;
     layer3.spmetaData = pos3
     json3 = JSON.parsefile(json_file)
     layer3.jsonParameters = json3
+    hd_umap =  DataFrame(CSV.File(umap_file))
+    clustering =  DataFrame(CSV.File(cluster_file))
+    rename!(clustering, ["cell", "cluster"]) 
+    if isa(prefix, String)
+        clustering.cell = prefix .*  "_" .* string.(clustering.cell)
+    end
+    if isa(postfix, String)
+        clustering.cell = string.(clustering.cell) .* "_" .* postfix
+    end
+    all_cells = layer3.rawCount.cell_name
+    clustering = filter(:cell=> ∈(Set(all_cells)), clustering)
+    layer3.spmetaData.cluster = string.(clustering.cluster)
+    layer3.metaData.cluster = string.(layer3.cluster)
+    if isa(prefix, String)
+        hd_umap.Barcode = prefix .*  "_" .* string.(hd_umap.Barcode)
+    end
+    if isa(postfix, String)
+        hd_umap.Barcode = string.(hd_umap.Barcode) .* "_" .* postfix
+    end
+    hd_umap = filter(:Barcode => ∈(Set(all_cells)), hd_umap)
+    hd_umap = Matrix(hd_umap[!, 2:end])
+    umap_obj = UMAPObject(hd_umap, "UMAP", 2, nothing, nothing, nothing, nothing, nothing)
+    reduct_obj = ReductionObject(nothing, nothing, umap_obj)
+    layer3.dimReduction = reduct_obj
     println("3. 16um binned data loaded!")
     highres_image_file = hd_dir * "/spatial/tissue_hires_image.png"
     lowres_image_file = hd_dir * "/spatial/tissue_lowres_image.png"

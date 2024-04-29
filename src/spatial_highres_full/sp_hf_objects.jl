@@ -68,6 +68,8 @@ mutable struct VisiumHDObject <: AbstractSpaFullObj
             postfix::Union{String, Nothing} = nothing)
         hd_obj = new(layer_data, nothing, nothing, nothing,nothing,nothing,nothing,nothing,nothing,nothing,default_bin)
         raw_count = hd_obj.layerData.layers[default_bin].rawCount
+        meta_data = hd_obj.layerData.layers[default_bin].metaData
+        sp_meta = hd_obj.layerData.layers[default_bin].spmetaData
         count_mat = raw_count.count_mtx
         genes = raw_count.gene_name
         cells = raw_count.cell_name
@@ -88,7 +90,6 @@ mutable struct VisiumHDObject <: AbstractSpaFullObj
         end
         count_obj = RawCountObject(count_mat, cells, genes)
         hd_obj.layerData.layers[default_bin].rawCount = count_obj
-        sp_meta = layer_data.layers[default_bin].spmetaData
         if sp_meta !== nothing
             sp_meta = filter(:barcode => ∈(Set(meta_data.Cell_id)), sp_meta)
             hd_obj.layerData.layers[default_bin].spmetaData = sp_meta
