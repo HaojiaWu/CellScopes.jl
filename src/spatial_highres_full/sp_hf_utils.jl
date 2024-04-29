@@ -50,18 +50,10 @@ end
 function read_hd_pos(pos_file)
     positions = read_parquet(pos_file)
     rename!(positions, ["barcode","in_tissue","array_row","array_col","pxl_row_in_fullres","pxl_col_in_fullres"])
-    if !isa(positions.pxl_col_in_fullres, Vector{<:Real})
-        positions.pxl_col_in_fullres = parse.(Float64, positions.pxl_col_in_fullres)
-    end
-    if !isa(positions.pxl_row_in_fullres, Vector{<:Real})
-        positions.pxl_row_in_fullres = parse.(Float64, positions.pxl_row_in_fullres)
-    end
-    if !isa(positions.array_col, Vector{<:Real})
-        positions.array_col = parse.(Float64, positions.array_col)
-    end
-    if !isa(positions.array_row, Vector{<:Real})
-        positions.array_row = parse.(Float64, positions.array_row)
-    end
+    positions.pxl_col_in_fullres = Float64.(positions.pxl_col_in_fullres)
+    positions.pxl_row_in_fullres = Float64.(positions.pxl_row_in_fullres)
+    positions.array_col = Int64.(positions.array_col)
+    positions.array_row = Int64.(positions.array_row)
     positions.barcode = string.(positions.barcode)
     return positions
 end
