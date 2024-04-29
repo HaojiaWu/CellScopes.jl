@@ -270,11 +270,11 @@ mutable struct VisiumObject <: AbstractSequencingObj
         genes = raw_count.gene_name
         cells = raw_count.cell_name
         count_mat, genes, cells = subset_matrix(count_mat, genes, cells, min_gene, min_cell)
-        if prefix == String
+        if isa(prefix, String)
             println("Adding prefix " * prefix * " to all cells...")
             cellnames = prefix * "_" .* raw_count.cell_name
         end
-        if postfix == String
+        if isa(postfix, String)
             println("Adding postfix " * postfix * " to all cells...")
             cellnames = raw_count.cell_name .* "_" .* postfix
         end

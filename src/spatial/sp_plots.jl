@@ -1,5 +1,5 @@
 
-function sp_dot_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject, XeniumObject, MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}, genes::Union{Vector, String},
+function sp_dot_plot(sp::get_object_group("Spatial"), genes::Union{Vector, String},
     cluster::Union{Symbol, String};expr_cutoff::Union{Float64, Int64}=0, split_by::Union{String, Nothing}=nothing,
     x_title="Gene",y_title="Cell type", use_imputed= false, imp_type = "SpaGE", cell_order::Union{Vector, String, Nothing}=nothing,
     fontsize::Int64=12, color_scheme::String="yelloworangered",reverse_color::Bool=false,
@@ -87,7 +87,7 @@ function sp_dot_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
     return p
 end
 
-function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject, XeniumObject,MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}, gene_list::Union{String, Vector{String}, Tuple{String}}; layer::String = "cells", x_col::Union{String, Symbol}="x",
+function sp_feature_plot(sp::get_object_group("Spatial"), gene_list::Union{String, Vector{String}, Tuple{String}}; layer::String = "cells", x_col::Union{String, Symbol}="x",
     y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order::Bool=true, scale::Bool = false,titlesize::Int64=24, 
     height::Real = 500, width::Real = 500, combine = true, img_res::String = "low",  adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3, use_imputed=false, imp_type::Union{String, Nothing} = nothing,
     color_keys=["gray94","orange","red3"], gene_colors = nothing, alpha = [1.0,1.0], clip = 0, legend_fontsize = 10, do_legend=false, legend_size = 10, bg_color = "white",
@@ -103,7 +103,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
     end
     if layer === "cells"
         coord_limits = spatial_range(sp)
-        if isa(sp, VisiumObject)
+        if isa(sp, Uinon{VisiumObject, VisiumHDObject})
             coord_cell = deepcopy(sp.spmetaData)
             x_col = Symbol(x_col)
             y_col = Symbol(y_col)
@@ -145,26 +145,26 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
         end
         
         if isa(x_lims, Nothing)
-            if isa(sp, VisiumObject)
+            if isa(sp, Uinon{VisiumObject, VisiumHDObject})
                 x_lims=coord_limits[1]
             else
                 x_lims1=(minimum(coord_cell[!, x_col])-0.05*maximum(coord_cell[!, x_col]),1.05*maximum(coord_cell[!, x_col]))
             end
         else 
-            if isa(sp, VisiumObject)
+            if isa(sp, Uinon{VisiumObject, VisiumHDObject})
                 x_lims = x_lims .* scale_factor
             else
                 x_lims = x_lims
             end
         end
         if isa(y_lims, Nothing)
-            if isa(sp, VisiumObject)
+            if isa(sp, Uinon{VisiumObject, VisiumHDObject})
                 y_lims=coord_limits[2]
             else
                 y_lims1=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
             end
         else
-            if isa(sp, VisiumObject)
+            if isa(sp, Uinon{VisiumObject, VisiumHDObject})
                 y_lims = y_lims .* scale_factor
             else
                 y_lims = y_lims
@@ -218,7 +218,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
             xgridvisible = false, ygridvisible = false,yreversed=false, title = gene_list[i], 
             titlesize = titlesize, xlabel = "", ylabel = "", 
             xlabelsize = titlesize -4, ylabelsize = titlesize -4)
-            if isa(sp, VisiumObject)
+            if isa(sp, Uinon{VisiumObject, VisiumHDObject})
                 if img_res == "high"
                     img = deepcopy(sp.imageData.highresImage)
                 elseif img_res == "low"
@@ -280,7 +280,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
         end
         MK.current_figure()
     elseif layer === "transcripts"
-            if isa(sp, Union{VisiumObject, SlideseqObject})
+            if isa(sp, Union{VisiumObject, SlideseqObject, VisiumHDObject})
                 error("Visium or SlideSeq object doesn't support transcript plot.")
             end
             coord_molecules=deepcopy(sp.spmetaData.molecule)
@@ -421,7 +421,7 @@ function sp_feature_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
     end
 end
 
-function plot_gene_polygons(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,MerfishObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}, gene_list::Union{String, Vector{String}, Tuple{String}};
+function plot_gene_polygons(sp::get_object_group("Imaging"), gene_list::Union{String, Vector{String}, Tuple{String}};
     color_keys::Union{Vector{String}, Tuple{String,String,String}}=["gray94","lemonchiffon","orange","red3"],
     x_lims=nothing, y_lims=nothing,width=900,height=1000,stroke_width=0,stroke_color="black",
     titlesize::Int64=24, scale::Bool = false, bg_color = "white"
@@ -546,7 +546,7 @@ function plot_cell_polygons(sp::Union{ImagingSpatialObject, CartanaObject,Xenium
     return MK.current_figure()
 end
 
-function plot_transcript_polygons(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,MerfishObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}; 
+function plot_transcript_polygons(sp::get_object_group("Imaging"); 
     gene_list::Union{Vector, Symbol, String, Nothing}=nothing, 
     gene_colors::Union{Vector, Symbol, String, Nothing}=nothing, 
     pt_bg_color::Union{Vector, Symbol, String}="gray95",
@@ -619,7 +619,7 @@ function plot_transcript_polygons(sp::Union{ImagingSpatialObject, CartanaObject,
     return MK.current_figure()
 end
 
-function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject,XeniumObject,MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}, anno::Union{Symbol, String}; 
+function sp_dim_plot(sp::get_object_group("Spatial"), anno::Union{Symbol, String}; 
     anno_color::Union{Nothing, Dict} = nothing, x_col::String = "x", y_col::String = "y", cell_order::Union{Vector{String}, Nothing}=nothing, cell_highlight::Union{String, Nothing}=nothing,
     x_lims=nothing, y_lims=nothing,width=900, height=1000,stroke_width=0.5,stroke_color=:transparent,  bg_color=:white,
         marker_size=2, label_size=50, label_color="black", label_offset=(0,0), do_label=false, do_legend=true, alpha::Real = 1,
@@ -627,7 +627,7 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
         adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3
     )
     coord_limits = spatial_range(sp)
-    if isa(sp, VisiumObject)
+    if isa(sp, Uinon{VisiumObject, VisiumHDObject})
         anno_df = deepcopy(sp.spmetaData)
         anno_df[!, anno] = sp.metaData[!, anno]
         x_col = Symbol(x_col)
@@ -652,26 +652,26 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
         anno_df[!, anno] = string.(anno_df[!, anno])
     end
     if isa(x_lims, Nothing)
-        if isa(sp, VisiumObject)
+        if isa(sp, Uinon{VisiumObject, VisiumHDObject})
             x_lims = coord_limits[1]
         else
             x_lims=(minimum(anno_df[!,x_col])-0.05*maximum(anno_df[!,x_col]),1.05*maximum(anno_df[!,x_col]))
         end
     else 
-        if isa(sp, VisiumObject)
+        if isa(sp, Uinon{VisiumObject, VisiumHDObject})
             x_lims = x_lims .* scale_factor
         else
             x_lims = x_lims
         end
     end
     if isa(y_lims, Nothing)
-        if isa(sp, VisiumObject)
+        if isa(sp, Uinon{VisiumObject, VisiumHDObject})
             y_lims = coord_limits[2]
         else
             y_lims=(minimum(anno_df[!,y_col])-0.05*maximum(anno_df[!,y_col]),1.05*maximum(anno_df[!,y_col]))
         end
     else 
-        if isa(sp, VisiumObject)
+        if isa(sp, Uinon{VisiumObject, VisiumHDObject})
             y_lims = y_lims .* scale_factor
         else
             y_lims = y_lims
@@ -695,7 +695,7 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
     ax2 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
         xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
         xgridvisible = false,ygridvisible = false);
-    if isa(sp, VisiumObject)
+    if isa(sp, Uinon{VisiumObject, VisiumHDObject})
         if img_res == "high"
             img = deepcopy(sp.imageData.highresImage)
         elseif img_res == "low"
@@ -776,7 +776,7 @@ function sp_dim_plot(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject
     return MK.current_figure()
 end
 
-function sp_highlight_cells(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject,XeniumObject,MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}, cell_hightlight::String, anno::Union{String,Symbol};
+function sp_highlight_cells(sp::get_object_group("Imaging"), cell_hightlight::String, anno::Union{String,Symbol};
     canvas_size=(900,1000),stroke_width::Float64=0.1, stroke_color="black", cell_color::String="red",
     marker_size=2,x_lims=nothing, y_lims=nothing, bg_color = "white")
     coord_cells=deepcopy(sp.spmetaData.cell)
@@ -800,7 +800,7 @@ function sp_highlight_cells(sp::Union{ImagingSpatialObject, CartanaObject, Visiu
     MK.current_figure()
 end
 
-function sp_gene_rank(sp::Union{ImagingSpatialObject, CartanaObject, XeniumObject, MerfishObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}, celltype::String, cluster::String; num_gene::Int64=20)
+function sp_gene_rank(sp::get_object_group("Imaging"), celltype::String, cluster::String; num_gene::Int64=20)
     gene_list=unique(sp.spmetaData.molecule.gene)
     all_df=DataFrame()
     for (i, gene) in enumerate(gene_list)
@@ -825,7 +825,7 @@ function sp_gene_rank(sp::Union{ImagingSpatialObject, CartanaObject, XeniumObjec
         y={:rank,axis={title="Ranking", grid=false}})
 end
 
-function sp_feature_plot_group(sp_list::Union{ Vector{ImagingSpatialObject}, Vector{CartanaObject}, Vector{XeniumObject}, Vector{VisiumObject}, Vector{MerfishObject}, Vector{SlideseqObject}, Vector{seqFishObject}, Vector{STARmapObject}, Vector{StereoSeqObject}, Vector{CosMxObject}}, genes::Vector{String};
+function sp_feature_plot_group(sp_list::Union{ Vector{ImagingSpatialObject}, Vector{VisiumHDObject}, Vector{CartanaObject}, Vector{XeniumObject}, Vector{VisiumObject}, Vector{MerfishObject}, Vector{SlideseqObject}, Vector{seqFishObject}, Vector{STARmapObject}, Vector{StereoSeqObject}, Vector{CosMxObject}}, genes::Vector{String};
     x_col::Union{String, Symbol}="x",y_col::Union{String, Symbol}="y", alpha = [1.0,1.0], clip = 0,
     marker_size = 2, order=false, use_imputed = false,  imp_type::Union{String, Nothing}=nothing,
     height::Real = 500, width::Real = 500, titlesize::Int64 = 24, labels=nothing, img_res="low",
@@ -899,7 +899,7 @@ function sp_feature_plot_group(sp_list::Union{ Vector{ImagingSpatialObject}, Vec
             end
         end
         for i in 1:length(sp_list)
-            if isa(sp_list[i], VisiumObject)
+            if isa(sp_list[i], Uinon{VisiumObject, VisiumHDObject})
                 coord_cell = deepcopy(sp_list[i].spmetaData)
                 x_col = Symbol(x_col)
                 y_col = Symbol(y_col)
@@ -951,7 +951,7 @@ function sp_feature_plot_group(sp_list::Union{ Vector{ImagingSpatialObject}, Vec
                             xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
                             xgridvisible = false, ygridvisible = false,yreversed=false, title = title_name, 
                             titlesize = titlesize , xlabel = "", ylabel = y_label, ylabelsize = titlesize)
-            if isa(sp_list[i], VisiumObject)
+            if isa(sp_list[i], Uinon{VisiumObject, VisiumHDObject})
                 if img_res == "high"
                     img = deepcopy(sp_list[i].imageData.highresImage)
                 elseif img_res == "low"
@@ -975,11 +975,11 @@ function sp_feature_plot_group(sp_list::Union{ Vector{ImagingSpatialObject}, Vec
     MK.current_figure()
 end
 
-function plot_fov(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,MerfishObject, STARmapObject, seqFishObject, StereoSeqObject, VisiumObject, CosMxObject}, n_fields_x::Int64, n_fields_y::Int64; 
+function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y::Int64; 
     x_col::Union{String, Symbol}="x", y_col::Union{String, Symbol}="y", group_label::Union{Nothing, String}=nothing, alpha = 1, adjust_coord_to_img = "auto",
     custom_img=false, width=4000, height=4000, cell_highlight::Union{Nothing, String, Number}=nothing, shield::Bool= false, marker_size::Union{Int64, Float64, Nothing}=nothing)
     coord_limits = spatial_range(sp)
-    if isa(sp, VisiumObject)
+    if isa(sp, Uinon{VisiumObject, VisiumHDObject})
         df = deepcopy(sp.spmetaData)
         if !isa(group_label, Nothing)
             meta = deepcopy(sp.metaData)
@@ -1003,12 +1003,12 @@ function plot_fov(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,Mer
     end
     pts, centroids=split_field(df, n_fields_x, n_fields_y)
     centroids=convert.(Tuple{Float64, Float64},centroids)
-    if isa(sp, VisiumObject)
+    if isa(sp, Uinon{VisiumObject, VisiumHDObject})
         x_lims = coord_limits[1]
     else
         x_lims=(minimum(df[!, x_col])-0.05*maximum(df[!, x_col]),1.05*maximum(df[!, x_col]))
     end
-    if isa(sp, VisiumObject)
+    if isa(sp, Uinon{VisiumObject, VisiumHDObject})
         y_lims = coord_limits[2]
     else
         y_lims=(minimum(df[!, y_col])-0.05*maximum(df[!, y_col]),1.05*maximum(df[!, y_col]))
@@ -1023,7 +1023,7 @@ function plot_fov(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,Mer
     fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
                 xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
                 xgridvisible = false,ygridvisible = false)
-    if isa(sp, VisiumObject)
+    if isa(sp, Uinon{VisiumObject, VisiumHDObject})
         if isa(marker_size, Nothing)
             marker_size = 50
         end
@@ -1069,7 +1069,7 @@ function plot_fov(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,Mer
     MK.current_figure()
 end
 
-function plot_point(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject, XeniumObject,MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}, pt::Vector{Float64}; 
+function plot_point(sp::get_object_group("Imaging"), pt::Vector{Float64}; 
     canvas_size=(4000,4000),marker_size=60, text_size=100, 
     pt_color="red", text_color="blue", label="point")
     df = sp.spmetaData.cell
@@ -1088,7 +1088,7 @@ function plot_point(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject,
     MK.current_figure()
 end
 
-function plot_depth(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject, XeniumObject,MerfishObject, SlideseqObject, seqFishObject, StereoSeqObject, CosMxObject}; celltype::Union{String, Symbol} = :celltype,
+function plot_depth(sp::get_object_group("Spatial"); celltype::Union{String, Symbol} = :celltype,
     cmap=nothing, cell_select=nothing, fontsize=16, scale=0.8, markers=nothing)
         cells=sp.spmetaData.cell
         celltypes=cell_select
@@ -1141,7 +1141,7 @@ function plot_depth(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject,
         MK.current_figure()
 end
 
-function plot_depth_animation(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject, XeniumObject,MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}, celltypes::Vector{String}, markers::Vector{String}; 
+function plot_depth_animation(sp::get_object_group("Spatial"), celltypes::Vector{String}, markers::Vector{String}; 
     group_label="celltype",gene_label="gene", bg_color="gray94",fontsize=16, scale=0.8, width=1800,height=600, file_name="animation.gif", framerate=30,
     titles = ["Cells colored by kidney depth","Cell distribution from cortex to papilla","Transcript distribution from cortex to papilla"])
     cells = sp.spmetaData.cell
@@ -1207,7 +1207,7 @@ function plot_depth_animation(sp::Union{ImagingSpatialObject, CartanaObject, Vis
         end
 end
 
-function plot_gene_depth(sp::Union{ImagingSpatialObject, CartanaObject, VisiumObject, XeniumObject,MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}, gene::String;
+function plot_gene_depth(sp::get_object_group("Spatial"), gene::String;
     c_map::Union{String, Symbol, Nothing}=nothing, cell_col="cell",
     canvas_size =(1200,300),marker_size=4,
     stroke_width=0.5,stroke_color="gray94",
@@ -1241,7 +1241,7 @@ function plot_gene_depth(sp::Union{ImagingSpatialObject, CartanaObject, VisiumOb
     MK.current_figure()
 end
 
-function PlotInteractive(sp::Union{CartanaObject, VisiumObject, XeniumObject,MerfishObject, SlideseqObject, seqFishObject, StereoSeqObject, CosMxObject}; layer::String = "cells", marker_color::Union{Symbol, String}="black", marker_size=3, plot_mode="markers")
+function PlotInteractive(sp::get_object_group("Spatial"); layer::String = "cells", marker_color::Union{Symbol, String}="black", marker_size=3, plot_mode="markers")
     if layer === "cells"
         cells=sp.spmetaData.cell
         plyjs.plot(plyjs.scatter(x=cells.x, y=cells.y, mode=plot_mode, marker=plyjs.attr(size=marker_size, color=marker_color)))
@@ -1253,7 +1253,7 @@ function PlotInteractive(sp::Union{CartanaObject, VisiumObject, XeniumObject,Mer
     end
 end
 
-function plot_transcript_dapi(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,MerfishObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}, fov::Int64, n_fields_x::Int64, 
+function plot_transcript_dapi(sp::get_object_group("Imaging"), fov::Int64, n_fields_x::Int64, 
     n_fields_y::Int64; noise_ann=nothing,annotation=:cell,
     is_noise=nothing, draw_poly=false, marker_size=3)
     selected_view = subset_fov(sp, fov, n_fields_x, n_fields_y)
@@ -1362,7 +1362,7 @@ function compare_gene_imputation(sp1::Union{ImagingSpatialObject, CartanaObject,
         return p
 end
 
-function plot_heatmap(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject, MerfishObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}, gene_list::Union{Vector, String},
+function plot_heatmap(sp::get_object_group("Imaging"), gene_list::Union{Vector, String},
     cluster::Union{Symbol, String};assay_use::String="measured",expr_cutoff::Union{Float64, Int64}=0, split_by::Union{String, Nothing}=nothing,
     x_title="Gene",y_title="Cell type", cell_order::Union{Vector, String, Nothing}=nothing,imp_type="SpaGE",
     fontsize::Int64=12, color_keys=["white", "ivory","gold","orange","tomato","red"],reverse_color::Bool=false,scale::Bool=false,
@@ -1447,7 +1447,7 @@ function plot_heatmap(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject
         return p
 end
 
-function overlay_visium_cartana(vs::Union{VisiumObject, SlideseqObject}, sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,MerfishObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}; vs_x = "new_x", vs_y = "new_y", 
+function overlay_visium_cartana(vs::Union{VisiumObject, SlideseqObject, VisiumHDObject}, sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,MerfishObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}; vs_x = "new_x", vs_y = "new_y", 
     sp_x = "new_x", sp_y = "new_y", vs_color=:red, sp_color=:blue, vs_markersize=7, 
     sp_markersize=2, vs_title="Visium", sp_title="Cartana")
     cartana_df = deepcopy(sp.spmetaData.cell)
@@ -1469,7 +1469,7 @@ function overlay_visium_cartana(vs::Union{VisiumObject, SlideseqObject}, sp::Uni
     MK.current_figure()
 end
 
-function overlay_visium_cartana_gene(vs::Union{VisiumObject, SlideseqObject}, sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject, MerfishObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}, gene; vs_x="new_x", vs_y="new_y", sp_x="new_x", sp_y="new_y",
+function overlay_visium_cartana_gene(vs::Union{VisiumObject, SlideseqObject, VisiumHDObject}, sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject, MerfishObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}, gene; vs_x="new_x", vs_y="new_y", sp_x="new_x", sp_y="new_y",
     vs_color=:red, sp_color=:blue, vs_markersize=7, canvas_size=(1800,500),x_lims=nothing, y_lims=nothing,
     sp_markersize=2, vs_title="Visium", sp_title="Cartana", order=true, scale = true)
     vs_count=deepcopy(vs.normCount)
@@ -1536,7 +1536,7 @@ function overlay_visium_cartana_gene(vs::Union{VisiumObject, SlideseqObject}, sp
     MK.current_figure()
 end
 
-function plot_gene_group_spatial(sp_list::Union{Vector{ImagingSpatialObject}, Vector{CartanaObject},Vector{XeniumObject}, Vector{MerfishObject}, Vector{SlideseqObject}, Vector{seqFishObject}, Vector{STARmapObject}, Vector{StereoSeqObject}, Vector{CosMxObject}}, n_bin, gene_list; group_names::Union{Vector, String, Nothing}=nothing,
+function plot_gene_group_spatial(sp_list::Union{Vector{ImagingSpatialObject}, Vector{VisiumHDObject}, Vector{CartanaObject},Vector{XeniumObject}, Vector{MerfishObject}, Vector{SlideseqObject}, Vector{seqFishObject}, Vector{STARmapObject}, Vector{StereoSeqObject}, Vector{CosMxObject}}, n_bin, gene_list; group_names::Union{Vector, String, Nothing}=nothing,
     color_range::Vector=["white", "ivory","gold","orange","tomato","red"],legend_min::Union{Float64, Int64}=0, 
     legend_max::Union{Float64, Int64}=1, assay_use = "measured", imp_type = "SpaGE")
     n_obj = length(sp_list)

@@ -41,7 +41,7 @@ function reorder(df::DataFrame,
     return df
 end
 
-function compute_pearson_cor(sp::Union{ImagingSpatialObject, CartanaObject, XeniumObject, MerfishObject, seqFishObject, STARmapObject, StereoSeqObject, CosMxObject}, cluster1::Union{Symbol, String}, cluster2::Union{Symbol, String}; color_scheme::String="lightgreyred",reverse_color::Bool=false)
+function compute_pearson_cor(sp::get_object_group("Imaging"), cluster1::Union{Symbol, String}, cluster2::Union{Symbol, String}; color_scheme::String="lightgreyred",reverse_color::Bool=false)
     df=sp.spmetaData.cell
     celltypes1=unique(df[!,cluster1])
     celltypes2=unique(df[!,cluster2])
@@ -78,7 +78,7 @@ function scan_cells(x, y, center_x, center_y, radius)
     sqrt((x - center_x)^2 + (y - center_y)^2)< radius
 end
 
-function compare_cell_distances(sp::Union{CartanaObject, XeniumObject,MerfishObject, seqFishObject, STARmapObject, CosMxObject}, col::Union{String, Symbol}, target_cell::String, 
+function compare_cell_distances(sp::get_object_group("Imaging"), col::Union{String, Symbol}, target_cell::String, 
     cell1::String, cell2::String, radius::Union{Int64, Float64})
     coord_cells=sp.spmetaData.cell
     if isa(col, String)
@@ -231,7 +231,7 @@ function slope2deg(slope::Float64)
     return degree
 end
 
-function subset_fov(sp::Union{ImagingSpatialObject, CartanaObject, XeniumObject,MerfishObject, seqFishObject, STARmapObject, StereoSeqObject, VisiumObject, CosMxObject}, fov::Vector{Int64}, n_fields_x::Int64, n_fields_y::Int64)
+function subset_fov(sp::get_object_group("Spatial"), fov::Vector{Int64}, n_fields_x::Int64, n_fields_y::Int64)
     if isa(sp, VisiumObject)
         df = deepcopy(sp.spmetaData)
         rename!(df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, :x, :y])
@@ -279,7 +279,7 @@ function compute_new_coord(df, pt, center; span=150)
     return depth, angle
 end
 
-function compute_kidney_coordinates(sp::Union{ImagingSpatialObject, CartanaObject, XeniumObject, MerfishObject, seqFishObject, STARmapObject, StereoSeqObject, CosMxObject}, center)
+function compute_kidney_coordinates(sp::get_object_group("Spatial"), center)
     df = sp.spmetaData.cell
     kid_depth=[]
     kid_angle=[]
@@ -386,7 +386,8 @@ function read_seurat_data(file_name; file_format="rda")
     end
 end
 
-function read_scanpy_data(file_name)
+function read_scanpy_data(file_name; python_path::Union{String, Nothing} = nothing)
+    set_python_environment(python_path)
     sc = pyimport("scanpy")
     adata = sc.read(file_name)
     return adata
@@ -449,7 +450,7 @@ function split_spatial(n_bin::Int64)
     return all_segs
 end
 
-function bin_gene_spatial(sp::Union{ImagingSpatialObject, CartanaObject, XeniumObject,MerfishObject, seqFishObject, STARmapObject, CosMxObject}, n_bin::Int64; 
+function bin_gene_spatial(sp::get_object_group("Imaging"), n_bin::Int64; 
     celltype::Union{String, Int64, Nothing}=nothing,
     assay_use = "measured", imp_type = "SpaGE", genes = nothing)
     cells=deepcopy(sp.spmetaData.cell)
@@ -541,9 +542,10 @@ function log_norm_cpm(x)
     return log.(((x ./ sum(x)) .* 1000000) .+ 1)
 end
 
-function from_scanpy(adata::Union{String, PyObject}; data_type = "scRNA", 
+function from_scanpy(adata::Union{String, PyObject}; python_path::Union{String, Nothing} = nothing, data_type = "scRNA", 
     tech::Union{String, Nothing}=nothing,
     sp_coord_name="spatial", anno="leiden")
+    set_python_environment(python_path)
     sc = pyimport("scanpy")
     if isa(adata, String)
         adata = sc.read(adata)

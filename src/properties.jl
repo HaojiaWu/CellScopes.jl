@@ -1,3 +1,19 @@
+
+function get_object_group(obj_type::String)
+    if obj_type == "Sequencing"
+        objs = Union{VisiumObject, SlideseqObject, StereoSeqObject, VisiumHDObject}
+    elseif obj_type == "Imaging"
+        objs = Union{ImagingSpatialObject, CartanaObject, XeniumObject, MerfishObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}
+    elseif obj_type == "Spatial"
+        objs = Union{ImagingSpatialObject, CartanaObject, VisiumObject, VisiumHDObject, XeniumObject, MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}
+    elseif obj_type == "All"
+        objs = Union{scRNAObject, scATACObject, ImagingSpatialObject, CartanaObject, VisiumObject, VisiumHDObject, XeniumObject, MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}
+    else
+        error("Obj_type can only be Sequencing, Imaging, Spatial or All")
+    end
+    return objs
+end
+
 function Base.show(io::IO, sc_obj::scRNAObject)
     println(io, "scRNAObject in CellScopes.jl")
     println("Genes x Cells = ", length(sc_obj.rawCount.gene_name), " x ", length(sc_obj.rawCount.cell_name))
@@ -56,7 +72,7 @@ function Base.show(io::IO, count::AbstractCount)
     [println("- ", string(i)) for i in fieldnames(typeof(count))]
 end
 
-function Base.show(io::IO, obj_type::Union{AbstractDimReduction, ClusteringObject, VariableGeneObject, UndefinedObject, SpaImputeObj, VisiumImgObject, SpaCountObj,SpaMetaObj,SpaImageObj})
+function Base.show(io::IO, obj_type::Union{AbstractDimReduction, ClusteringObject, VariableGeneObject, UndefinedObject, SpaImputeObj, VisiumImgObject, SpaCountObj, SpaMetaObj, SpaImageObj, Layer, Layers})
     println(io, string(typeof(obj_type)))
     println("All fields:")
     [println("- ", string(i)) for i in fieldnames(typeof(obj_type))]
@@ -79,11 +95,13 @@ matchtype(field) = @match field begin
     spCoord::SpaCoordObj => println("- Spatial coordiantes")
     fragment::FragmentObject => println("- Fragment data")
     imgObject::SpaImageObj => println("- Image data")
+    layer::Layer => println("- Layer")
+    layers::Layers => println("- Layers data")
     uns::UndefinedObject => println("- Undefined slot")
     emptyObj::Nothing => print("")
 end
 
-function Base.show(io::IO, sp_obj::Union{ImagingSpatialObject, CartanaObject, VisiumObject, XeniumObject, MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject})
+function Base.show(io::IO, sp_obj::get_object_group("Spatial"))
     if isa(sp_obj, ImagingSpatialObject)
         println(io, "ImagingSpatialObject in CellScopes.jl")
     elseif isa(sp_obj, CartanaObject)
@@ -100,6 +118,8 @@ function Base.show(io::IO, sp_obj::Union{ImagingSpatialObject, CartanaObject, Vi
         println(io, "SlideseqObject in CellScopes.jl")
     elseif isa(sp_obj, StereoSeqObject)
         println(io, "StereoSeqObject in CellScopes.jl")
+    elseif isa(sp_obj, VisiumHDObject)
+        println(io, "VisiumHDObject in CellScopes.jl")
     else
         println(io, "VisiumObject in CellScopes.jl")
     end

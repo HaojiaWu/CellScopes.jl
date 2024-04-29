@@ -37,7 +37,7 @@ using ColorSchemes
 import CairoMakie as MK
 using StatsPlots
 using Folds
-using PyCall
+#using PyCall
 using RCall
 import PlotlyJS as plyjs
 using Images
@@ -67,7 +67,9 @@ using Graphs: src, dst
 include("scrna/objects.jl")
 include("spatial/sp_objects.jl")
 include("scatac/atac_objects.jl")
+inclue("spatial_highres_full/sp_hf_objects.jl")
 include("properties.jl")
+inclue("spatial_highres_full/sp_hf_utils.jl")
 include("scrna/processing.jl")
 include("scrna/utils.jl")
 include("scrna/visualization.jl")
@@ -80,5 +82,4 @@ include("scatac/atac_processing.jl")
 include("scatac/atac_plots.jl")
 include("scatac/atac_utils.jl")
 include("spatial/baysor_boundary.jl")
-
 end

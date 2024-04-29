@@ -74,10 +74,15 @@ function read_visium(visium_dir::String;
     genes = genes[gene_kept]
     cell_kept = (vec ∘ collect)(colSum(counts) .> min_gene)
     cells = cells[cell_kept]
-    counts = counts[gene_kept, cell_kept]
+    gene_indices = findall(gene_kept)
+    cell_indices = findall(cell_kept)
+    counts = counts[gene_indices, cell_indices]
     gene_kept, gene_removed = check_duplicates(genes)
     gene_removed = collect(values(gene_removed))
-    counts = counts[Not(gene_removed), :]
+    total_num = collect(1:length(genes))
+    gene_num = total_num[Not(gene_removed)]
+    to_keep = [i ∈ gene_num for i in total_num]
+    counts = counts[findall(to_keep), :]
     rawcount = RawCountObject(counts, cells, gene_kept)
     # prepare spatial info
     positions = DataFrame(CSV.File(position_file, header=true))
@@ -523,4 +528,70 @@ else
 end
 
 return cosmx_obj
+end
+
+function read_visiumHD(hd_dir::String; 
+    min_genes::Union{Vector{Int64}, Tuple{Int64} }= [0, 0, 0], 
+    min_cells::Union{Vector{Int64}, Tuple{Int64} }= [0, 0, 0],
+    python_path::Union{String, Nothing} = nothing,
+    prefix::Union{String, Nothing} = nothing,
+    postfix::Union{String, Nothing} = nothing,
+    default_bin = "8_um"
+)
+    layers = Layers()
+    println("1. loading 2um binned data...")
+    tenx_dir = hd_dir * "/binned_outputs/square_002um/filtered_feature_bc_matrix"
+    pos_file = hd_dir * "/binned_outputs/square_002um/spatial/tissue_positions.parquet"
+    json_file = hd_dir * "/binned_outputs/square_002um/spatial/scalefactors_json.json"
+    counts = read_10x(tenx_dir; version ="v3", min_gene=min_genes[1], min_cell=min_cells[1])
+    layer1 = Layer(counts; prefix = prefix, postfix = postfix)
+    layers.layers["2_um"] = layer1
+    pos1 = read_hd_pos(pos_file; python_path=python_path)
+    layer1.spmetaData = pos1
+    json1 = JSON.parsefile(json_file)
+    layer1.jsonParameters = json1
+    println("1. 2um binned data loaded!")
+    println("2. loading 8um binned data...")
+    tenx_dir = hd_dir * "/binned_outputs/square_008um/filtered_feature_bc_matrix"
+    pos_file = hd_dir * "/binned_outputs/square_008um/spatial/tissue_positions.parquet"
+    json_file = hd_dir * "/binned_outputs/square_008um/spatial/scalefactors_json.json"
+    counts = read_10x(tenx_dir; version ="v3", min_gene=min_genes[2], min_cell=min_cells[2])
+    layer2 = Layer(counts; prefix = prefix, postfix = postfix)
+    layers.layers["8_um"] = layer2
+    pos2 = read_hd_pos(pos_file; python_path=python_path)
+    layer2.spmetaData = pos2
+    json2 = JSON.parsefile(json_file)
+    layer2.jsonParameters = json2
+    println("2. 8um binned data loaded!")
+    println("3. loading 16um binned data...")
+    tenx_dir = hd_dir * "/binned_outputs/square_016um/filtered_feature_bc_matrix"
+    pos_file = hd_dir * "/binned_outputs/square_016um/spatial/tissue_positions.parquet"
+    json_file = hd_dir * "/binned_outputs/square_016um/spatial/scalefactors_json.json"
+    counts = read_10x(tenx_dir; version ="v3", min_gene=min_genes[3], min_cell=min_cells[3])
+    layer3 = Layer(counts; prefix = prefix, postfix = postfix)
+    layers.layers["16_um"] = layer3
+    pos3 = read_hd_pos(pos_file; python_path=python_path)
+    layer3.spmetaData = pos3
+    json3 = JSON.parsefile(json_file)
+    layer3.jsonParameters = json3
+    println("3. 16um binned data loaded!")
+    highres_image_file = hd_dir * "/spatial/tissue_hires_image.png"
+    lowres_image_file = hd_dir * "/spatial/tissue_lowres_image.png"
+    fullres_image_file = hd_dir * "/spatial/tissue_fullres_image.png"
+    detected_tissue = hd_dir * "/spatial/detected_tissue_image.jpg"
+    aligned_image_file = hd_dir * "/spatial/aligned_fiducials.jpg"
+    high_img = FileIO.load(highres_image_file)
+    low_img = FileIO.load(lowres_image_file)
+    if isfile(fullres_image_file)
+        full_img = FileIO.load(fullres_image_file)
+        full_img = convert(Matrix{RGB{N0f8}}, full_img)
+    else
+        full_img = nothing
+    end
+    tissue_img = FileIO.load(detected_tissue)
+    aligned_img = FileIO.load(aligned_image_file)
+    hd_obj = VisiumHDObject(layers; default_bin=default_bin)
+    image_obj = VisiumImgObject(high_img, low_img, full_img, tissue_img, aligned_img, layers.layers[default_bin].jsonParameters)
+    hd_obj.imageData = image_obj
+    return hd_obj
 end
