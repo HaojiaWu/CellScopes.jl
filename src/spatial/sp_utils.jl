@@ -739,7 +739,7 @@ function from_seurat(seurat_file; data_type::String = "scRNA",
 end
 
 function spatial_range(sp; x_col::String="x", y_col::String="y")
-    if isa(sp, VisiumObject)
+    if isa(sp, Union{VisiumObject, VisiumHDObject})
         coord_cell = deepcopy(sp.spmetaData)
         x_col = Symbol(x_col)
         y_col = Symbol(y_col)
