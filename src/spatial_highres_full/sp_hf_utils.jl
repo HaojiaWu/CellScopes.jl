@@ -40,11 +40,19 @@ function set_python_environment(python_path::Union{String, Nothing})
     end
 end
 
-function read_parquet(parquet_file)
+function read_parquet_py(parquet_file)
     pd = pyimport("pandas")
     parquet_df = pd.read_parquet(parquet_file)
     parquet_df = pd_to_df(parquet_df)
     return parquet_df
+end
+
+function read_parquet(parquet_file)
+    db = DuckDB.open(":memory:")
+    con = DuckDB.connect(db)
+    res = DuckDB.execute(con, "SELECT * FROM '$parquet_file';")
+    pos_data = DataFrame(res)
+    return pos_data
 end
 
 function read_hd_pos(pos_file)

@@ -776,7 +776,7 @@ get_xn_sf = function(sp::XeniumObject;adjust_coord_to_img="auto", x_col="x", y_c
     return (scale_x, scale_y)
 end
 
-get_vs_sf = function(sp::VisiumObject;img_res="high")
+get_vs_sf = function(sp::Union{VisiumObject, VisiumHDObject};img_res="high")
         if img_res == "high"
             scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
         elseif img_res == "low"

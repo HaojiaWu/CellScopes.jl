@@ -63,6 +63,7 @@ using SimpleWeightedGraphs
 using StatsBase: countmap
 using KernelDensity
 using Graphs: src, dst
+using DuckDB
 
 include("scrna/objects.jl")
 include("spatial/sp_objects.jl")
