@@ -437,6 +437,11 @@ git-tree-sha1 = "1a3f97f907e6dd8983b744d2642651bb162a3f7a"
 uuid = "dc8bdbbb-1ca9-579f-8c36-e416f6a65cce"
 version = "1.0.2"
 
+[[deps.DBInterface]]
+git-tree-sha1 = "a444404b3f94deaa43ca2a58e18153a82695282b"
+uuid = "a10d1c49-ce27-4219-8d33-6db1a4562965"
+version = "2.6.1"
+
 [[deps.DataAPI]]
 git-tree-sha1 = "8da84edb865b0b5b0100c0666a9bc9a0b71c553c"
 uuid = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
@@ -545,6 +550,18 @@ deps = ["Calculus", "NaNMath", "SpecialFunctions"]
 git-tree-sha1 = "5837a837389fccf076445fce071c8ddaea35a566"
 uuid = "fa6b7ba4-c1ee-5f82-b5fc-ecf0adba8f74"
 version = "0.6.8"
+
+[[deps.DuckDB]]
+deps = ["DBInterface", "Dates", "DuckDB_jll", "FixedPointDecimals", "Tables", "UUIDs", "WeakRefStrings"]
+git-tree-sha1 = "34c46f31f78ff08bd305ceb6361da234f98f35e4"
+uuid = "d2f5444f-75bc-4fdf-ac35-56f514c445e1"
+version = "0.10.2"
+
+[[deps.DuckDB_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "9968a55c8158342c11341ba3384282baf06acb82"
+uuid = "2cbbab25-fc8b-58cf-88d4-687a02676033"
+version = "0.10.2+0"
 
 [[deps.EarCut_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
@@ -663,6 +680,12 @@ deps = ["ArrayInterface", "LinearAlgebra", "Requires", "Setfield", "SparseArrays
 git-tree-sha1 = "c6e4a1fbe73b31a3dea94b1da449503b8830c306"
 uuid = "6a86dc24-6348-571c-b903-95158fe2bd41"
 version = "2.21.1"
+
+[[deps.FixedPointDecimals]]
+deps = ["Parsers"]
+git-tree-sha1 = "cd96db4ebe96ee1063ee1deddef318c6d5844cff"
+uuid = "fb4d412d-6eee-574d-9565-ede6634db7b0"
+version = "0.5.2"
 
 [[deps.FixedPointNumbers]]
 deps = ["Statistics"]
