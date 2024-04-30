@@ -103,7 +103,7 @@ function sp_feature_plot(sp::get_object_group("Spatial"), gene_list::Union{Strin
     end
     if layer === "cells"
         coord_limits = spatial_range(sp)
-        if isa(sp, Uinon{VisiumObject, VisiumHDObject})
+        if isa(sp, Union{VisiumObject, VisiumHDObject})
             coord_cell = deepcopy(sp.spmetaData)
             x_col = Symbol(x_col)
             y_col = Symbol(y_col)
@@ -145,26 +145,26 @@ function sp_feature_plot(sp::get_object_group("Spatial"), gene_list::Union{Strin
         end
         
         if isa(x_lims, Nothing)
-            if isa(sp, Uinon{VisiumObject, VisiumHDObject})
+            if isa(sp, Union{VisiumObject, VisiumHDObject})
                 x_lims=coord_limits[1]
             else
                 x_lims1=(minimum(coord_cell[!, x_col])-0.05*maximum(coord_cell[!, x_col]),1.05*maximum(coord_cell[!, x_col]))
             end
         else 
-            if isa(sp, Uinon{VisiumObject, VisiumHDObject})
+            if isa(sp, Union{VisiumObject, VisiumHDObject})
                 x_lims = x_lims .* scale_factor
             else
                 x_lims = x_lims
             end
         end
         if isa(y_lims, Nothing)
-            if isa(sp, Uinon{VisiumObject, VisiumHDObject})
+            if isa(sp, Union{VisiumObject, VisiumHDObject})
                 y_lims=coord_limits[2]
             else
                 y_lims1=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
             end
         else
-            if isa(sp, Uinon{VisiumObject, VisiumHDObject})
+            if isa(sp, Union{VisiumObject, VisiumHDObject})
                 y_lims = y_lims .* scale_factor
             else
                 y_lims = y_lims
@@ -218,7 +218,7 @@ function sp_feature_plot(sp::get_object_group("Spatial"), gene_list::Union{Strin
             xgridvisible = false, ygridvisible = false,yreversed=false, title = gene_list[i], 
             titlesize = titlesize, xlabel = "", ylabel = "", 
             xlabelsize = titlesize -4, ylabelsize = titlesize -4)
-            if isa(sp, Uinon{VisiumObject, VisiumHDObject})
+            if isa(sp, Union{VisiumObject, VisiumHDObject})
                 if img_res == "high"
                     img = deepcopy(sp.imageData.highresImage)
                 elseif img_res == "low"
@@ -627,7 +627,7 @@ function sp_dim_plot(sp::get_object_group("Spatial"), anno::Union{Symbol, String
         adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3
     )
     coord_limits = spatial_range(sp)
-    if isa(sp, Uinon{VisiumObject, VisiumHDObject})
+    if isa(sp, Union{VisiumObject, VisiumHDObject})
         anno_df = deepcopy(sp.spmetaData)
         anno_df[!, anno] = sp.metaData[!, anno]
         x_col = Symbol(x_col)
@@ -652,26 +652,26 @@ function sp_dim_plot(sp::get_object_group("Spatial"), anno::Union{Symbol, String
         anno_df[!, anno] = string.(anno_df[!, anno])
     end
     if isa(x_lims, Nothing)
-        if isa(sp, Uinon{VisiumObject, VisiumHDObject})
+        if isa(sp, Union{VisiumObject, VisiumHDObject})
             x_lims = coord_limits[1]
         else
             x_lims=(minimum(anno_df[!,x_col])-0.05*maximum(anno_df[!,x_col]),1.05*maximum(anno_df[!,x_col]))
         end
     else 
-        if isa(sp, Uinon{VisiumObject, VisiumHDObject})
+        if isa(sp, Union{VisiumObject, VisiumHDObject})
             x_lims = x_lims .* scale_factor
         else
             x_lims = x_lims
         end
     end
     if isa(y_lims, Nothing)
-        if isa(sp, Uinon{VisiumObject, VisiumHDObject})
+        if isa(sp, Union{VisiumObject, VisiumHDObject})
             y_lims = coord_limits[2]
         else
             y_lims=(minimum(anno_df[!,y_col])-0.05*maximum(anno_df[!,y_col]),1.05*maximum(anno_df[!,y_col]))
         end
     else 
-        if isa(sp, Uinon{VisiumObject, VisiumHDObject})
+        if isa(sp, Union{VisiumObject, VisiumHDObject})
             y_lims = y_lims .* scale_factor
         else
             y_lims = y_lims
@@ -695,7 +695,7 @@ function sp_dim_plot(sp::get_object_group("Spatial"), anno::Union{Symbol, String
     ax2 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
         xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
         xgridvisible = false,ygridvisible = false);
-    if isa(sp, Uinon{VisiumObject, VisiumHDObject})
+    if isa(sp, Union{VisiumObject, VisiumHDObject})
         if img_res == "high"
             img = deepcopy(sp.imageData.highresImage)
         elseif img_res == "low"
@@ -899,7 +899,7 @@ function sp_feature_plot_group(sp_list::Union{ Vector{ImagingSpatialObject}, Vec
             end
         end
         for i in 1:length(sp_list)
-            if isa(sp_list[i], Uinon{VisiumObject, VisiumHDObject})
+            if isa(sp_list[i], Union{VisiumObject, VisiumHDObject})
                 coord_cell = deepcopy(sp_list[i].spmetaData)
                 x_col = Symbol(x_col)
                 y_col = Symbol(y_col)
@@ -951,7 +951,7 @@ function sp_feature_plot_group(sp_list::Union{ Vector{ImagingSpatialObject}, Vec
                             xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
                             xgridvisible = false, ygridvisible = false,yreversed=false, title = title_name, 
                             titlesize = titlesize , xlabel = "", ylabel = y_label, ylabelsize = titlesize)
-            if isa(sp_list[i], Uinon{VisiumObject, VisiumHDObject})
+            if isa(sp_list[i], Union{VisiumObject, VisiumHDObject})
                 if img_res == "high"
                     img = deepcopy(sp_list[i].imageData.highresImage)
                 elseif img_res == "low"
@@ -979,7 +979,7 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
     x_col::Union{String, Symbol}="x", y_col::Union{String, Symbol}="y", group_label::Union{Nothing, String}=nothing, alpha = 1, adjust_coord_to_img = "auto",
     custom_img=false, width=4000, height=4000, cell_highlight::Union{Nothing, String, Number}=nothing, shield::Bool= false, marker_size::Union{Int64, Float64, Nothing}=nothing)
     coord_limits = spatial_range(sp)
-    if isa(sp, Uinon{VisiumObject, VisiumHDObject})
+    if isa(sp, Union{VisiumObject, VisiumHDObject})
         df = deepcopy(sp.spmetaData)
         if !isa(group_label, Nothing)
             meta = deepcopy(sp.metaData)
@@ -1003,12 +1003,12 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
     end
     pts, centroids=split_field(df, n_fields_x, n_fields_y)
     centroids=convert.(Tuple{Float64, Float64},centroids)
-    if isa(sp, Uinon{VisiumObject, VisiumHDObject})
+    if isa(sp, Union{VisiumObject, VisiumHDObject})
         x_lims = coord_limits[1]
     else
         x_lims=(minimum(df[!, x_col])-0.05*maximum(df[!, x_col]),1.05*maximum(df[!, x_col]))
     end
-    if isa(sp, Uinon{VisiumObject, VisiumHDObject})
+    if isa(sp, Union{VisiumObject, VisiumHDObject})
         y_lims = coord_limits[2]
     else
         y_lims=(minimum(df[!, y_col])-0.05*maximum(df[!, y_col]),1.05*maximum(df[!, y_col]))
@@ -1023,7 +1023,7 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
     fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
                 xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
                 xgridvisible = false,ygridvisible = false)
-    if isa(sp, Uinon{VisiumObject, VisiumHDObject})
+    if isa(sp, Union{VisiumObject, VisiumHDObject})
         if isa(marker_size, Nothing)
             marker_size = 50
         end
