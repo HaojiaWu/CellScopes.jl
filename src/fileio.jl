@@ -560,7 +560,7 @@ function read_layers(hd_dir;
     layer.jsonParameters = json
     px_width = bin_size/json["microns_per_pixel"]
     corner_coordinates = compute_corner_points(pos, px_width; cell = "barcode")
-    seg = DataFrame(x = corner_coordinates.new_x, y = corner_coordinates.new_y, cell_id = corner_coordinates.barcode)
+    seg = DataFrame(x = corner_coordinates.new_x, y = corner_coordinates.new_y, cell_id = corner_coordinates.barcode, x_col = "pxl_row_in_fullres", y_col = "pxl_col_in_fullres")
     grouped = groupby(seg, :cell_id)
     cell_ids = unique(seg.cell_id)
     poly = Vector{Matrix{Float64}}(undef, length(cell_ids))
