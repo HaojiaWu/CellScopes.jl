@@ -530,6 +530,76 @@ end
 return cosmx_obj
 end
 
+function read_layers(layer_path; 
+    min_gene::Int64 = 0,
+    min_cell::Int64 = 0,
+    bin_size::Int64 = 2,
+    prefix::Union{String, Nothing}=nothing, 
+    postfix::Union{String, Nothing}=nothing
+    )
+    tenx_dir = hd_dir * "/filtered_feature_bc_matrix"
+    pos_file = hd_dir * "/spatial/tissue_positions.parquet"
+    json_file = hd_dir * "/spatial/scalefactors_json.json"
+    counts = read_10x(tenx_dir; version ="v3", min_gene=min_gene, min_cell=min_cell)
+    all_cells = counts.cell_name
+    pos = read_hd_pos(pos_file)
+    pos = filter(:barcode => ∈(Set(all_cells)), pos)
+    pos = reorder(pos, "barcode", all_cells)
+    pos =  pos[(pos[!, :pxl_row_in_fullres] .> 0) .& (pos[!, :pxl_col_in_fullres] .> 0), :]
+    if isa(prefix, String)
+        pos.barcode = prefix .*  "_" .* string.(pos.barcode)
+    end
+    if isa(postfix, String)
+        pos.barcode = string.(pos.barcode ) .* "_" .* postfix
+    end
+    all_cells = pos[!, :barcode]
+    counts = subset_count(counts; cells = all_cells)
+    layer = Layer(counts; prefix = prefix, postfix = postfix)
+    layer.spmetaData = pos
+    json = JSON.parsefile(json_file)
+    layer.jsonParameters = json
+    px_width = bin_size/json["microns_per_pixel"]
+    corner_coordinates = compute_corner_points(pos, px_width; cell = "barcode")
+    seg = DataFrame(x = corner_coordinates.new_x, y = corner_coordinates.new_y, cell_id = corner_coordinates.barcode)
+    grouped = groupby(seg, :cell_id)
+    cell_ids = unique(seg.cell_id)
+    poly = Vector{Matrix{Float64}}(undef, length(cell_ids))
+    n = length(cell_ids)
+    println("Formatting cell polygons...")
+    p = Progress(n, dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, color=:blue)
+    for idx in 1:length(cell_ids)
+        cell_data = grouped[idx]
+        cell_1 = Matrix(cell_data[!, 1:2])
+        poly[idx] = cell_1
+        next!(p)
+    end
+    layer.polygonData = poly
+    if bin_size !== 2
+        cluster_file = hd_dir * "/analysis/clustering/gene_expression_graphclust/clusters.csv"
+        umap_file = hd_dir * "/analysis/umap/gene_expression_2_components/projection.csv"
+        hd_umap =  DataFrame(CSV.File(umap_file))
+        clustering =  DataFrame(CSV.File(cluster_file))
+        rename!(clustering, ["cell", "cluster"]) 
+        if isa(prefix, String)
+            clustering.cell = prefix .*  "_" .* string.(clustering.cell)
+            hd_umap.Barcode = prefix .*  "_" .* string.(hd_umap.Barcode)
+        end
+        if isa(postfix, String)
+            clustering.cell = string.(clustering.cell) .* "_" .* postfix
+            hd_umap.Barcode = string.(hd_umap.Barcode) .* "_" .* postfix
+        end
+        clustering = filter(:cell=> ∈(Set(all_cells)), clustering)
+        layer.spmetaData.cluster = string.(clustering.cluster)
+        layer.metaData.cluster = string.(clustering.cluster)
+        hd_umap = filter(:Barcode => ∈(Set(all_cells)), hd_umap)
+        hd_umap = Matrix(hd_umap[!, 2:end])
+        umap_obj = UMAPObject(hd_umap, "UMAP", 2, nothing, nothing, nothing, nothing, nothing)
+        reduct_obj = ReductionObject(nothing, nothing, umap_obj)
+        layer.dimReduction = reduct_obj
+    end
+    return layer
+end
+
 function read_visiumHD(hd_dir::String; 
     min_genes::Union{Vector{Int64}, Tuple{Int64} }= [0, 0, 0], 
     min_cells::Union{Vector{Int64}, Tuple{Int64} }= [0, 0, 0],
@@ -539,99 +609,18 @@ function read_visiumHD(hd_dir::String;
 )
     layers = Layers()
     println("1. loading 2um binned data...")
-    tenx_dir = hd_dir * "/binned_outputs/square_002um/filtered_feature_bc_matrix"
-    pos_file = hd_dir * "/binned_outputs/square_002um/spatial/tissue_positions.parquet"
-    json_file = hd_dir * "/binned_outputs/square_002um/spatial/scalefactors_json.json"
-    counts = read_10x(tenx_dir; version ="v3", min_gene=min_genes[1], min_cell=min_cells[1])
-    layer1 = Layer(counts; prefix = prefix, postfix = postfix)
-    all_cells = layer1.rawCount.cell_name
-    pos1 = read_hd_pos(pos_file)
-    pos1 = filter(:barcode => ∈(Set(all_cells)), pos1)
-    pos1 = reorder(pos1, "barcode", all_cells)
-    rename!(pos1, :barcode => :cell)
-    layer1.spmetaData = pos1
-    json1 = JSON.parsefile(json_file)
-    layer1.jsonParameters = json1
+    bin_dir = hd_dir * "/binned_outputs/square_002um"
+    layer1 = read_layers(bin_dir; min_gene = min_genes[1], min_cell =  min_cells[1], prefix = prefix, postfix = postfix, bin_size = 2)
     layers.layers["2_um"] = layer1
     println("1. 2um binned data loaded!")
     println("2. loading 8um binned data...")
-    tenx_dir = hd_dir * "/binned_outputs/square_008um/filtered_feature_bc_matrix"
-    pos_file = hd_dir * "/binned_outputs/square_008um/spatial/tissue_positions.parquet"
-    json_file = hd_dir * "/binned_outputs/square_008um/spatial/scalefactors_json.json"
-    cluster_file = hd_dir * "/binned_outputs/square_008um/analysis/clustering/gene_expression_graphclust/clusters.csv"
-    umap_file = hd_dir * "/binned_outputs/square_008um/analysis/umap/gene_expression_2_components/projection.csv"
-    counts = read_10x(tenx_dir; version ="v3", min_gene=min_genes[2], min_cell=min_cells[2])
-    layer2 = Layer(counts; prefix = prefix, postfix = postfix)
-    all_cells = layer2.rawCount.cell_name
-    pos2 = read_hd_pos(pos_file)
-    pos2 = filter(:barcode => ∈(Set(all_cells)), pos2)
-    pos2 = reorder(pos2, "barcode", all_cells)
-    layer2.spmetaData = pos2
-    json2 = JSON.parsefile(json_file)
-    layer2.jsonParameters = json2
-    hd_umap =  DataFrame(CSV.File(umap_file))
-    clustering =  DataFrame(CSV.File(cluster_file))
-    rename!(clustering, ["cell", "cluster"]) 
-    if isa(prefix, String)
-        clustering.cell = prefix .*  "_" .* string.(clustering.cell)
-    end
-    if isa(postfix, String)
-        clustering.cell = string.(clustering.cell) .* "_" .* postfix
-    end
-    clustering = filter(:cell=> ∈(Set(all_cells)), clustering)
-    layer2.spmetaData.cluster = string.(clustering.cluster)
-    layer2.metaData.cluster = string.(clustering.cluster)
-    if isa(prefix, String)
-        hd_umap.Barcode = prefix .*  "_" .* string.(hd_umap.Barcode)
-    end
-    if isa(postfix, String)
-        hd_umap.Barcode = string.(hd_umap.Barcode) .* "_" .* postfix
-    end
-    hd_umap = filter(:Barcode => ∈(Set(all_cells)), hd_umap)
-    hd_umap = Matrix(hd_umap[!, 2:end])
-    umap_obj = UMAPObject(hd_umap, "UMAP", 2, nothing, nothing, nothing, nothing, nothing)
-    reduct_obj = ReductionObject(nothing, nothing, umap_obj)
-    layer2.dimReduction = reduct_obj
+    bin_dir = hd_dir * "/binned_outputs/square_008um"
+    layer2 = read_layers(bin_dir; min_gene = min_genes[2], min_cell =  min_cells[2], prefix = prefix, postfix = postfix, bin_size = 8)
     layers.layers["8_um"] = layer2
     println("2. 8um binned data loaded!")
     println("3. loading 16um binned data...")
-    tenx_dir = hd_dir * "/binned_outputs/square_016um/filtered_feature_bc_matrix"
-    pos_file = hd_dir * "/binned_outputs/square_016um/spatial/tissue_positions.parquet"
-    json_file = hd_dir * "/binned_outputs/square_016um/spatial/scalefactors_json.json"
-    cluster_file = hd_dir * "/binned_outputs/square_016um/analysis/clustering/gene_expression_graphclust/clusters.csv"
-    umap_file = hd_dir * "/binned_outputs/square_016um/analysis/umap/gene_expression_2_components/projection.csv"
-    counts = read_10x(tenx_dir; version ="v3", min_gene=min_genes[3], min_cell=min_cells[3])
-    layer3 = Layer(counts; prefix = prefix, postfix = postfix)
-    all_cells = layer3.rawCount.cell_name
-    pos3 = read_hd_pos(pos_file)
-    pos3 = filter(:barcode => ∈(Set(all_cells)), pos3)
-    pos3 = reorder(pos3, "barcode", all_cells)
-    layer3.spmetaData = pos3
-    json3 = JSON.parsefile(json_file)
-    layer3.jsonParameters = json3
-    hd_umap =  DataFrame(CSV.File(umap_file))
-    clustering =  DataFrame(CSV.File(cluster_file))
-    rename!(clustering, ["cell", "cluster"]) 
-    if isa(prefix, String)
-        clustering.cell = prefix .*  "_" .* string.(clustering.cell)
-    end
-    if isa(postfix, String)
-        clustering.cell = string.(clustering.cell) .* "_" .* postfix
-    end
-    clustering = filter(:cell=> ∈(Set(all_cells)), clustering)
-    layer3.spmetaData.cluster = string.(clustering.cluster)
-    layer3.metaData.cluster = string.(clustering.cluster)
-    if isa(prefix, String)
-        hd_umap.Barcode = prefix .*  "_" .* string.(hd_umap.Barcode)
-    end
-    if isa(postfix, String)
-        hd_umap.Barcode = string.(hd_umap.Barcode) .* "_" .* postfix
-    end
-    hd_umap = filter(:Barcode => ∈(Set(all_cells)), hd_umap)
-    hd_umap = Matrix(hd_umap[!, 2:end])
-    umap_obj = UMAPObject(hd_umap, "UMAP", 2, nothing, nothing, nothing, nothing, nothing)
-    reduct_obj = ReductionObject(nothing, nothing, umap_obj)
-    layer3.dimReduction = reduct_obj
+    bin_dir = hd_dir * "/binned_outputs/square_016um"
+    layer3 = read_layers(bin_dir; min_gene = min_genes[3], min_cell =  min_cells[3], prefix = prefix, postfix = postfix, bin_size = 16)
     layers.layers["16_um"] = layer3
     println("3. 16um binned data loaded!")
     highres_image_file = hd_dir * "/spatial/tissue_hires_image.png"

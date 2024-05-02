@@ -23,7 +23,7 @@ function dim_plot(sc_obj::get_object_group("All"); anno::Union{Symbol, String}="
         else
             dim_data.new_color .= "springgreen3"
         end
-        fig = MK.Figure(resolution=(width, height))
+        fig = MK.Figure(size=(width, height))
         ax1 = MK.Axis(fig[1,1]; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
             xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
             xgridvisible = false, ygridvisible = false, xlabel = names(dim_data)[1], ylabel = names(dim_data)[2]);
@@ -80,7 +80,7 @@ function highlight_cells(sc_obj::get_object_group("All"), cl::String; dim_type="
     end
     dim_data = DataFrames.transform(dim_data, anno => ByRow(name -> name == cl ? name : "others") => :newcell)
     dim_data = DataFrames.transform(dim_data, :newcell => ByRow(name -> name =="others" ? "gray90" : cell_color) => :newcolor)
-    fig = MK.Figure(resolution=canvas_size)
+    fig = MK.Figure(size=canvas_size)
     fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, 
                 xticksvisible=false, xticklabelsvisible=false, 
                 yticksvisible=false, yticklabelsvisible=false,
@@ -126,7 +126,7 @@ function feature_plot(sc_obj::get_object_group("All"), genes; dim_type::String =
             else
                 n_cols = 3
             end
-            fig = MK.Figure(resolution = (width * n_cols, height * n_rows))
+            fig = MK.Figure(size = (width * n_cols, height * n_rows))
             for (i, gene) in enumerate(genes)
                 df_plt = gene_data[!, [x_col, y_col, gene]]
                 gene_expr = float.(df_plt[!, gene])

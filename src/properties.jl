@@ -6,6 +6,8 @@ function get_object_group(obj_type::String)
         objs = Union{ImagingSpatialObject, CartanaObject, XeniumObject, MerfishObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}
     elseif obj_type == "Spatial"
         objs = Union{ImagingSpatialObject, CartanaObject, VisiumObject, VisiumHDObject, XeniumObject, MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}
+    elseif obj_type == "Spatial2"
+        objs = Union{ImagingSpatialObject, CartanaObject, VisiumObject, XeniumObject, MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}
     elseif obj_type == "All"
         objs = Union{scRNAObject, scATACObject, ImagingSpatialObject, CartanaObject, VisiumObject, VisiumHDObject, XeniumObject, MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}
     else

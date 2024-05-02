@@ -87,7 +87,7 @@ function sp_dot_plot(sp::get_object_group("Spatial"), genes::Union{Vector, Strin
     return p
 end
 
-function sp_feature_plot(sp::get_object_group("Spatial"), gene_list::Union{String, Vector{String}, Tuple{String}}; layer::String = "cells", x_col::Union{String, Symbol}="x",
+function sp_feature_plot(sp::get_object_group("Spatial2"), gene_list::Union{String, Vector{String}, Tuple{String}}; layer::String = "cells", x_col::Union{String, Symbol}="x",
     y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order::Bool=true, scale::Bool = false,titlesize::Int64=24, 
     height::Real = 500, width::Real = 500, combine = true, img_res::String = "low",  adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3, use_imputed=false, imp_type::Union{String, Nothing} = nothing,
     color_keys=["gray94","orange","red3"], gene_colors = nothing, alpha = [1.0,1.0], clip = 0, legend_fontsize = 10, do_legend=false, legend_size = 10, bg_color = "white",
@@ -103,7 +103,7 @@ function sp_feature_plot(sp::get_object_group("Spatial"), gene_list::Union{Strin
     end
     if layer === "cells"
         coord_limits = spatial_range(sp)
-        if isa(sp, Union{VisiumObject, VisiumHDObject})
+        if isa(sp, VisiumObject)
             coord_cell = deepcopy(sp.spmetaData)
             x_col = Symbol(x_col)
             y_col = Symbol(y_col)
@@ -145,33 +145,33 @@ function sp_feature_plot(sp::get_object_group("Spatial"), gene_list::Union{Strin
         end
         
         if isa(x_lims, Nothing)
-            if isa(sp, Union{VisiumObject, VisiumHDObject})
+            if isa(sp, VisiumObject)
                 x_lims=coord_limits[1]
             else
                 x_lims1=(minimum(coord_cell[!, x_col])-0.05*maximum(coord_cell[!, x_col]),1.05*maximum(coord_cell[!, x_col]))
             end
         else 
-            if isa(sp, Union{VisiumObject, VisiumHDObject})
+            if isa(sp, VisiumObject)
                 x_lims = x_lims .* scale_factor
             else
                 x_lims = x_lims
             end
         end
         if isa(y_lims, Nothing)
-            if isa(sp, Union{VisiumObject, VisiumHDObject})
+            if isa(sp, VisiumObject)
                 y_lims=coord_limits[2]
             else
                 y_lims1=(minimum(coord_cell[!, y_col])-0.05*maximum(coord_cell[!, y_col]),1.05*maximum(coord_cell[!, y_col]))
             end
         else
-            if isa(sp, Union{VisiumObject, VisiumHDObject})
+            if isa(sp, VisiumObject)
                 y_lims = y_lims .* scale_factor
             else
                 y_lims = y_lims
             end
         end
         c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
-        fig = MK.Figure(resolution = (width * n_cols, height * n_rows))
+        fig = MK.Figure(size = (width * n_cols, height * n_rows))
         for (i, gene) in enumerate(gene_list)
             gene_expr = subset_count(norm_counts; genes = [gene])
             gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
@@ -218,7 +218,7 @@ function sp_feature_plot(sp::get_object_group("Spatial"), gene_list::Union{Strin
             xgridvisible = false, ygridvisible = false,yreversed=false, title = gene_list[i], 
             titlesize = titlesize, xlabel = "", ylabel = "", 
             xlabelsize = titlesize -4, ylabelsize = titlesize -4)
-            if isa(sp, Union{VisiumObject, VisiumHDObject})
+            if isa(sp, VisiumObject)
                 if img_res == "high"
                     img = deepcopy(sp.imageData.highresImage)
                 elseif img_res == "low"
@@ -280,7 +280,7 @@ function sp_feature_plot(sp::get_object_group("Spatial"), gene_list::Union{Strin
         end
         MK.current_figure()
     elseif layer === "transcripts"
-            if isa(sp, Union{VisiumObject, SlideseqObject, VisiumHDObject})
+            if isa(sp, Union{VisiumObject, SlideseqObject})
                 error("Visium or SlideSeq object doesn't support transcript plot.")
             end
             coord_molecules=deepcopy(sp.spmetaData.molecule)
@@ -306,7 +306,7 @@ function sp_feature_plot(sp::get_object_group("Spatial"), gene_list::Union{Strin
                 df_plt = map_values(df_plt, :new_gene, :forcolor, from, to)
                 df_plt.new_gene = string.(df_plt.new_gene)
                 df_plt.forcolor = [(i, alpha) for i in df_plt.forcolor]
-                fig = MK.Figure(resolution = (width, height))
+                fig = MK.Figure(size = (width, height))
                 ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
                     xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
                     xgridvisible = false, ygridvisible = false,yreversed=false, 
@@ -357,7 +357,7 @@ function sp_feature_plot(sp::get_object_group("Spatial"), gene_list::Union{Strin
                 end
                 MK.current_figure()
             else
-                fig = MK.Figure(resolution = (width * n_cols, height * n_rows))
+                fig = MK.Figure(size = (width * n_cols, height * n_rows))
                 for (i, gene) in enumerate(gene_list)
                     n_row = Int(ceil(i/3))
                     if i < 4
@@ -449,7 +449,7 @@ function plot_gene_polygons(sp::get_object_group("Imaging"), gene_list::Union{St
     polygon_num = subset_poly.polygon_number
     polygons = polygons[polygon_num]
     c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3]),parse(Colorant, color_keys[4])])
-    fig = MK.Figure(resolution = (width * n_cols, height * n_rows))
+    fig = MK.Figure(size = (width * n_cols, height * n_rows))
     for (i, gene) in enumerate(gene_list)
         gene_expr = subset_count(norm_count; genes = [gene])
         gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
@@ -527,7 +527,7 @@ function plot_cell_polygons(sp::Union{ImagingSpatialObject, CartanaObject,Xenium
     polygon_num = subset_poly.polygon_number
     polygons = polygons[polygon_num]
     plt_color = plt_color[polygon_num]
-    fig = MK.Figure(resolution=(width, height))
+    fig = MK.Figure(size=(width, height))
     ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
         xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
         xgridvisible = false,ygridvisible = false)
@@ -604,7 +604,7 @@ function plot_transcript_polygons(sp::get_object_group("Imaging");
     colors1 = df_spatial1[!,:new_color]
     df_spatial2=filter(:gene => ∈(Set(gene_list)), df_spatial)
     colors2 = df_spatial2[!,:new_color]
-    fig = MK.Figure(resolution=(width, height))
+    fig = MK.Figure(size=(width, height))
     fig[1, 1] = MK.Axis(fig; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, 
         xticksvisible=false, xticklabelsvisible=false, yticksvisible=false, 
         yticklabelsvisible=false, xgridvisible = false, ygridvisible = false)
@@ -619,7 +619,7 @@ function plot_transcript_polygons(sp::get_object_group("Imaging");
     return MK.current_figure()
 end
 
-function sp_dim_plot(sp::get_object_group("Spatial"), anno::Union{Symbol, String}; 
+function sp_dim_plot(sp::get_object_group("Spatial2"), anno::Union{Symbol, String}; 
     anno_color::Union{Nothing, Dict} = nothing, x_col::String = "x", y_col::String = "y", cell_order::Union{Vector{String}, Nothing}=nothing, cell_highlight::Union{String, Nothing}=nothing,
     x_lims=nothing, y_lims=nothing,width=900, height=1000,stroke_width=0.5,stroke_color=:transparent,  bg_color=:white,
         marker_size=2, label_size=50, label_color="black", label_offset=(0,0), do_label=false, do_legend=true, alpha::Real = 1,
@@ -627,7 +627,7 @@ function sp_dim_plot(sp::get_object_group("Spatial"), anno::Union{Symbol, String
         adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3
     )
     coord_limits = spatial_range(sp)
-    if isa(sp, Union{VisiumObject, VisiumHDObject})
+    if isa(sp, VisiumObject)
         anno_df = deepcopy(sp.spmetaData)
         anno_df[!, anno] = sp.metaData[!, anno]
         x_col = Symbol(x_col)
@@ -652,26 +652,26 @@ function sp_dim_plot(sp::get_object_group("Spatial"), anno::Union{Symbol, String
         anno_df[!, anno] = string.(anno_df[!, anno])
     end
     if isa(x_lims, Nothing)
-        if isa(sp, Union{VisiumObject, VisiumHDObject})
+        if isa(sp, VisiumObject)
             x_lims = coord_limits[1]
         else
             x_lims=(minimum(anno_df[!,x_col])-0.05*maximum(anno_df[!,x_col]),1.05*maximum(anno_df[!,x_col]))
         end
     else 
-        if isa(sp, Union{VisiumObject, VisiumHDObject})
+        if isa(sp, VisiumObject)
             x_lims = x_lims .* scale_factor
         else
             x_lims = x_lims
         end
     end
     if isa(y_lims, Nothing)
-        if isa(sp, Union{VisiumObject, VisiumHDObject})
+        if isa(sp, VisiumObject)
             y_lims = coord_limits[2]
         else
             y_lims=(minimum(anno_df[!,y_col])-0.05*maximum(anno_df[!,y_col]),1.05*maximum(anno_df[!,y_col]))
         end
     else 
-        if isa(sp, Union{VisiumObject, VisiumHDObject})
+        if isa(sp, VisiumObject)
             y_lims = y_lims .* scale_factor
         else
             y_lims = y_lims
@@ -688,14 +688,14 @@ function sp_dim_plot(sp::get_object_group("Spatial"), anno::Union{Symbol, String
     end
     anno_df=DataFrames.transform(anno_df, anno => ByRow(x -> anno_color[x]) => :new_color)
     anno_df.new_color = [(i, alpha) for i in anno_df.new_color]
-    fig = MK.Figure(resolution=(width, height))
+    fig = MK.Figure(size=(width, height))
     ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
         xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
         xgridvisible = false,ygridvisible = false);
     ax2 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
         xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
         xgridvisible = false,ygridvisible = false);
-    if isa(sp, Union{VisiumObject, VisiumHDObject})
+    if isa(sp, VisiumObject)
         if img_res == "high"
             img = deepcopy(sp.imageData.highresImage)
         elseif img_res == "low"
@@ -789,7 +789,7 @@ function sp_highlight_cells(sp::get_object_group("Imaging"), cell_hightlight::St
     coord_cells[!,anno]=string.(coord_cells[!,anno])
     coord_cells=DataFrames.transform(coord_cells, anno => ByRow(name -> name == cell_hightlight ? name : "others") => :newcell)
     coord_cells=DataFrames.transform(coord_cells, :newcell => ByRow(name -> name =="others" ? "gray90" : cell_color) => :newcolor)
-    fig = MK.Figure(resolution=canvas_size)
+    fig = MK.Figure(size=canvas_size)
     fig[1, 1] = MK.Axis(fig; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, 
                 xticksvisible=false, xticklabelsvisible=false, 
                 yticksvisible=false, yticklabelsvisible=false,
@@ -839,7 +839,7 @@ function sp_feature_plot_group(sp_list::Union{ Vector{ImagingSpatialObject}, Vec
             error("Labels must have same length as length(sp_list)")
         end
     end
-    fig = MK.Figure(resolution=(width * length(genes), height * length(sp_list)))
+    fig = MK.Figure(size=(width * length(genes), height * length(sp_list)))
     for m in 1:length(genes)
         gene=genes[m]
         all_expr=[]
@@ -975,11 +975,11 @@ function sp_feature_plot_group(sp_list::Union{ Vector{ImagingSpatialObject}, Vec
     MK.current_figure()
 end
 
-function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y::Int64; 
+function plot_fov(sp::get_object_group("Spatial2"), n_fields_x::Int64, n_fields_y::Int64; 
     x_col::Union{String, Symbol}="x", y_col::Union{String, Symbol}="y", group_label::Union{Nothing, String}=nothing, alpha = 1, adjust_coord_to_img = "auto",
     custom_img=false, width=4000, height=4000, cell_highlight::Union{Nothing, String, Number}=nothing, shield::Bool= false, marker_size::Union{Int64, Float64, Nothing}=nothing)
     coord_limits = spatial_range(sp)
-    if isa(sp, Union{VisiumObject, VisiumHDObject})
+    if isa(sp, VisiumObject)
         df = deepcopy(sp.spmetaData)
         if !isa(group_label, Nothing)
             meta = deepcopy(sp.metaData)
@@ -1003,12 +1003,12 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
     end
     pts, centroids=split_field(df, n_fields_x, n_fields_y)
     centroids=convert.(Tuple{Float64, Float64},centroids)
-    if isa(sp, Union{VisiumObject, VisiumHDObject})
+    if isa(sp, VisiumObject)
         x_lims = coord_limits[1]
     else
         x_lims=(minimum(df[!, x_col])-0.05*maximum(df[!, x_col]),1.05*maximum(df[!, x_col]))
     end
-    if isa(sp, Union{VisiumObject, VisiumHDObject})
+    if isa(sp, VisiumObject)
         y_lims = coord_limits[2]
     else
         y_lims=(minimum(df[!, y_col])-0.05*maximum(df[!, y_col]),1.05*maximum(df[!, y_col]))
@@ -1019,11 +1019,11 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
     elseif label_size > 1600
         label_size = 1600
     end
-    fig = MK.Figure(resolution=(width, height))
+    fig = MK.Figure(size=(width, height))
     fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
                 xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
                 xgridvisible = false,ygridvisible = false)
-    if isa(sp, Union{VisiumObject, VisiumHDObject})
+    if isa(sp, VisiumObject)
         if isa(marker_size, Nothing)
             marker_size = 50
         end
@@ -1076,7 +1076,7 @@ function plot_point(sp::get_object_group("Imaging"), pt::Vector{Float64};
     pt2=MK.Point2f0(pt[1], pt[2])
     x_lims=(minimum(df.x)-0.05*maximum(df.x),1.05*maximum(df.x))
     y_lims=(minimum(df.y)-0.05*maximum(df.y),1.05*maximum(df.y))
-    fig = MK.Figure(resolution=canvas_size)
+    fig = MK.Figure(size=canvas_size)
     fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
                 xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
                 xgridvisible = false,ygridvisible = false);
@@ -1104,7 +1104,7 @@ function plot_depth(sp::get_object_group("Spatial"); celltype::Union{String, Sym
         else
             cell_colors = [cgrad(cmap, [0.0, 1.0])[z] for z in cells.depth]
         end
-        fig = MK.Figure(resolution=(1200,600))
+        fig = MK.Figure(size=(1200,600))
         ax1=MK.Axis(fig[1, 1]; xticklabelsize=(fontsize-4), yticklabelsize=fontsize, xticksvisible=false, xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,xgridvisible = false,ygridvisible = false,title = "Cells colored by kidney depth",titlesize = fontsize)
         ax2=MK.Axis(fig[1,2]; xticklabelsize=(fontsize-4) ,yticklabelsize=fontsize, xticksvisible=true, xticklabelsvisible=true, yticksvisible=true, yticklabelsvisible=true,xgridvisible = false,ygridvisible = false, title = "Cell distribution from cortex to papilla",titlesize = fontsize,yticks = ((1:length(celltypes)) ./ scale,  celltypes))
         MK.scatter!(ax1, cells.x, cells.y; color = cell_colors, markersize = 2)
@@ -1148,7 +1148,7 @@ function plot_depth_animation(sp::get_object_group("Spatial"), celltypes::Vector
     cells = filter(group_label => ∈(Set(celltypes)), cells)
     molecules = sp.spmetaData.molecule
     molecules = filter(gene_label => ∈(Set(markers)), molecules)
-    fig = MK.Figure(resolution = (width, height))
+    fig = MK.Figure(size = (width, height))
     ax1 = MK.Axis(fig[1, 1]; xticklabelsize = (fontsize-4), yticklabelsize=fontsize, xticksvisible=false, xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,xgridvisible = false,ygridvisible = false,title = titles[1],titlesize = fontsize)
     ax2 = MK.Axis(fig[1, 3]; xticklabelsize = (fontsize-4) ,yticklabelsize=fontsize, xticksvisible=true, xticklabelsvisible=true, yticksvisible=true, yticklabelsvisible=true,xgridvisible = false,ygridvisible = false, title = titles[2],titlesize = fontsize,yticks = ((1:length(celltypes)) ./ scale,  celltypes))
     ax3 = MK.Axis(fig[1, 2]; xticklabelsize = (fontsize-4) ,yticklabelsize=fontsize, xticksvisible=true, xticklabelsvisible=true, yticksvisible=true, yticklabelsvisible=true,xgridvisible = false,ygridvisible = false, title = titles[3],titlesize = fontsize,yticks = ((1:length(markers)) ./ scale,  markers))
@@ -1228,7 +1228,7 @@ function plot_gene_depth(sp::get_object_group("Spatial"), gene::String;
     if isa(c_map, Nothing)
         c_map=:gist_heat
     end
-    fig = MK.Figure(resolution=canvas_size)
+    fig = MK.Figure(size=canvas_size)
     fig[1, 1] = MK.Axis(fig; xticklabelsize=16, yticklabelsize=16, 
                 xticksvisible=false, xticklabelsvisible=false, 
                 yticksvisible=false, yticklabelsvisible=false,
@@ -1274,7 +1274,7 @@ function plot_transcript_dapi(sp::get_object_group("Imaging"), fov::Int64, n_fie
     img2 = img[ymin:ymax,xmin:xmax]'
     plt_x = df_spatial.x .- xmin
     plt_y = df_spatial.y .- ymin
-    fig = MK.Figure(resolution=(500,500))
+    fig = MK.Figure(size=(500,500))
     fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, 
         xticksvisible = false, xticklabelsvisible=false, backgroundcolor = :black,
         yticksvisible = false, yticklabelsvisible=false, xgridvisible = false,ygridvisible = false );
@@ -1452,7 +1452,7 @@ function overlay_visium_cartana(vs::Union{VisiumObject, SlideseqObject, VisiumHD
     sp_markersize=2, vs_title="Visium", sp_title="Cartana")
     cartana_df = deepcopy(sp.spmetaData.cell)
     visium_df = deepcopy(vs.spmetaData.cell)
-    fig = MK.Figure(resolution=(1800,500))
+    fig = MK.Figure(size=(1800,500))
     ax1 = MK.Axis(fig[1, 1]; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
                             xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
                             xgridvisible = false, ygridvisible = false,yreversed=false, title = sp_title, titlesize=26)
@@ -1513,7 +1513,7 @@ function overlay_visium_cartana_gene(vs::Union{VisiumObject, SlideseqObject, Vis
     if isa(y_lims, Nothing)
         y_lims=(minimum(sp.spmetaData.cell[!, sp_y])-0.1,maximum(sp.spmetaData.cell[!, sp_y])+0.1)
     end
-    fig = MK.Figure(resolution=canvas_size)
+    fig = MK.Figure(size=canvas_size)
     ax3 = MK.Axis(fig[1,3]; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
                             xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
                             xgridvisible = false, ygridvisible = false, title = vs_title * "+" * sp_title, titlesize=26)

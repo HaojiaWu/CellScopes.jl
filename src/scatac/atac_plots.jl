@@ -66,7 +66,7 @@ function gene_activity_plot(atac_obj::scATACObject, genes; dim_type::String = "u
             group_arr = string.(atac_obj.metaData[!, split_by])
             group_names = unique(group_arr)
             gene_data[!, split_by] = group_arr
-            fig = MK.Figure(resolution = (width * length(group_names), height * length(genes)))
+            fig = MK.Figure(size = (width * length(group_names), height * length(genes)))
             for (i, group) in enumerate(group_names)
                 for (j, gene) in enumerate(genes)
                     df_plt = gene_data[!, [x_col, y_col, gene, split_by]]

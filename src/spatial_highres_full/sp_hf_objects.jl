@@ -11,6 +11,7 @@ mutable struct Layer <: AbstractLayers
     varGene::Union{VariableGeneObject, Nothing}
     dimReduction::Union{ReductionObject, Nothing}
     clustData::Union{ClusteringObject, Nothing}
+    polygonData::Union{Array{Array{Float64, 2}, 1}, Nothing}
     jsonParameters::Union{Dict{String, Any}, Nothing}
     function Layer(raw_count; 
         min_gene::Int64 = 0,
@@ -36,7 +37,7 @@ mutable struct Layer <: AbstractLayers
             meta_data = DataFrame(Cell_id = cells, nFeatures=nFeatures, nGenes = nGenes)
         end
         count_obj = RawCountObject(count_mat, cells, genes)
-        layer_obj = new(count_obj, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
+        layer_obj = new(count_obj, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
         layer_obj.metaData = meta_data
         return layer_obj
     end
@@ -58,6 +59,7 @@ mutable struct VisiumHDObject <: AbstractSpaFullObj
     dimReduction::Union{ReductionObject, Nothing}
     clustData::Union{ClusteringObject, Nothing}
     imageData::Union{VisiumImgObject, Nothing}
+    polygonData::Union{Array{Array{Float64, 2}, 1}, Nothing}
     defaultData::Union{String, Nothing}
     function VisiumHDObject(layer_data::Layers; 
             default_bin::String="8_um",
@@ -67,7 +69,7 @@ mutable struct VisiumHDObject <: AbstractSpaFullObj
             min_cell::Int64 = 0,
             prefix::Union{String, Nothing} = nothing,
             postfix::Union{String, Nothing} = nothing)
-        hd_obj = new(layer_data, nothing, nothing, nothing,nothing,nothing,nothing,nothing,nothing,nothing,default_bin)
+        hd_obj = new(layer_data, nothing, nothing, nothing,nothing,nothing,nothing,nothing,nothing,nothing, nothing,default_bin)
         raw_count = hd_obj.layerData.layers[default_bin].rawCount
         meta_data = hd_obj.layerData.layers[default_bin].metaData
         sp_meta = hd_obj.layerData.layers[default_bin].spmetaData
@@ -114,6 +116,7 @@ function update_data!(obj::VisiumHDObject)
         obj.varGene = layer.varGene
         obj.dimReduction = layer.dimReduction
         obj.clustData = layer.clustData
+        obj.polygonData = layer.polygonData
         obj.imageData.jsonParameters  = layer.jsonParameters
     end
 end
