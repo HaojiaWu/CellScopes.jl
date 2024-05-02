@@ -530,7 +530,7 @@ end
 return cosmx_obj
 end
 
-function read_layers(layer_path; 
+function read_layers(hd_dir; 
     min_gene::Int64 = 0,
     min_cell::Int64 = 0,
     bin_size::Int64 = 2,
