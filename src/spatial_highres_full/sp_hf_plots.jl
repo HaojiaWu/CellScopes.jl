@@ -32,10 +32,11 @@ function sp_dim_plot(sp::VisiumHDObject, anno; x_col::String = "x", y_col::Strin
     if isa(anno_color, Nothing)
         c_map=Colors.distinguishable_colors(length(cell_highlight), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
         c_map = "#" .* hex.(c_map)
-        anno_color=Dict(cell_highlight .=> c_map)
-        anno_color = merge(anno_color, other_color)
+        cell_color=Dict(cell_highlight .=> c_map)
+        anno_color = merge(cell_color, other_color)
 
     else
+        cell_color = anno_color
         anno_color = merge(anno_color, other_color)
     end
     
@@ -73,9 +74,9 @@ function sp_dim_plot(sp::VisiumHDObject, anno; x_col::String = "x", y_col::Strin
             if !isa(cell_order, Nothing)
                cells = cell_order
             else
-               cells = string.(collect(keys(anno_color)))
+               cells = string.(collect(keys(cell_color)))
             end
-            colors = [anno_color[i] for i in cells]
+            colors = [cell_color[i] for i in cells]
             for (cell1, color1) in zip(cells, colors)
                 select_fov1 = filter(anno => ==(cell1), select_fov)
                 MK.scatter!(ax1,[0, 1], color = color1, marker=:rect,
