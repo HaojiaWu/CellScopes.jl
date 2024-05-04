@@ -979,7 +979,7 @@ function plot_fov(sp::get_object_group("Spatial2"), n_fields_x::Int64, n_fields_
     x_col::Union{String, Symbol}="x", y_col::Union{String, Symbol}="y", group_label::Union{Nothing, String}=nothing, alpha = 1, adjust_coord_to_img = "auto",
     custom_img=false, width=4000, height=4000, cell_highlight::Union{Nothing, String, Number}=nothing, shield::Bool= false, marker_size::Union{Int64, Float64, Nothing}=nothing)
     coord_limits = spatial_range(sp)
-    if isa(sp, VisiumObject)
+    if isa(sp, Union{VisiumObject, VisiumHDObject})
         df = deepcopy(sp.spmetaData)
         if !isa(group_label, Nothing)
             meta = deepcopy(sp.metaData)
@@ -1003,12 +1003,12 @@ function plot_fov(sp::get_object_group("Spatial2"), n_fields_x::Int64, n_fields_
     end
     pts, centroids=split_field(df, n_fields_x, n_fields_y)
     centroids=convert.(Tuple{Float64, Float64},centroids)
-    if isa(sp, VisiumObject)
+    if isa(sp, Union{VisiumObject, VisiumHDObject})
         x_lims = coord_limits[1]
     else
         x_lims=(minimum(df[!, x_col])-0.05*maximum(df[!, x_col]),1.05*maximum(df[!, x_col]))
     end
-    if isa(sp, VisiumObject)
+    if isa(sp, Union{VisiumObject, VisiumHDObject})
         y_lims = coord_limits[2]
     else
         y_lims=(minimum(df[!, y_col])-0.05*maximum(df[!, y_col]),1.05*maximum(df[!, y_col]))
@@ -1023,7 +1023,7 @@ function plot_fov(sp::get_object_group("Spatial2"), n_fields_x::Int64, n_fields_
     fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
                 xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
                 xgridvisible = false,ygridvisible = false)
-    if isa(sp, VisiumObject)
+    if isa(sp, Union{VisiumObject, VisiumHDObject})
         if isa(marker_size, Nothing)
             marker_size = 50
         end
