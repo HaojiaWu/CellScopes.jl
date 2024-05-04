@@ -544,17 +544,21 @@ function read_layers(hd_dir;
     all_cells = counts.cell_name
     pos = read_hd_pos(pos_file)
     pos = filter(:barcode => ∈(Set(all_cells)), pos)
-    pos = reorder(pos, "barcode", all_cells)
     pos =  pos[(pos[!, :pxl_row_in_fullres] .> 0) .& (pos[!, :pxl_col_in_fullres] .> 0), :]
     if isa(prefix, String)
         pos.barcode = prefix .*  "_" .* string.(pos.barcode)
+        counts.cell_name = prefix .*  "_" .* string.(counts.cell_name)
     end
     if isa(postfix, String)
         pos.barcode = string.(pos.barcode ) .* "_" .* postfix
+        counts.cell_name = string.(counts.cell_name ) .* "_" .* postfix
     end
     all_cells = pos[!, :barcode]
     counts = subset_count(counts; cells = all_cells)
-    layer = Layer(counts; prefix = prefix, postfix = postfix)
+    layer = Layer(counts)
+    all_cells = layer.rawCount.cell_name
+    pos = filter(:barcode => ∈(Set(all_cells)), pos)
+    pos = reorder(pos, "barcode", all_cells)
     layer.spmetaData = pos
     json = JSON.parsefile(json_file)
     layer.jsonParameters = json

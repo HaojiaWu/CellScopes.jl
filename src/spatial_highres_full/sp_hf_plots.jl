@@ -135,6 +135,7 @@ function sp_feature_plot(sp::VisiumHDObject, gene_list::Union{String, Vector{Str
     if isa(y_lims, Nothing)
         y_lims=[1,max_h]
     end
+    poly = [m .- [x_lims[1]-1 y_lims[1]-1] for m in poly]
     img = img[x_lims[1]:x_lims[2], y_lims[1]:y_lims[2]]
     img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
     fig = MK.Figure(size = (width * n_cols, height * n_rows))
@@ -143,10 +144,9 @@ function sp_feature_plot(sp::VisiumHDObject, gene_list::Union{String, Vector{Str
         gene_expr = subset_count(norm_count; genes = [gene])
         gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
         anno_df.gene = gene_expr
-        select_fov = filter([:x, :y, :gene] => (x, y, gene) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2] && gene >= clip, anno_df)
+        select_fov = filter([:x, :y, :gene] => (x, y, gene) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2] && gene > clip, anno_df)
         polygon_num = select_fov.ID
-        poly = poly[polygon_num]
-        poly = [m .- [x_lims[1]-1 y_lims[1]-1] for m in poly]
+        poly2 = poly[polygon_num]
         gene_expr = select_fov.gene
         if scale
             gene_expr = unit_range_scale(gene_expr)
@@ -154,7 +154,7 @@ function sp_feature_plot(sp::VisiumHDObject, gene_list::Union{String, Vector{Str
         colors = get(c_map, gene_expr, :extrema)
         plt_color="#" .* hex.(colors)
         plt_color = [(i, alpha) for i in plt_color]
-        c_map = [(i, alpha) for i in c_map]
+        c_map2 = [(i, alpha) for i in c_map]
         n_row = Int(ceil(i/3))
         if i < 4
             n_col1 = 2i-1
@@ -169,10 +169,11 @@ function sp_feature_plot(sp::VisiumHDObject, gene_list::Union{String, Vector{Str
         titlesize = titlesize, xlabel = "", ylabel = "", 
         xlabelsize = titlesize -4, ylabelsize = titlesize -4)
         MK.image!(ax1, img2)
-        MK.poly!(ax1, [MK.Point2.(eachrow(p)) for p in poly]; strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width,label="")
+        MK.poly!(ax1, [MK.Point2.(eachrow(p)) for p in poly2]; strokecolor=stroke_color, 
+                    color=plt_color, strokewidth=stroke_width,label="")
         MK.xlims!(MK.current_axis(), x_lims .- x_lims[1] .+ 1)
         MK.ylims!(MK.current_axis(), y_lims .- y_lims[1] .+ 1)
-        MK.Colorbar(fig[n_row,n_col2], label = "", colormap = c_map, width=10, limits = (0, maximum(gene_expr)))
+        MK.Colorbar(fig[n_row,n_col2], label = "", colormap = c_map2, width=10, limits = (0, maximum(gene_expr)))
     end
         MK.current_figure()
 end
