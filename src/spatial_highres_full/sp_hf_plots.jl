@@ -77,7 +77,7 @@ function sp_dim_plot(sp::VisiumHDObject, anno; x_col::String = "x", y_col::Strin
                cells = string.(collect(keys(cell_color)))
             end
             colors = [cell_color[i] for i in cells]
-            for color1 in colors
+            for (cell1, color1) in zip(cells, colors)
                 MK.scatter!(ax1,[NaN], [NaN], color = color1, marker=:rect,
                                 strokewidth = 0.5,strokecolor=stroke_color, markersize = legend_size, label = cell1)
             end
