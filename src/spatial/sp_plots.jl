@@ -975,7 +975,7 @@ function sp_feature_plot_group(sp_list::Union{ Vector{ImagingSpatialObject}, Vec
     MK.current_figure()
 end
 
-function plot_fov(sp::get_object_group("Spatial2"), n_fields_x::Int64, n_fields_y::Int64; 
+function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y::Int64; 
     x_col::Union{String, Symbol}="x", y_col::Union{String, Symbol}="y", group_label::Union{Nothing, String}=nothing, alpha = 1, adjust_coord_to_img = "auto",
     custom_img=false, width=4000, height=4000, cell_highlight::Union{Nothing, String, Number}=nothing, shield::Bool= false, marker_size::Union{Int64, Float64, Nothing}=nothing)
     coord_limits = spatial_range(sp)

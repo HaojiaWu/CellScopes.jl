@@ -146,3 +146,64 @@ function compute_corner_points(df::DataFrame, width::Real; x_col="x", y_col="y",
     end
     return corners
 end
+
+function create_image(df)
+    max_y = maximum(df.y)
+    max_x = maximum(df.x)
+    new_img = fill(RGBA(1, 1, 1, 1), max_x, max_y)
+    x_coords = df.x
+    y_coords = df.y
+    colors = df.color
+    indices = CartesianIndex.(df.x, df.y)
+    new_img[indices] = df.color
+    return new_img
+end
+
+function process_hd_coordinates(img, pos, scale_factor)
+    h1, w1 = size(img)
+    df = DataFrame(x = repeat(1:w1, inner = h1),
+               y = repeat(1:h1, outer = w1),
+               color = vec(img))
+    pos.pxl_row_in_fullres = pos.pxl_row_in_fullres .* scale_factor
+    pos.pxl_col_in_fullres = pos.pxl_col_in_fullres .* scale_factor
+    df2=df[!, ["x","y"]]
+    df2.datatype .= "HE"
+    df3=pos[!, ["pxl_col_in_fullres","pxl_row_in_fullres"]]
+    rename!(df3, ["x","y"])
+    df3.datatype .= "cell"
+    df4=[df2; df3]
+    df4.y = invert_y_axis(df4.y)
+    df_grp = groupby(df4, :datatype)
+    df.y = df_grp[1].y
+    new_pos = pos
+    new_pos.x = df_grp[2].x ./ scale_factor
+    new_pos.y = df_grp[2].y ./ scale_factor
+    df2.color = df.color
+    new_img = create_image(df2)
+    return new_img, new_pos
+end
+
+function update_coordinates_hd(sp::VisiumHDObject)
+    low_res = deepcopy(sp.imageData.lowresImage)
+    sp_meta = deepcopy(sp.spmetaData)
+    scale_factor = get_vs_sf(sp; img_res = "low")
+    img1, pos1 = process_hd_coordinates(low_res, sp_meta, scale_factor)
+    new_pos = deepcopy(sp.spmetaData)
+    new_pos.x_low, new_pos.y_low = pos1.x, pos1.y
+    sp.imageData.lowresImage = img1
+    sp_meta = deepcopy(sp.spmetaData)
+    hi_res = deepcopy(sp.imageData.highresImage);
+    scale_factor = get_vs_sf(sp; img_res = "high")
+    img2, pos2 = process_hd_coordinates(hi_res, sp_meta, scale_factor)
+    new_pos.x_high, new_pos.y_high = pos2.x, pos2.y
+    sp.imageData.highresImage = img2
+    if !isa(sp.imageData.fullresImage, Nothing)
+        sp_meta = deepcopy(sp.spmetaData)
+        full_res = deepcopy(sp.imageData.fullresImage)
+        scale_factor = get_vs_sf(sp; img_res = "full")
+        img3, pos3 = process_hd_coordinates(full_res, sp_meta, scale_factor)
+        new_pos.x_full, new_pos.y_full = pos3.x, pos3.y
+        sp.imageData.fullresImage = img3
+    end
+    return sp
+end
