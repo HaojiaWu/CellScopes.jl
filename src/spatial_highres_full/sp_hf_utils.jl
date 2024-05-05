@@ -175,7 +175,6 @@ function process_hd_coordinates(img, pos, scale_factor; return_img=true)
     df4.y = invert_y_axis(df4.y)
     df_grp = groupby(df4, :datatype)
     new_pos = DataFrame(cell = pos.barcode, x=df_grp[2].x ./ scale_factor, y=df_grp[2].y ./ scale_factor
-    new_pos.y = df_grp[2].y ./ scale_factor
     if return_img
         df2.color = df.color
         new_img = create_image(df2)
@@ -197,7 +196,7 @@ function update_coordinates_hd(sp::VisiumHDObject)
     hi_res = deepcopy(sp.imageData.highresImage)
     scale_factor = get_vs_sf(sp; img_res = "high")
     img2, pos2 = process_hd_coordinates(hi_res, sp_meta, scale_factor)
-    alter_imgdata.imgData["high"] = img1
+    alter_imgdata.imgData["high"] = img2
     alter_imgdata.posData["high_pos"] = pos2
     if !isa(sp.imageData.fullresImage, Nothing)
         sp_meta = deepcopy(sp.spmetaData)
