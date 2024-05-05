@@ -5,6 +5,10 @@ abstract type AbstractLayers <: AbstractSpaFullObj end
 abstract type AbstractPositions <: AbstractSpaFullObj end
 abstract type AbstractHDImages <: AbstractSpaFullObj end
 
+mutable struct Positions <: AbstractPositions
+    Positions() = new(Dict{String, DataFrame}())
+end
+
 mutable struct Layer <: AbstractLayers
     rawCount::Union{RawCountObject, Nothing}
     normCount::Union{NormCountObject, Nothing}
@@ -50,10 +54,6 @@ end
 mutable struct Layers <: AbstractLayers
     layers::Dict{String, Layer}
     Layers() = new(Dict{String, Layer}())
-end
-
-mutable struct Positions <: AbstractPositions
-    Positions() = new(Dict{String, DataFrame}())
 end
 
 mutable struct AlterImages <: AbstractHDImages
