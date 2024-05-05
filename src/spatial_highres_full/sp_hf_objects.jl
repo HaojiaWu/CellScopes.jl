@@ -63,7 +63,7 @@ end
 mutable struct AlterHDImgObject <: AbstractHDImages
     imgData::Union{AlterImages, Nothing}
     posData::Union{Positions, Nothing}
-    AlterHDImgObject = new(imageData, posData)
+    AlterHDImgObject(imageData, posData) = new(imageData, posData)
 end
 
 mutable struct VisiumHDObject <: AbstractSpaFullObj
