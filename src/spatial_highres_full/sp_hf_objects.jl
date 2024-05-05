@@ -16,6 +16,7 @@ mutable struct Layer <: AbstractLayers
     clustData::Union{ClusteringObject, Nothing}
     polygonData::Union{Array{Array{Float64, 2}, 1}, Nothing}
     jsonParameters::Union{Dict{String, Any}, Nothing}
+    posData::Union{Positions, Nothing}
     function Layer(raw_count; 
         min_gene::Int64 = 0,
         min_cell::Int64 = 0,
@@ -40,7 +41,7 @@ mutable struct Layer <: AbstractLayers
             meta_data = DataFrame(Cell_id = cells, nFeatures=nFeatures, nGenes = nGenes)
         end
         count_obj = RawCountObject(count_mat, cells, genes)
-        layer_obj = new(count_obj, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
+        layer_obj = new(count_obj, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
         layer_obj.metaData = meta_data
         return layer_obj
     end
@@ -136,6 +137,9 @@ function update_data!(obj::VisiumHDObject)
         obj.clustData = layer.clustData
         obj.polygonData = layer.polygonData
         obj.imageData.jsonParameters  = layer.jsonParameters
+        if !isa(obj.alterImgData, Nothing)
+            obj.alterImgData.posData = layer.posData
+        end
     end
 end
 

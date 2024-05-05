@@ -9,6 +9,9 @@ function set_default_layer(obj::VisiumHDObject; layer_slot::Union{String, Nothin
         layer.varGene = obj.varGene
         layer.dimReduction = obj.dimReduction
         layer.clustData = obj.clustData
+        if !isa(obj.alterImgData, Nothing)
+            layer.posData = obj.alterImgData.posData
+        end
     end
     obj.defaultData = layer_slot
     layer = get(obj.layerData.layers, obj.defaultData, nothing)
@@ -22,6 +25,9 @@ function set_default_layer(obj::VisiumHDObject; layer_slot::Union{String, Nothin
         obj.dimReduction = layer.dimReduction
         obj.clustData = layer.clustData
         obj.imageData.jsonParameters  = layer.jsonParameters
+        if !isa(obj.alterImgData, Nothing)
+            obj.alterImgData.posData = layer.posData
+        end
     end
     return obj
 end
@@ -195,7 +201,7 @@ function update_coordinates_hd(sp::VisiumHDObject)
     sp_meta = deepcopy(sp.spmetaData)
     hi_res = deepcopy(sp.imageData.highresImage)
     scale_factor = get_vs_sf(sp; img_res = "high")
-    img2, pos2 = process_hd_coordinates(hi_res, sp_meta, scale_factor)
+    img2, pos2 = process_hd_coordinates(hi_res, sp_meta, scale_factor; return_img=true)
     alter_imgdata.imgData["high"] = img2
     alter_imgdata.posData["high_pos"] = pos2
     if !isa(sp.imageData.fullresImage, Nothing)
@@ -206,5 +212,6 @@ function update_coordinates_hd(sp::VisiumHDObject)
         alter_imgdata.imgData["full"] = img3
         alter_imgdata.posData["full_pos"] = pos3
     end
+    sp.alterImgData = alter_imgdata
     return sp
 end
