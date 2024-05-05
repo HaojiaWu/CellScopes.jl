@@ -84,5 +84,6 @@ include("scatac/atac_plots.jl")
 include("scatac/atac_utils.jl")
 include("spatial/baysor_boundary.jl")
 include("spatial_highres_full/sp_hf_plots.jl")
+include("spatial_highres_full/sp_hf_processing.jl")
 
 end

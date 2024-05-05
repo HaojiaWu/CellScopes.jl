@@ -1,6 +1,9 @@
-abstract type AbstractCellScope end
+# Types for high resolution full transcriptome spatial data
+
 abstract type AbstractSpaFullObj <: AbstractCellScope end
 abstract type AbstractLayers <: AbstractSpaFullObj end
+abstract type AbstractPositions <: AbstractSpaFullObj end
+abstract type AbstractHDImages <: AbstractSpaFullObj end
 
 mutable struct Layer <: AbstractLayers
     rawCount::Union{RawCountObject, Nothing}
@@ -48,6 +51,20 @@ mutable struct Layers <: AbstractLayers
     Layers() = new(Dict{String, Layer}())
 end
 
+mutable struct Positions <: AbstractPositions
+    Positions() = new(Dict{String, DataFrame}())
+end
+
+mutable struct AlterImages <: AbstractHDImages
+    AlterImages() = new(Dict{String, Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Nothing}}())
+end
+
+mutable struct AlterHDImgObject <: AbstractHDImages
+    imgData::Union{AlterImages, Nothing}
+    posData::Union{Positions, Nothing}
+    AlterHDImgObject = new(imageData, posData)
+end
+
 mutable struct VisiumHDObject <: AbstractSpaFullObj
     layerData::Union{Layers, Nothing}
     rawCount::Union{RawCountObject, Nothing}
@@ -59,6 +76,7 @@ mutable struct VisiumHDObject <: AbstractSpaFullObj
     dimReduction::Union{ReductionObject, Nothing}
     clustData::Union{ClusteringObject, Nothing}
     imageData::Union{VisiumImgObject, Nothing}
+    alterImgData::Union{AlterHDImgObject, Nothing}
     polygonData::Union{Array{Array{Float64, 2}, 1}, Nothing}
     defaultData::Union{String, Nothing}
     function VisiumHDObject(layer_data::Layers; 
@@ -69,7 +87,7 @@ mutable struct VisiumHDObject <: AbstractSpaFullObj
             min_cell::Int64 = 0,
             prefix::Union{String, Nothing} = nothing,
             postfix::Union{String, Nothing} = nothing)
-        hd_obj = new(layer_data, nothing, nothing, nothing,nothing,nothing,nothing,nothing,nothing,nothing, nothing,default_bin)
+        hd_obj = new(layer_data, nothing, nothing, nothing,nothing,nothing,nothing,nothing,nothing,nothing, nothing, nothing,default_bin)
         raw_count = hd_obj.layerData.layers[default_bin].rawCount
         meta_data = hd_obj.layerData.layers[default_bin].metaData
         sp_meta = hd_obj.layerData.layers[default_bin].spmetaData

@@ -74,7 +74,7 @@ function Base.show(io::IO, count::AbstractCount)
     [println("- ", string(i)) for i in fieldnames(typeof(count))]
 end
 
-function Base.show(io::IO, obj_type::Union{AbstractDimReduction, ClusteringObject, VariableGeneObject, UndefinedObject, SpaImputeObj, VisiumImgObject, SpaCountObj, SpaMetaObj, SpaImageObj, Layer, Layers})
+function Base.show(io::IO, obj_type::Union{AbstractDimReduction, ClusteringObject, VariableGeneObject, UndefinedObject, SpaImputeObj, VisiumImgObject, SpaCountObj, SpaMetaObj, SpaImageObj, Layer, Layers, Positions, AlterImages, AlterHDImgObject})
     println(io, string(typeof(obj_type)))
     println("All fields:")
     [println("- ", string(i)) for i in fieldnames(typeof(obj_type))]
@@ -97,8 +97,12 @@ matchtype(field) = @match field begin
     spCoord::SpaCoordObj => println("- Spatial coordiantes")
     fragment::FragmentObject => println("- Fragment data")
     imgObject::SpaImageObj => println("- Image data")
+    vsmImgObject::VisiumImgObject => println("- Visium image data")
     layer::Layer => println("- Layer")
     layers::Layers => println("- Layers data")
+    positions::Positions => println("- Positions data")
+    alterimg::AlterImages => println("- Processed image data")
+    alterimgobj::AlterHDImgObject => println("- Alternative image data")
     uns::UndefinedObject => println("- Undefined slot")
     emptyObj::Nothing => print("")
 end

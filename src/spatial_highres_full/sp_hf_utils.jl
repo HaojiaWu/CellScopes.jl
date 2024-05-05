@@ -159,7 +159,7 @@ function create_image(df)
     return new_img
 end
 
-function process_hd_coordinates(img, pos, scale_factor)
+function process_hd_coordinates(img, pos, scale_factor; return_img=true)
     h1, w1 = size(img)
     df = DataFrame(x = repeat(1:w1, inner = h1),
                y = repeat(1:h1, outer = w1),
@@ -174,13 +174,15 @@ function process_hd_coordinates(img, pos, scale_factor)
     df4=[df2; df3]
     df4.y = invert_y_axis(df4.y)
     df_grp = groupby(df4, :datatype)
-    df.y = df_grp[1].y
-    new_pos = pos
-    new_pos.x = df_grp[2].x ./ scale_factor
+    new_pos = DataFrame(cell = pos.barcode, x=df_grp[2].x ./ scale_factor, y=df_grp[2].y ./ scale_factor
     new_pos.y = df_grp[2].y ./ scale_factor
-    df2.color = df.color
-    new_img = create_image(df2)
-    return new_img, new_pos
+    if return_img
+        df2.color = df.color
+        new_img = create_image(df2)
+        return new_img, new_pos
+    else
+        return new_pos
+    end
 end
 
 function update_coordinates_hd(sp::VisiumHDObject)
@@ -188,22 +190,22 @@ function update_coordinates_hd(sp::VisiumHDObject)
     sp_meta = deepcopy(sp.spmetaData)
     scale_factor = get_vs_sf(sp; img_res = "low")
     img1, pos1 = process_hd_coordinates(low_res, sp_meta, scale_factor)
-    new_pos = deepcopy(sp.spmetaData)
-    new_pos.x_low, new_pos.y_low = pos1.x, pos1.y
-    sp.imageData.lowresImage = img1
+    alter_imgdata = AlterHDImgObject(nothing, nothing)
+    alter_imgdata.imgData["low"] = img1
+    alter_imgdata.posData["low_pos"] = pos1
     sp_meta = deepcopy(sp.spmetaData)
-    hi_res = deepcopy(sp.imageData.highresImage);
+    hi_res = deepcopy(sp.imageData.highresImage)
     scale_factor = get_vs_sf(sp; img_res = "high")
     img2, pos2 = process_hd_coordinates(hi_res, sp_meta, scale_factor)
-    new_pos.x_high, new_pos.y_high = pos2.x, pos2.y
-    sp.imageData.highresImage = img2
+    alter_imgdata.imgData["high"] = img1
+    alter_imgdata.posData["high_pos"] = pos2
     if !isa(sp.imageData.fullresImage, Nothing)
         sp_meta = deepcopy(sp.spmetaData)
         full_res = deepcopy(sp.imageData.fullresImage)
         scale_factor = get_vs_sf(sp; img_res = "full")
         img3, pos3 = process_hd_coordinates(full_res, sp_meta, scale_factor)
-        new_pos.x_full, new_pos.y_full = pos3.x, pos3.y
-        sp.imageData.fullresImage = img3
+        alter_imgdata.imgData["full"] = img3
+        alter_imgdata.posData["full_pos"] = pos3
     end
     return sp
 end
