@@ -180,7 +180,7 @@ function process_hd_coordinates(img, pos, scale_factor; return_img=true)
     df4=[df2; df3]
     df4.y = invert_y_axis(df4.y)
     df_grp = groupby(df4, :datatype)
-    new_pos = DataFrame(cell = pos.barcode, x=df_grp[2].x ./ scale_factor, y=df_grp[2].y ./ scale_factor
+    new_pos = DataFrame(cell = pos.barcode, x=df_grp[2].x ./ scale_factor, y=df_grp[2].y ./ scale_factor)
     if return_img
         df2.color = df.color
         new_img = create_image(df2)
