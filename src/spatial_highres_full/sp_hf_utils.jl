@@ -160,11 +160,9 @@ function create_image(df)
     max_y = maximum(df.y)
     max_x = maximum(df.x)
     new_img = fill(RGBA(1, 1, 1, 1), max_x, max_y)
-    x_coords = df.x
-    y_coords = df.y
-    colors = df.color
-    indices = CartesianIndex.(df.x, df.y)
-    new_img[indices] = df.color
+    for row in eachrow(df)
+        new_img[row.x, row.y] = row.color
+    end
     return new_img
 end
 
