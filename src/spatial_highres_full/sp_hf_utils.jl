@@ -173,11 +173,11 @@ function process_hd_coordinates(img, pos, scale_factor; return_img=true)
     df = DataFrame(x = repeat(1:w1, inner = h1),
                y = repeat(1:h1, outer = w1),
                color = vec(img))
-    pos.pxl_row_in_fullres = pos.pxl_row_in_fullres .* scale_factor
-    pos.pxl_col_in_fullres = pos.pxl_col_in_fullres .* scale_factor
+    pos.pxl_row_in_fullres1 = pos.pxl_row_in_fullres .* scale_factor
+    pos.pxl_col_in_fullres1 = pos.pxl_col_in_fullres .* scale_factor
     df2=df[!, ["x","y"]]
     df2.datatype .= "HE"
-    df3=pos[!, ["pxl_col_in_fullres","pxl_row_in_fullres"]]
+    df3=pos[!, ["pxl_col_in_fullres1","pxl_row_in_fullres1"]]
     rename!(df3, ["x","y"])
     df3.datatype .= "cell"
     df4=[df2; df3]
@@ -203,9 +203,9 @@ function update_coordinates_hd(sp::VisiumHDObject)
     sp_meta = deepcopy(sp.spmetaData)
     scale_factor = get_vs_sf(sp; img_res = "low")
     img1, pos1 = process_hd_coordinates(low_res, sp_meta, scale_factor)
-    poly1 = create_polygon(pos1, px_width; x_col="x", y_col="y", cell_col = "cell")
     alter_imgdata.imgs["low"] = img1
     pos_data.positions["low_pos"] = pos1
+    poly1 = create_polygon(pos1, px_width; x_col="x", y_col="y", cell_col = "cell")
     poly_data.polygons["low_poly"] = poly1
     sp_meta = deepcopy(sp.spmetaData)
     hi_res = deepcopy(sp.imageData.highresImage)
