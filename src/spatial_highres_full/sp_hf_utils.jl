@@ -198,7 +198,7 @@ function update_coordinates_hd(sp::VisiumHDObject)
     pos_data = Positions()
     poly_data = Polygons()
     layer_slot = sp.defaultData
-    px_width = parse(Int, split(layer_slot, "_")[1]) / sp.imageData.jsonParameters["microns_per_pixel"]
+    px_width = parse(Int, Base.split(layer_slot, "_")[1]) / sp.imageData.jsonParameters["microns_per_pixel"]
     low_res = deepcopy(sp.imageData.lowresImage)
     sp_meta = deepcopy(sp.spmetaData)
     scale_factor = get_vs_sf(sp; img_res = "low")
