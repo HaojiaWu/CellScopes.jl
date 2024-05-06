@@ -4,9 +4,7 @@ function convert_image_data(sp; layer_slot = "8_um")
     return sp
 end
 
-function create_polygon(sp; layer_slot = "8_um", img_res = "low", x_col="x", y_col="y", cell_col = "cell")
-        pos = sp.alterImgData.posData.positions[img_res * "_pos"]
-        px_width = parse(Int, split(img_res, "_")[1]) / hd.imageData.jsonParameters["microns_per_pixel"]
+function create_polygon(pos::DataFrame, px_width; x_col="x", y_col="y", cell_col = "cell")
         corner_coordinates = compute_corner_points(pos, px_width; cell = cell_col, x_col = x_col, y_col = y_col)
         seg = DataFrame(x = corner_coordinates.new_x, y = corner_coordinates.new_y, cell_id = corner_coordinates.barcode)
         grouped = groupby(seg, :cell_id)

@@ -198,11 +198,12 @@ function update_coordinates_hd(sp::VisiumHDObject)
     pos_data = Positions()
     poly_data = Polygons()
     layer_slot = sp.defaultData
+    px_width = parse(Int, split(layer_slot, "_")[1]) / sp.imageData.jsonParameters["microns_per_pixel"]
     low_res = deepcopy(sp.imageData.lowresImage)
     sp_meta = deepcopy(sp.spmetaData)
     scale_factor = get_vs_sf(sp; img_res = "low")
     img1, pos1 = process_hd_coordinates(low_res, sp_meta, scale_factor)
-    poly1 = create_polygon(sp; layer_slot = layer_slot, img_res = "low", x_col="x", y_col="y", cell_col = "cell")
+    poly1 = create_polygon(pos1, px_width; x_col="x", y_col="y", cell_col = "cell")
     alter_imgdata.imgs["low"] = img1
     pos_data.positions["low_pos"] = pos1
     poly_data.polygons["low_poly"] = poly1
@@ -210,7 +211,7 @@ function update_coordinates_hd(sp::VisiumHDObject)
     hi_res = deepcopy(sp.imageData.highresImage)
     scale_factor = get_vs_sf(sp; img_res = "high")
     img2, pos2 = process_hd_coordinates(hi_res, sp_meta, scale_factor; return_img=true)
-    poly2 = create_polygon(sp; layer_slot = layer_slot, img_res = "high", x_col="x", y_col="y", cell_col = "cell")
+    poly2 = create_polygon(pos2, px_width; x_col="x", y_col="y", cell_col = "cell")
     alter_imgdata.imgs["high"] = img2
     pos_data.positions["high_pos"] = pos2
     poly_data.polygons["high_poly"] = poly2
@@ -219,7 +220,7 @@ function update_coordinates_hd(sp::VisiumHDObject)
         full_res = deepcopy(sp.imageData.fullresImage)
         scale_factor = get_vs_sf(sp; img_res = "full")
         img3, pos3 = process_hd_coordinates(full_res, sp_meta, scale_factor)
-        poly3 = create_polygon(sp; layer_slot = layer_slot, img_res = "full", x_col="x", y_col="y", cell_col = "cell")
+        poly3 = create_polygon(pos3, px_width; x_col="x", y_col="y", cell_col = "cell")
         alter_imgdata.imgs["full"] = img3
         pos_data.positions["full_pos"] = pos3
         poly_data.polygons["full_poly"] = poly3
