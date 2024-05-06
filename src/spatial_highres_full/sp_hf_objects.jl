@@ -57,7 +57,7 @@ mutable struct Layers <: AbstractLayers
 end
 
 mutable struct AlterImages <: AbstractHDImages
-    AlterImages() = new(Dict{String, Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Nothing}}())
+    AlterImages() = new(Dict{String, Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Matrix{RGBA{N0f8}}, Nothing}}())
 end
 
 mutable struct AlterHDImgObject <: AbstractHDImages
