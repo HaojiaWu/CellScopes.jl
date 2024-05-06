@@ -213,6 +213,6 @@ function update_coordinates_hd(sp::VisiumHDObject)
         alter_imgdata.imgs["full"] = img3
         pos_data.positions["full_pos"] = pos3
     end
-    sp.alterImgData = AlterHDImgObject(img, pos)
+    sp.alterImgData = AlterHDImgObject(alter_imgdata, pos_data)
     return sp
 end
