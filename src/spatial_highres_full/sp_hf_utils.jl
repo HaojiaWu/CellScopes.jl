@@ -160,9 +160,11 @@ function create_image(df)
     max_y = maximum(df.y)
     max_x = maximum(df.x)
     new_img = fill(RGBA(1, 1, 1, 1), max_x, max_y)
-    for row in eachrow(df)
-        new_img[row.x, row.y] = row.color
-    end
+    x_coords = df.x
+    y_coords = df.y
+    colors = df.color
+    indices = CartesianIndex.(df.x, df.y)
+    new_img[indices] = df.color
     return new_img
 end
 
@@ -198,6 +200,7 @@ function update_coordinates_hd(sp::VisiumHDObject)
     layer_slot = sp.defaultData
     px_width = parse(Int, Base.split(layer_slot, "_")[1]) / sp.imageData.jsonParameters["microns_per_pixel"]
     low_res = deepcopy(sp.imageData.lowresImage)
+    low_res = rotl90(rotl90(rotl90(low_res)))
     sp_meta = deepcopy(sp.spmetaData)
     scale_factor = get_vs_sf(sp; img_res = "low")
     img1, pos1 = process_hd_coordinates(low_res, sp_meta, scale_factor)
@@ -207,6 +210,7 @@ function update_coordinates_hd(sp::VisiumHDObject)
     poly_data.polygons["low_poly"] = poly1
     sp_meta = deepcopy(sp.spmetaData)
     hi_res = deepcopy(sp.imageData.highresImage)
+    hi_res = rotl90(rotl90(rotl90(hi_res)))
     scale_factor = get_vs_sf(sp; img_res = "high")
     img2, pos2 = process_hd_coordinates(hi_res, sp_meta, scale_factor; return_img=true)
     poly2 = create_polygon(pos2, px_width; x_col="x", y_col="y", cell_col = "cell")
@@ -216,6 +220,7 @@ function update_coordinates_hd(sp::VisiumHDObject)
     if !isa(sp.imageData.fullresImage, Nothing)
         sp_meta = deepcopy(sp.spmetaData)
         full_res = deepcopy(sp.imageData.fullresImage)
+        full_res = rotl90(rotl90(rotl90(full_res)))
         scale_factor = get_vs_sf(sp; img_res = "full")
         img3, pos3 = process_hd_coordinates(full_res, sp_meta, scale_factor)
         poly3 = create_polygon(pos3, px_width; x_col="x", y_col="y", cell_col = "cell")
