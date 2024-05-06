@@ -89,7 +89,6 @@ function sp_dim_plot(sp::VisiumHDObject, anno; x_col::String = "x", y_col::Strin
     return MK.current_figure()
 end
 
-
 function sp_feature_plot(sp::VisiumHDObject, gene_list::Union{String, Vector{String}, Tuple{String}};
     color_keys::Union{Vector{String}, Tuple{String}}=["gray94","lemonchiffon","orange","red3"],
     x_lims=nothing, y_lims=nothing,width=900,height=1000,stroke_width=0,stroke_color="black", img_res = "low",

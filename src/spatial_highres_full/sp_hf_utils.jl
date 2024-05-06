@@ -11,6 +11,7 @@ function set_default_layer(obj::VisiumHDObject; layer_slot::Union{String, Nothin
         layer.clustData = obj.clustData
         if !isa(obj.alterImgData, Nothing)
             layer.posData = obj.alterImgData.posData
+            layer.polyData.polygons = merge(obj.polygonData, obj.alterImgData.polyData.polygons)
         end
     end
     obj.defaultData = layer_slot
@@ -24,9 +25,11 @@ function set_default_layer(obj::VisiumHDObject; layer_slot::Union{String, Nothin
         obj.varGene = layer.varGene
         obj.dimReduction = layer.dimReduction
         obj.clustData = layer.clustData
+        obj.polygonData = layer.polygonData.polygons["original"]
         obj.imageData.jsonParameters  = layer.jsonParameters
         if !isa(obj.alterImgData, Nothing)
             obj.alterImgData.posData = layer.posData
+            obj.alterImgData.polyData.polygons = Dict(key => value for (key, value) in layer.polygonData.polygons if key != "original")
         end
     end
     return obj
@@ -193,26 +196,34 @@ end
 function update_coordinates_hd(sp::VisiumHDObject)
     alter_imgdata = AlterImages()
     pos_data = Positions()
+    poly_data = Polygons()
+    layer_slot = sp.defaultData
     low_res = deepcopy(sp.imageData.lowresImage)
     sp_meta = deepcopy(sp.spmetaData)
     scale_factor = get_vs_sf(sp; img_res = "low")
     img1, pos1 = process_hd_coordinates(low_res, sp_meta, scale_factor)
+    poly1 = create_polygon(sp; layer_slot = layer_slot, img_res = "low", x_col="x", y_col="y", cell_col = "cell")
     alter_imgdata.imgs["low"] = img1
     pos_data.positions["low_pos"] = pos1
+    poly_data.polygons["low_poly"] = poly1
     sp_meta = deepcopy(sp.spmetaData)
     hi_res = deepcopy(sp.imageData.highresImage)
     scale_factor = get_vs_sf(sp; img_res = "high")
     img2, pos2 = process_hd_coordinates(hi_res, sp_meta, scale_factor; return_img=true)
+    poly2 = create_polygon(sp; layer_slot = layer_slot, img_res = "high", x_col="x", y_col="y", cell_col = "cell")
     alter_imgdata.imgs["high"] = img2
     pos_data.positions["high_pos"] = pos2
+    poly_data.polygons["high_poly"] = poly2
     if !isa(sp.imageData.fullresImage, Nothing)
         sp_meta = deepcopy(sp.spmetaData)
         full_res = deepcopy(sp.imageData.fullresImage)
         scale_factor = get_vs_sf(sp; img_res = "full")
         img3, pos3 = process_hd_coordinates(full_res, sp_meta, scale_factor)
+        poly3 = create_polygon(sp; layer_slot = layer_slot, img_res = "full", x_col="x", y_col="y", cell_col = "cell")
         alter_imgdata.imgs["full"] = img3
         pos_data.positions["full_pos"] = pos3
+        poly_data.polygons["full_poly"] = poly3
     end
-    sp.alterImgData = AlterHDImgObject(alter_imgdata, pos_data)
+    sp.alterImgData = AlterHDImgObject(alter_imgdata, pos_data, poly_data)
     return sp
 end

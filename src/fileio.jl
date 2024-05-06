@@ -577,7 +577,9 @@ function read_layers(hd_dir;
         poly[idx] = cell_1
         next!(p)
     end
-    layer.polygonData = poly
+    poly_data = Polygons()
+    poly_data.polygons["original"] = poly
+    layer.polygonData = poly_data
     if bin_size !== 2
         cluster_file = hd_dir * "/analysis/clustering/gene_expression_graphclust/clusters.csv"
         umap_file = hd_dir * "/analysis/umap/gene_expression_2_components/projection.csv"

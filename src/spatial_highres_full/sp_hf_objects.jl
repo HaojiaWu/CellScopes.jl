@@ -10,6 +10,11 @@ mutable struct Positions <: AbstractPositions
     Positions() = new(Dict{String, DataFrame}())
 end
 
+mutable struct Polygons <: AbstractPositions
+    polygons::Dict{String, Array{Array{Float64, 2}, 1}}
+    Polygons() = new(Dict{String, Array{Array{Float64, 2}, 1}}())
+end
+
 mutable struct Layer <: AbstractLayers
     rawCount::Union{RawCountObject, Nothing}
     normCount::Union{NormCountObject, Nothing}
@@ -19,7 +24,7 @@ mutable struct Layer <: AbstractLayers
     varGene::Union{VariableGeneObject, Nothing}
     dimReduction::Union{ReductionObject, Nothing}
     clustData::Union{ClusteringObject, Nothing}
-    polygonData::Union{Array{Array{Float64, 2}, 1}, Nothing}
+    polygonData::Union{Polygons, Nothing}
     jsonParameters::Union{Dict{String, Any}, Nothing}
     posData::Union{Positions, Nothing}
     function Layer(raw_count; 
@@ -65,7 +70,8 @@ end
 mutable struct AlterHDImgObject <: AbstractHDImages
     imgData::Union{AlterImages, Nothing}
     posData::Union{Positions, Nothing}
-    AlterHDImgObject(imageData, posData) = new(imageData, posData)
+    polyData::Union{Polygons, Nothing}
+    AlterHDImgObject(imageData, posData, polyData) = new(imageData, posData, polyData)
 end
 
 mutable struct VisiumHDObject <: AbstractSpaFullObj
@@ -137,10 +143,11 @@ function update_data!(obj::VisiumHDObject)
         obj.varGene = layer.varGene
         obj.dimReduction = layer.dimReduction
         obj.clustData = layer.clustData
-        obj.polygonData = layer.polygonData
+        obj.polygonData = layer.polygonData.polygons["original"]
         obj.imageData.jsonParameters  = layer.jsonParameters
         if !isa(obj.alterImgData, Nothing)
             obj.alterImgData.posData = layer.posData
+            obj.alterImgData.polyData.polygons = Dict(key => value for (key, value) in layer.polygonData.polygons if key != "original")
         end
     end
 end
