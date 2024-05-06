@@ -6,6 +6,7 @@ abstract type AbstractPositions <: AbstractSpaFullObj end
 abstract type AbstractHDImages <: AbstractSpaFullObj end
 
 mutable struct Positions <: AbstractPositions
+    positions::Dict{String, DataFrame}
     Positions() = new(Dict{String, DataFrame}())
 end
 
@@ -57,6 +58,7 @@ mutable struct Layers <: AbstractLayers
 end
 
 mutable struct AlterImages <: AbstractHDImages
+    imgs::Dict{String, Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Matrix{RGBA{N0f8}}, Nothing}}
     AlterImages() = new(Dict{String, Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Matrix{RGBA{N0f8}}, Nothing}}())
 end
 

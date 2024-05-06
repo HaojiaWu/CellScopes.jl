@@ -191,27 +191,28 @@ function process_hd_coordinates(img, pos, scale_factor; return_img=true)
 end
 
 function update_coordinates_hd(sp::VisiumHDObject)
+    alter_imgdata = AlterImages()
+    pos_data = Positions()
     low_res = deepcopy(sp.imageData.lowresImage)
     sp_meta = deepcopy(sp.spmetaData)
     scale_factor = get_vs_sf(sp; img_res = "low")
     img1, pos1 = process_hd_coordinates(low_res, sp_meta, scale_factor)
-    alter_imgdata = AlterHDImgObject(nothing, nothing)
-    alter_imgdata.imgData["low"] = img1
-    alter_imgdata.posData["low_pos"] = pos1
+    alter_imgdata.imgs["low"] = img1
+    pos_data.positions["low_pos"] = pos1
     sp_meta = deepcopy(sp.spmetaData)
     hi_res = deepcopy(sp.imageData.highresImage)
     scale_factor = get_vs_sf(sp; img_res = "high")
     img2, pos2 = process_hd_coordinates(hi_res, sp_meta, scale_factor; return_img=true)
-    alter_imgdata.imgData["high"] = img2
-    alter_imgdata.posData["high_pos"] = pos2
+    alter_imgdata.imgs["high"] = img2
+    pos_data.positions["high_pos"] = pos2
     if !isa(sp.imageData.fullresImage, Nothing)
         sp_meta = deepcopy(sp.spmetaData)
         full_res = deepcopy(sp.imageData.fullresImage)
         scale_factor = get_vs_sf(sp; img_res = "full")
         img3, pos3 = process_hd_coordinates(full_res, sp_meta, scale_factor)
-        alter_imgdata.imgData["full"] = img3
-        alter_imgdata.posData["full_pos"] = pos3
+        alter_imgdata.imgs["full"] = img3
+        pos_data.positions["full_pos"] = pos3
     end
-    sp.alterImgData = alter_imgdata
+    sp.alterImgData = AlterHDImgObject(img, pos)
     return sp
 end
