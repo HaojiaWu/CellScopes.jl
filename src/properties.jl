@@ -103,6 +103,7 @@ matchtype(field) = @match field begin
     positions::Positions => println("- Positions data")
     alterimg::AlterImages => println("- Processed image data")
     alterimgobj::AlterHDImgObject => println("- Alternative image data")
+    polygonData::Polygons => println("- Polygon data")
     uns::UndefinedObject => println("- Undefined slot")
     emptyObj::Nothing => print("")
 end
