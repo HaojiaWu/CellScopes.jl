@@ -992,12 +992,17 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
         coord_limits[1] = round.(Int, coord_limits[1] .* scale_factor)
         coord_limits[2] = round.(Int, coord_limits[2] .* scale_factor)
     elseif isa(sp, VisiumHDObject)
-        df = deepcopy(sp.alterImgData.posData.positions["high_pos"])
+        if isa(sp.alterImgData, Nothing)
+            df = deepcopy(sp.spmetaData)
+            rename!(df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, Symbol(x_col), Symbol(y_col)])
+        else
+            df = deepcopy(sp.alterImgData.posData.positions["low_pos"])
+        end
         if !isa(group_label, Nothing)
             meta = deepcopy(sp.metaData)
             df[!,group_label] = meta[!, group_label]
         end
-        scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
+        scale_factor = sp.imageData.jsonParameters["tissue_lowres_scalef"]
         df[!, x_col] =  df[!, x_col] .* scale_factor
         df[!, y_col] =  df[!, y_col] .* scale_factor
         coord_limits[1] = round.(Int, coord_limits[1] .* scale_factor)
@@ -1014,12 +1019,12 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
     end
     pts, centroids=split_field(df, n_fields_x, n_fields_y)
     centroids=convert.(Tuple{Float64, Float64},centroids)
-    if isa(sp, Union{VisiumObject, VisiumHDObject})
+    if isa(sp, VisiumObject)
         x_lims = coord_limits[1]
     else
         x_lims=(minimum(df[!, x_col])-0.05*maximum(df[!, x_col]),1.05*maximum(df[!, x_col]))
     end
-    if isa(sp, Union{VisiumObject, VisiumHDObject})
+    if isa(sp, VisiumObject)
         y_lims = coord_limits[2]
     else
         y_lims=(minimum(df[!, y_col])-0.05*maximum(df[!, y_col]),1.05*maximum(df[!, y_col]))
@@ -1044,10 +1049,14 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
     end
     if isa(sp, VisiumHDObject)
         if isa(marker_size, Nothing)
-            marker_size = 50
+            marker_size = 5
         end
         alpha = 0.5
-        img = deepcopy(sp.alterImgData.imgData.imgs["high"])
+        if isa(sp.alterImgData, Nothing)
+            img = deepcopy(sp.imageData.highresImage)
+        else
+            img = deepcopy(sp.alterImgData.imgData.imgs["low"])
+        end
         MK.image!(img)
     end
     if custom_img
@@ -1058,6 +1067,18 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
             img = deepcopy(sp.imageData)
             MK.image!(img)
         end
+    end
+    if isa(sp, VisiumHDObject)
+        max_w = minimum([size(img)[1], Int(round(maximum(df[!, x_col])))])
+        max_h = minimum([size(img)[2], Int(round(maximum(df[!, y_col])))])
+        if isa(x_lims, Nothing)
+            x_lims=[1,max_w]
+        end
+        if isa(y_lims, Nothing)
+            y_lims=[1,max_h]
+        end
+        img = img[x_lims[1]:x_lims[2], y_lims[1]:y_lims[2]]
+        df = filter([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], df)
     end
     if isa(group_label, Nothing) && isa(cell_highlight, Nothing)
         MK.scatter!(df[!,x_col],df[!, y_col]; strokecolor="black", color=(:gray98, alpha), strokewidth=0.5,label="", markersize=marker_size)
