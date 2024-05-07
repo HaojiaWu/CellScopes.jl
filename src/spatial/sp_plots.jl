@@ -1057,18 +1057,6 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
         else
             img = deepcopy(sp.alterImgData.imgData.imgs["low"])
         end
-        MK.image!(img)
-    end
-    if custom_img
-        if isa(sp, XeniumObject)
-            if isa(marker_size, Nothing)
-                marker_size=10
-            end
-            img = deepcopy(sp.imageData)
-            MK.image!(img)
-        end
-    end
-    if isa(sp, VisiumHDObject)
         max_w = minimum([size(img)[1], Int(round(maximum(df[!, x_col])))])
         max_h = minimum([size(img)[2], Int(round(maximum(df[!, y_col])))])
         if isa(x_lims, Nothing)
@@ -1079,6 +1067,16 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
         end
         img = img[x_lims[1]:x_lims[2], y_lims[1]:y_lims[2]]
         df = filter([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], df)
+        MK.image!(img)
+    end
+    if custom_img
+        if isa(sp, XeniumObject)
+            if isa(marker_size, Nothing)
+                marker_size=10
+            end
+            img = deepcopy(sp.imageData)
+            MK.image!(img)
+        end
     end
     if isa(group_label, Nothing) && isa(cell_highlight, Nothing)
         MK.scatter!(df[!,x_col],df[!, y_col]; strokecolor="black", color=(:gray98, alpha), strokewidth=0.5,label="", markersize=marker_size)
@@ -1104,8 +1102,13 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
     end
     MK.poly!([p for p in pts]; color = bg_color, strokecolor = :black, strokewidth = 3)
     MK.text!(string.(1:length(centroids)),position = centroids,align = (:center, :center),font = font_style,fontsize = label_size,color = label_color)
-    MK.xlims!(MK.current_axis(), x_lims)
-    MK.ylims!(MK.current_axis(), y_lims)
+    if isa(sp, VisiumHDObject)
+        MK.xlims!(MK.current_axis(), x_lims .- x_lims[1] .+ 1)
+        MK.ylims!(MK.current_axis(), y_lims .- y_lims[1] .+ 1)
+    else
+        MK.xlims!(MK.current_axis(), x_lims)
+        MK.ylims!(MK.current_axis(), y_lims)
+    end
     MK.current_figure()
 end
 
