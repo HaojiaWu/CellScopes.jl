@@ -5,11 +5,16 @@ function sp_dim_plot(sp::VisiumHDObject, anno; x_col::String = "x", y_col::Strin
     stroke_width=0, stroke_color="black", cell_order::Union{Vector{String}, Nothing}=nothing,
     legend_fontsize = 30, do_legend=false, legend_size = 30 , bg_color = "white"
     )
-    anno_df = deepcopy(sp.spmetaData)
-    x_col = Symbol(x_col)
-    y_col = Symbol(y_col)
-    anno = Symbol(anno)
-    rename!(anno_df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
+    if isa(sp.alterImgData, Nothing)
+        anno_df = deepcopy(sp.spmetaData)
+        x_col = Symbol(x_col)
+        y_col = Symbol(y_col)
+        anno = Symbol(anno)
+        rename!(anno_df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
+    else
+        anno_df = deepcopy(sp.alterImgData.posData.positions[img_res * "_pos"])
+        anno_df[!, anno] = sp.spmetaData[!, anno]
+    end
     if isa(anno_df[!, x_col], Vector{String})
         anno_df[!, x_col] = Float64.(anno_df[!, x_col])
     end
@@ -22,7 +27,13 @@ function sp_dim_plot(sp::VisiumHDObject, anno; x_col::String = "x", y_col::Strin
     if isa(cell_highlight, String)
         cell_highlight = [cell_highlight]
     end
-    poly = sp.polygonData .* scale_factor
+    if isa(sp.alterImgData, Nothing)
+        poly = deepcopy(sp.polygonData)
+        poly = poly .* scale_factor
+    else
+        poly = deepcopy(sp.alterImgData.polyData.polygons[img_res * "_poly"])
+        poly = poly .* scale_factor
+    end
     all_celltypes = unique(anno_df[!,anno])
     if isa(cell_highlight, Nothing)
         cell_highlight = all_celltypes
@@ -39,16 +50,19 @@ function sp_dim_plot(sp::VisiumHDObject, anno; x_col::String = "x", y_col::Strin
         cell_color = anno_color
         anno_color = merge(anno_color, other_color)
     end
-    
     anno_df = DataFrames.transform(anno_df, anno => ByRow(x -> anno_color[x]) => :new_color)
     anno_df.new_color = [(i, alpha) for i in anno_df.new_color]
     plt_color = anno_df.new_color
-    if img_res == "high"
-        img = deepcopy(sp.imageData.highresImage)
-    elseif img_res == "low"
-        img = deepcopy(sp.imageData.lowresImage)
+    if isa(sp.alterImgData, Nothing)
+        if img_res == "high"
+            img = deepcopy(sp.imageData.highresImage)
+        elseif img_res == "low"
+            img = deepcopy(sp.imageData.lowresImage)
+        else
+            img = deepcopy(sp.imageData.fullresImage)
+        end
     else
-        img = deepcopy(sp.imageData.fullresImage)
+        img = deepcopy(sp.alterImgData.imgData.imgs[img_res])
     end
     max_w = minimum([size(img)[1], Int(round(maximum(anno_df[!, x_col])))])
     max_h = minimum([size(img)[2], Int(round(maximum(anno_df[!, y_col])))])
@@ -65,7 +79,7 @@ function sp_dim_plot(sp::VisiumHDObject, anno; x_col::String = "x", y_col::Strin
     polygon_num = select_fov.ID
     poly = poly[polygon_num]
     poly = [m .- [x_lims[1]-1 y_lims[1]-1] for m in poly]
-    plt_color = plt_color[polygon_num]
+    plt_color = select_fov.new_color
     fig = MK.Figure(size=(width, height))
     ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
         xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false, xgridvisible = false,ygridvisible = false)
