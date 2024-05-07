@@ -11,7 +11,7 @@ function set_default_layer(obj::VisiumHDObject; layer_slot::Union{String, Nothin
         layer.clustData = obj.clustData
         if !isa(obj.alterImgData, Nothing)
             layer.posData = obj.alterImgData.posData
-            layer.polygonData.polygons = merge(obj.polygonData, obj.alterImgData.polyData.polygons)
+            layer.polygonData.polygons = merge(Dict("original" => obj.polygonData), obj.alterImgData.polyData.polygons)
         end
     end
     obj.defaultData = layer_slot
