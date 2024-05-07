@@ -232,9 +232,16 @@ function slope2deg(slope::Float64)
 end
 
 function subset_fov(sp::get_object_group("Spatial"), fov::Vector{Int64}, n_fields_x::Int64, n_fields_y::Int64)
-    if isa(sp, Union{VisiumObject, VisiumHDObject})
+    if isa(sp, VisiumObject)
         df = deepcopy(sp.spmetaData)
         rename!(df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, :x, :y])
+    elseif isa(sp, VisiumHDObject)
+        if isa(sp.alterImgData, Nothing)
+            df = deepcopy(sp.spmetaData)
+            rename!(df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, Symbol(x_col), Symbol(y_col)])
+        else
+            df = deepcopy(sp.alterImgData.posData.positions["high_pos"])
+        end
     else
         df = deepcopy(sp.spmetaData.cell)
     end
