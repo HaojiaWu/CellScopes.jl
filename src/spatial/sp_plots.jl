@@ -979,13 +979,24 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
     x_col::Union{String, Symbol}="x", y_col::Union{String, Symbol}="y", group_label::Union{Nothing, String}=nothing, alpha = 1, adjust_coord_to_img = "auto",
     custom_img=false, width=4000, height=4000, cell_highlight::Union{Nothing, String, Number}=nothing, shield::Bool= false, marker_size::Union{Int64, Float64, Nothing}=nothing)
     coord_limits = spatial_range(sp)
-    if isa(sp, Union{VisiumObject, VisiumHDObject})
+    if isa(sp, VisiumObject)
         df = deepcopy(sp.spmetaData)
         if !isa(group_label, Nothing)
             meta = deepcopy(sp.metaData)
             df[!,group_label] = meta[!, group_label]
         end
         rename!(df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, Symbol(x_col), Symbol(y_col)])
+        scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
+        df[!, x_col] =  df[!, x_col] .* scale_factor
+        df[!, y_col] =  df[!, y_col] .* scale_factor
+        coord_limits[1] = round.(Int, coord_limits[1] .* scale_factor)
+        coord_limits[2] = round.(Int, coord_limits[2] .* scale_factor)
+    elseif isa(sp, VisiumHDObject)
+        df = deepcopy(sp.alterImgData.posData.positions["high_pos"])
+        if !isa(group_label, Nothing)
+            meta = deepcopy(sp.metaData)
+            df[!,group_label] = meta[!, group_label]
+        end
         scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
         df[!, x_col] =  df[!, x_col] .* scale_factor
         df[!, y_col] =  df[!, y_col] .* scale_factor
@@ -1023,12 +1034,20 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
     fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
                 xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
                 xgridvisible = false,ygridvisible = false)
-    if isa(sp, Union{VisiumObject, VisiumHDObject})
+    if isa(sp, VisiumObject)
         if isa(marker_size, Nothing)
             marker_size = 50
         end
         alpha = 0.5
         img = deepcopy(sp.imageData.highresImage)
+        MK.image!(img)
+    end
+    if isa(sp, VisiumHDObject)
+        if isa(marker_size, Nothing)
+            marker_size = 50
+        end
+        alpha = 0.5
+        img = deepcopy(sp.alterImgData.imgData.imgs["high"])
         MK.image!(img)
     end
     if custom_img
