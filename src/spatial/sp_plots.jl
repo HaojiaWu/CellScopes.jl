@@ -996,13 +996,13 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
             df = deepcopy(sp.spmetaData)
             rename!(df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, Symbol(x_col), Symbol(y_col)])
         else
-            df = deepcopy(sp.alterImgData.posData.positions["low_pos"])
+            df = deepcopy(sp.alterImgData.posData.positions["high_pos"])
         end
         if !isa(group_label, Nothing)
             meta = deepcopy(sp.metaData)
             df[!,group_label] = meta[!, group_label]
         end
-        scale_factor = sp.imageData.jsonParameters["tissue_lowres_scalef"]
+        scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
         df[!, x_col] =  df[!, x_col] .* scale_factor
         df[!, y_col] =  df[!, y_col] .* scale_factor
         coord_limits[1] = round.(Int, coord_limits[1] .* scale_factor)
@@ -1055,16 +1055,12 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
         if isa(sp.alterImgData, Nothing)
             img = deepcopy(sp.imageData.highresImage)
         else
-            img = deepcopy(sp.alterImgData.imgData.imgs["low"])
+            img = deepcopy(sp.alterImgData.imgData.imgs["high"])
         end
         max_w = minimum([size(img)[1], Int(round(maximum(df[!, x_col])))])
         max_h = minimum([size(img)[2], Int(round(maximum(df[!, y_col])))])
-        if isa(x_lims, Nothing)
-            x_lims=[1,max_w]
-        end
-        if isa(y_lims, Nothing)
-            y_lims=[1,max_h]
-        end
+        x_lims=[1,max_w]
+        y_lims=[1,max_h]
         img = img[x_lims[1]:x_lims[2], y_lims[1]:y_lims[2]]
         df = filter([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], df)
         MK.image!(img)
@@ -1089,7 +1085,9 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
         df=DataFrames.transform(df, group_label => ByRow(name -> name == cell_highlight ? name : "others") => :newcell)
         df=DataFrames.transform(df, :newcell => ByRow(name -> name =="others" ? "gray98" : "black") => :newcolor)
         df.newcolor = [(i, alpha) for i in df.newcolor]
-        MK.scatter!(df[!, x_col],df[!, y_col]; strokecolor="black", color=df.newcolor, strokewidth=0.5,label="", markersize=marker_size)
+        if marker_size > 0
+            MK.scatter!(df[!, x_col],df[!, y_col]; strokecolor="black", color=df.newcolor, strokewidth=0.5,label="", markersize=marker_size)
+        end
     end
     if shield
         label_color=:yellow1
