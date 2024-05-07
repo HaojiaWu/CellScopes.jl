@@ -156,37 +156,44 @@ function compute_corner_points(df::DataFrame, width::Real; x_col="x", y_col="y",
     return corners
 end
 
-function create_image(df)
-    max_y = maximum(df.y)
-    max_x = maximum(df.x)
-    new_img = fill(RGBA(1, 1, 1, 1), max_x, max_y)
-    x_coords = df.x
-    y_coords = df.y
-    colors = df.color
-    indices = CartesianIndex.(df.x, df.y)
-    new_img[indices] = df.color
-    return new_img
-end
-
 function process_hd_coordinates(img, pos, scale_factor; return_img=true)
+    max_x = maximum(pos.pxl_row_in_fullres) + 1
+    transformed_pos = DataFrames.transform(pos, [:pxl_row_in_fullres, :pxl_col_in_fullres] => ByRow((x, y) -> (y, -x + max_x)) => [:pxl_row_in_fullres, :pxl_col_in_fullres]);
     h1, w1 = size(img)
     df = DataFrame(x = repeat(1:w1, inner = h1),
-               y = repeat(1:h1, outer = w1),
-               color = vec(img))
+                   y = repeat(1:h1, outer = w1),
+                   color = vec(img))
+    transformed_pos.pxl_row_in_fullres1 = transformed_pos.pxl_row_in_fullres .* scale_factor
+    transformed_pos.pxl_col_in_fullres1 = transformed_pos.pxl_col_in_fullres .* scale_factor
+    df1=df[!, ["x","y"]]
+    df1.datatype .= "HE"
+    df2=transformed_pos[!, ["pxl_col_in_fullres1","pxl_row_in_fullres1"]]
+    rename!(df2, ["x","y"])
+    df2.datatype .= "cell"
+    df3=[df1; df2]
+    df3.y = invert_y_axis(df3.y)
+    new_df1 = df3[df3.datatype .== "HE",:]
+    new_df1.color = df.color
+    new_df1.x=Int64.(round.(new_df1.x))
+    new_df1.y=Int64.(round.(new_df1.y))
+    max_y = maximum(new_df1.y)
+    max_x = maximum(new_df1.x)
+    new_img = fill(RGBA(1, 1, 1, 1), max_x, max_y)
+    indices = CartesianIndex.(new_df1.x, new_df1.y)
+    new_img[indices] = new_df1.color
     pos.pxl_row_in_fullres1 = pos.pxl_row_in_fullres .* scale_factor
     pos.pxl_col_in_fullres1 = pos.pxl_col_in_fullres .* scale_factor
-    df2=df[!, ["x","y"]]
-    df2.datatype .= "HE"
-    df3=pos[!, ["pxl_col_in_fullres1","pxl_row_in_fullres1"]]
-    rename!(df3, ["x","y"])
-    df3.datatype .= "cell"
-    df4=[df2; df3]
-    df4.y = invert_y_axis(df4.y)
-    df_grp = groupby(df4, :datatype)
-    new_pos = DataFrame(cell = pos.barcode, x=df_grp[2].x ./ scale_factor, y=df_grp[2].y ./ scale_factor)
+    df4=pos[!, ["pxl_col_in_fullres1","pxl_row_in_fullres1"]]
+    rename!(df4, ["x","y"])
+    df4.datatype .= "cell"
+    df5=[df1; df4];
+    df5.y = invert_y_axis(df5.y)
+    new_pos = df5[df5.datatype .== "cell",:]
+    new_pos.cell = pos.barcode
+    new_pos = new_pos[!, [:cell, :x, :y, :cluster]]
+    new_pos.x = new_pos.x ./ scale_factor
+    new_pos.y = new_pos.y ./ scale_factor
     if return_img
-        df2.color = df.color
-        new_img = create_image(df2)
         return new_img, new_pos
     else
         return new_pos
@@ -200,7 +207,6 @@ function update_coordinates_hd(sp::VisiumHDObject)
     layer_slot = sp.defaultData
     px_width = parse(Int, Base.split(layer_slot, "_")[1]) / sp.imageData.jsonParameters["microns_per_pixel"]
     low_res = deepcopy(sp.imageData.lowresImage)
-    low_res = rotl90(rotl90(rotl90(low_res)))
     sp_meta = deepcopy(sp.spmetaData)
     scale_factor = get_vs_sf(sp; img_res = "low")
     img1, pos1 = process_hd_coordinates(low_res, sp_meta, scale_factor)
@@ -210,7 +216,6 @@ function update_coordinates_hd(sp::VisiumHDObject)
     poly_data.polygons["low_poly"] = poly1
     sp_meta = deepcopy(sp.spmetaData)
     hi_res = deepcopy(sp.imageData.highresImage)
-    hi_res = rotl90(rotl90(rotl90(hi_res)))
     scale_factor = get_vs_sf(sp; img_res = "high")
     img2, pos2 = process_hd_coordinates(hi_res, sp_meta, scale_factor; return_img=true)
     poly2 = create_polygon(pos2, px_width; x_col="x", y_col="y", cell_col = "cell")
@@ -220,7 +225,6 @@ function update_coordinates_hd(sp::VisiumHDObject)
     if !isa(sp.imageData.fullresImage, Nothing)
         sp_meta = deepcopy(sp.spmetaData)
         full_res = deepcopy(sp.imageData.fullresImage)
-        full_res = rotl90(rotl90(rotl90(full_res)))
         scale_factor = get_vs_sf(sp; img_res = "full")
         img3, pos3 = process_hd_coordinates(full_res, sp_meta, scale_factor)
         poly3 = create_polygon(pos3, px_width; x_col="x", y_col="y", cell_col = "cell")
