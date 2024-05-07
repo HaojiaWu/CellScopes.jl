@@ -190,7 +190,7 @@ function process_hd_coordinates(img, pos, scale_factor; return_img=true)
     df5.y = invert_y_axis(df5.y)
     new_pos = df5[df5.datatype .== "cell",:]
     new_pos.cell = pos.barcode
-    new_pos = new_pos[!, [:cell, :x, :y, :cluster]]
+    new_pos = new_pos[!, [:cell, :x, :y]]
     new_pos.x = new_pos.x ./ scale_factor
     new_pos.y = new_pos.y ./ scale_factor
     if return_img
