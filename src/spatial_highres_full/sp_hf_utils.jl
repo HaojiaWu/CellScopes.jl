@@ -178,6 +178,20 @@ function process_hd_coordinates(img, pos, scale_factor; return_img=true)
     new_df1.y=Int64.(round.(new_df1.y))
     max_y = maximum(new_df1.y)
     max_x = maximum(new_df1.x)
+    if max_y < h1
+        new_df1.y .+= 1
+        max_y += 1
+    elseif max_y > h1
+        new_df1.y .-= 1
+        max_y -= 1
+    end
+    if max_x < w1
+        new_df1.x .+= 1
+        max_x += 1
+    elseif max_x > w1
+        new_df1.x .-= 1
+        max_x -= 1
+    end
     new_img = fill(RGBA(1, 1, 1, 1), max_x, max_y)
     indices = CartesianIndex.(new_df1.x, new_df1.y)
     new_img[indices] = new_df1.color

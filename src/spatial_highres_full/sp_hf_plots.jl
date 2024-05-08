@@ -127,10 +127,16 @@ function sp_feature_plot(sp::VisiumHDObject, gene_list::Union{String, Vector{Str
         n_cols = 3
     end
     norm_count=sp.normCount
-   anno_df = deepcopy(sp.spmetaData)
-    x_col = Symbol(x_col)
-    y_col = Symbol(y_col)
-    rename!(anno_df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
+    if isa(sp.alterImgData, Nothing)
+        anno_df = deepcopy(sp.spmetaData)
+        x_col = Symbol(x_col)
+        y_col = Symbol(y_col)
+        #anno = Symbol(anno)
+        rename!(anno_df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
+    else
+        anno_df = deepcopy(sp.alterImgData.posData.positions[img_res * "_pos"])
+        #anno_df[!, anno] = sp.spmetaData[!, anno]
+    end
     if isa(anno_df[!, x_col], Vector{String})
         anno_df[!, x_col] = Float64.(anno_df[!, x_col])
     end
@@ -140,28 +146,45 @@ function sp_feature_plot(sp::VisiumHDObject, gene_list::Union{String, Vector{Str
     scale_factor = get_vs_sf(sp; img_res = img_res)
     anno_df[!, x_col] =  anno_df[!, x_col] .* scale_factor
     anno_df[!, y_col] =  anno_df[!, y_col] .* scale_factor
-    poly = sp.polygonData .* scale_factor
-    c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3]),parse(Colorant, color_keys[4])])
-    if img_res == "high"
-        img = deepcopy(sp.imageData.highresImage)
-    elseif img_res == "low"
-        img = deepcopy(sp.imageData.lowresImage)
+    if isa(sp.alterImgData, Nothing)
+        poly = deepcopy(sp.polygonData)
+        poly = poly .* scale_factor
     else
-        img = deepcopy(sp.imageData.fullresImage)
+        poly = deepcopy(sp.alterImgData.polyData.polygons[img_res * "_poly"])
+        poly = poly .* scale_factor
+    end
+    c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3]),parse(Colorant, color_keys[4])])
+    if isa(sp.alterImgData, Nothing)
+        if img_res == "high"
+            img = deepcopy(sp.imageData.highresImage)
+        elseif img_res == "low"
+            img = deepcopy(sp.imageData.lowresImage)
+        else
+            img = deepcopy(sp.imageData.fullresImage)
+        end
+    else
+        img = deepcopy(sp.alterImgData.imgData.imgs[img_res])
     end
     max_w = minimum([size(img)[1], Int(round(maximum(anno_df[!, x_col])))])
     max_h = minimum([size(img)[2], Int(round(maximum(anno_df[!, y_col])))])
     if isa(x_lims, Nothing)
         x_lims=[1,max_w]
+    else
+        xlim1 = Int(round(x_lims[1] * scale_factor))
+        xlim2 = Int(round(x_lims[2] * scale_factor))
+        x_lims = [xlim1, xlim2]
     end
     if isa(y_lims, Nothing)
         y_lims=[1,max_h]
+    else
+        ylim1 = Int(round(y_lims[1] * scale_factor))
+        ylim2 = Int(round(y_lims[2] * scale_factor))
+        y_lims = [ylim1, ylim2]
     end
     poly = [m .- [x_lims[1]-1 y_lims[1]-1] for m in poly]
     img = img[x_lims[1]:x_lims[2], y_lims[1]:y_lims[2]]
     img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
     fig = MK.Figure(size = (width * n_cols, height * n_rows))
-
     for (i, gene) in enumerate(gene_list)
         gene_expr = subset_count(norm_count; genes = [gene])
         gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
