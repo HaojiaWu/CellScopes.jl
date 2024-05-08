@@ -1005,8 +1005,6 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
         scale_factor = sp.imageData.jsonParameters["tissue_hires_scalef"]
         df[!, x_col] =  df[!, x_col] .* scale_factor
         df[!, y_col] =  df[!, y_col] .* scale_factor
-        coord_limits[1] = round.(Int, coord_limits[1] .* scale_factor)
-        coord_limits[2] = round.(Int, coord_limits[2] .* scale_factor)
     else
         df = deepcopy(sp.spmetaData.cell)
     end
@@ -1043,7 +1041,6 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
         if isa(marker_size, Nothing)
             marker_size = 50
         end
-        alpha = 0.5
         img = deepcopy(sp.imageData.highresImage)
         MK.image!(img)
     end
@@ -1051,7 +1048,6 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
         if isa(marker_size, Nothing)
             marker_size = 5
         end
-        alpha = 0.5
         if isa(sp.alterImgData, Nothing)
             img = deepcopy(sp.imageData.highresImage)
         else

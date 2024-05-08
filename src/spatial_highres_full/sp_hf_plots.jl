@@ -68,9 +68,17 @@ function sp_dim_plot(sp::VisiumHDObject, anno; x_col::String = "x", y_col::Strin
     max_h = minimum([size(img)[2], Int(round(maximum(anno_df[!, y_col])))])
     if isa(x_lims, Nothing)
         x_lims=[1,max_w]
+    else
+        xlim1 = Int(round(x_lims[1] * scale_factor))
+        xlim2 = Int(round(x_lims[2] * scale_factor))
+        x_lims = [xlim1, xlim2]
     end
     if isa(y_lims, Nothing)
         y_lims=[1,max_h]
+    else
+        ylim1 = Int(round(y_lims[1] * scale_factor))
+        ylim2 = Int(round(y_lims[2] * scale_factor))
+        y_lims = [ylim1, ylim2]
     end
     img = img[x_lims[1]:x_lims[2], y_lims[1]:y_lims[2]]
     img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))

@@ -255,6 +255,12 @@ function subset_fov(sp::get_object_group("Spatial"), fov::Vector{Int64}, n_field
     return df_sub      
 end
 
+function get_subset_cood(df::DataFrame)
+    x_lims = (minimum(df.x), maximum(df.x))
+    y_lims = (minimum(df.y), maximum(df.y))
+    return x_lims, y_lims
+end
+
 function get_slope(pt1, pt2)
     slope= (pt1[2]-pt2[2])/(pt1[1]-pt2[1])
     return slope
