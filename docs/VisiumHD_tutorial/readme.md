@@ -86,6 +86,8 @@ hd = cs.set_default_layer(hd; layer_slot = "8_um")
 cs.sp_dim_plot(hd, "cluster"; width=1300, height=1000, 
         do_legend=true, legend_size=40, legend_fontsize=40)
 ```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/hd1.png" width="1000"> <br>
+
 You may notice that the tissue orientation in the graph looks different from what is displayed in the Loupe Browser. This difference can be attributed to the use of CairoMakie as the backend plotting tool for most visualizations in CellScopes, which handles the coordinates differently. To align the orientation with the original tissue orientation, you can use the ```convert_image_data``` function. Here’s how you can adjust the orientation:
 ```julia
 @time hd = cs.convert_image_data(hd)
@@ -96,6 +98,8 @@ hd = cs.set_default_layer(hd; layer_slot = "8_um")
 cs.sp_dim_plot(hd, "cluster"; width=1300, height=1000, 
         do_legend=true, legend_size=40, legend_fontsize=40)
 ```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/hd2.png" width="1000"> <br>
+
 We can also highlight the dentate gyrus (DG) of the hippocampus on the same graph (cluster 13 in the 16 µm or cluster 11 in the 8 µm clustering analysis.).
 ```julia
 hd = cs.set_default_layer(hd; layer_slot = "16_um")
@@ -104,11 +108,15 @@ cs.sp_dim_plot(hd, "cluster"; width=1000, height=1200,
           anno_color = Dict("13" => "green2") ,do_legend=true, img_res = "high", stroke_width=0.2, 
             cell_highlight = "13",legend_size=30, adjust_contrast =1, adjust_brightness=0.0, alpha=0.4)
 ```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/hd3.png" width="1000"> <br>
+
 #### 5.2 Select a region of interest for detailed visualization
 To crop a specific region of interest in your spatial data, you can initially use the ```plot_fov``` function to locate the coordinates of the four corners.
 ```julia
 cs.plot_fov(hd, 20, 20; marker_size = 0, width=2000, height=2400)
 ```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/hd4.png" width="1000"> <br>
+
  Here's how you can subset the field of view (FOV) using specific square numbers for the corners:
 ```julia
 df = cs.subset_fov(hd, [193,197,333,337], 20,20);
@@ -128,6 +136,8 @@ cs.sp_dim_plot(hd, "cluster"; width=1800, height=1000, y_lims=ylim , x_lims=xlim
             cell_highlight =["11", "2","13"],legend_size=40, 
         adjust_contrast =1, adjust_brightness=0.0, alpha=1)
 ```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/hd5.png" width="1000"> <br>
+
 #### 5.3 Compare the spatial resolution of different bin sizes
 You can easily compare the spatial distributions of cell types across different bin sizes using CellScopes. Here's how you can analyze the distributions in 8 µm and 16 µm resolutions:
 ```julia
@@ -140,6 +150,7 @@ cs.sp_dim_plot(hd, "cluster"; width=1500, height=900, y_lims=ylim , x_lims=xlim,
             cell_highlight =["11", "2"],legend_size=40, 
         adjust_contrast =1, adjust_brightness=0.0, alpha=0.7)
 ```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/hd6.png" width="1000"> <br>
 
 ```julia
 hd = cs.set_default_layer(hd; layer_slot = "16_um")
@@ -149,6 +160,8 @@ cs.sp_dim_plot(hd, "cluster"; width=1500, height=900, y_lims=ylim , x_lims=xlim,
             cell_highlight =["13", "16"],legend_size=40, 
         adjust_contrast =1, adjust_brightness=0.0, alpha=0.7)
 ```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/hd7.png" width="1000"> <br>
+
 Since no clustering analysis is available for the 2 µm data, it cannot be directly visualized in the same manner. However, you can still compare the 2 µm, 8 µm, and 16 µm resolutions in terms of spatial gene expression distribution by adjusting the layer selection and plotting parameters accordingly in CellScopes. Here is how to use the ```sp_feature_plot``` to visualize the gene expression at various resolutions.
 
 ```julia
@@ -159,18 +172,21 @@ hd = cs.convert_image_data(hd; layer_slot = "2_um")
 cs.sp_feature_plot(hd, ["Pcp4"]; color_keys=["gray94", "cyan", "blue", "darkblue"],  
     width=800, height=500, x_lims=xlim , y_lims=ylim, img_res = "high", alpha=1)
 ```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/hd8.png" width="1000"> <br>
 
 ```julia
 hd = cs.set_default_layer(hd; layer_slot="8_um")
 cs.sp_feature_plot(hd, ["Pcp4"]; color_keys=["gray94", "cyan", "blue", "darkblue"],  
     width=800, height=500, x_lims=xlim , y_lims=ylim, img_res = "high", alpha=1)
 ```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/hd9.png" width="1000"> <br>
 
 ```julia
 hd = cs.set_default_layer(hd; layer_slot="16_um")
 cs.sp_feature_plot(hd, ["Pcp4"]; color_keys=["gray94", "cyan", "blue", "darkblue"],  
     width=800, height=500, x_lims=xlim , y_lims=ylim, img_res = "high", alpha=1)
 ```
+<img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/hd10.png" width="1000"> <br>
 
 ### 6. Exporting data
 ```julia
