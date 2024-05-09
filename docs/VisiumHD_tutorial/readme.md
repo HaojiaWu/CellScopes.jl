@@ -168,6 +168,7 @@ Since no clustering analysis is available for the 2 µm data, it cannot be direc
 xlim = (11818, 16100)
 ylim=(15500, 17599)
 hd = cs.set_default_layer(hd; layer_slot="2_um")
+hd = cs.normalize_object(hd; scale_factor = 10000)
 hd = cs.convert_image_data(hd; layer_slot = "2_um")
 cs.sp_feature_plot(hd, ["Pcp4"]; color_keys=["gray94", "cyan", "blue", "darkblue"],  
     width=800, height=500, x_lims=xlim , y_lims=ylim, img_res = "high", alpha=1)
@@ -176,6 +177,7 @@ cs.sp_feature_plot(hd, ["Pcp4"]; color_keys=["gray94", "cyan", "blue", "darkblue
 
 ```julia
 hd = cs.set_default_layer(hd; layer_slot="8_um")
+hd = cs.normalize_object(hd; scale_factor = 10000)
 cs.sp_feature_plot(hd, ["Pcp4"]; color_keys=["gray94", "cyan", "blue", "darkblue"],  
     width=800, height=500, x_lims=xlim , y_lims=ylim, img_res = "high", alpha=1)
 ```
@@ -183,6 +185,7 @@ cs.sp_feature_plot(hd, ["Pcp4"]; color_keys=["gray94", "cyan", "blue", "darkblue
 
 ```julia
 hd = cs.set_default_layer(hd; layer_slot="16_um")
+hd = cs.normalize_object(hd; scale_factor = 10000)
 cs.sp_feature_plot(hd, ["Pcp4"]; color_keys=["gray94", "cyan", "blue", "darkblue"],  
     width=800, height=500, x_lims=xlim , y_lims=ylim, img_res = "high", alpha=1)
 ```
