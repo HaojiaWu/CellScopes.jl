@@ -100,7 +100,7 @@ cs.sp_dim_plot(hd, "cluster"; width=1300, height=1000,
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/hd2.jpg" width="1000"> <br>
 
-We can also highlight the dentate gyrus (DG) of the hippocampus on the same graph (cluster 13 in the 16 µm or cluster 11 in the 8 µm clustering analysis.).
+We can also highlight a particular cluster, e.g. the dentate gyrus (DG) of the hippocampus, on the same graph (cluster 13 in the 16 µm or cluster 11 in the 8 µm clustering analysis.).
 ```julia
 hd = cs.set_default_layer(hd; layer_slot = "16_um")
 hd = cs.convert_image_data(hd; layer_slot = "16_um")
