@@ -1,6 +1,6 @@
 # Analysis and visualization of Visium HD data with CellScopes.jl
 
-Visium HD is an enhanced version of Visium that identifies transcripts arrayed across millions of 2 x 2 µm barcoded squares with no gaps between them. Space Ranger outputs data in multiple bin sizes: 2 µm, 8 µm, and 16 µm. CellScopes allows reading and aligning data from all these bin sizes with histology images for data analysis and visualization. With Visium HD, we incorporated layers in CellScopes to manage different bin sizes independently, allowing users to analyze and visualize data at each bin size without interference from other bins.
+Visium HD is an enhanced version of Visium that detects transcripts arrayed across millions of 2 x 2 µm barcoded squares with no gaps between them. Space Ranger outputs data in multiple bin sizes: 2 µm, 8 µm, and 16 µm. CellScopes allows reading and aligning data from all these bin sizes with histology images for data analysis and visualization. With Visium HD, we incorporated layers in CellScopes to manage different bin sizes independently, allowing users to analyze and visualize data at each bin size without interference from other bins.
 
 ### 1. Example dataset
 This tutorial uses a mouse brain dataset provided by 10x Genomics to illustrate how to use CellScopes to read, analyze, and visualize Visium HD data. You can download the example dataset from 10x website:
@@ -14,7 +14,7 @@ import CellScopes as cs
 hd_dir = "/mnt/sdb/visiumHD/hd_output/outs/"
 hd = cs.read_visiumHD(hd_dir)
 ```
-This will create a VisiumHDObject that hold all the information for downstream analysis.
+This will create a VisiumHDObject that holds all the information for downstream analysis.
 
 ```
 1. loading 2um binned data...
