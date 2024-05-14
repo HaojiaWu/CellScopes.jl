@@ -45,8 +45,7 @@ function scale_object(count_mtx::AbstractMatrix{<:Real}; scale_max = 10.0, do_sc
         count_mtx .= count_mtx ./ rsd
     end
     count_mtx .= min.(count_mtx, scale_max)
-    sparse_mtx = sparse(count_mtx')
-    return sparse_mtx
+    return count_mtx
 end
 
 function scale_object(ct_obj::NormCountObject; features::Union{Vector{String}, Nothing}=nothing, scale_max = 10.0, do_scale::Bool = true, do_center::Bool = true)
