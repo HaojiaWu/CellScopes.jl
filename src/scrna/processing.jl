@@ -21,6 +21,7 @@ function normalize_object(sc_obj::get_object_group("All"); scale_factor = 10000,
     return sc_obj
 end
 
+#= This function was deprecated because it had a long runtime for large datasets
 function scale_object(count_mtx::AbstractMatrix{<:Real}; scale_max = 10.0, do_scale::Bool = true, do_center::Bool = true)
     rmean = mean(count_mtx, dims=2)
     rsd = sqrt.(var(count_mtx, dims=2))
@@ -31,6 +32,21 @@ function scale_object(count_mtx::AbstractMatrix{<:Real}; scale_max = 10.0, do_sc
     count_mtx = Folds.map(x -> x > scale_max ? scale_max : x, count_mtx)
     count_mtx = convert(SparseArrays.SparseMatrixCSC{Float64, Int64}, count_mtx')
     return count_mtx
+end
+=#
+
+function scale_object(count_mtx::AbstractMatrix{<:Real}; scale_max = 10.0, do_scale::Bool = true, do_center::Bool = true)
+    rmean = mean(count_mtx, dims=2)
+    rsd = sqrt.(var(count_mtx, dims=2))
+    if do_center
+        count_mtx .-= rmean
+    end
+    if do_scale
+        count_mtx .= count_mtx ./ rsd
+    end
+    count_mtx .= min.(count_mtx, scale_max)
+    sparse_mtx = sparse(count_mtx')
+    return sparse_mtx
 end
 
 function scale_object(ct_obj::NormCountObject; features::Union{Vector{String}, Nothing}=nothing, scale_max = 10.0, do_scale::Bool = true, do_center::Bool = true)
