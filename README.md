@@ -73,21 +73,23 @@ The container's Port ID for ```cellscopes``` is 5237. A tutorial for connecting 
 <br>
 ***i. STARmap***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/starmap_tutorial
 <br>
+***j. Visium HD***: https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/VisiumHD_tutorial
+<br>
 
 In addition to these standalone CellScopes analyses, we also provide tutorials how CellScopes can interact with other popular tools such as Seurat, Scanpy and tools for gene imputation and spot deconvolution.
 <br>
-***j. Conversion of Scanpy AnnData to CellScopes Objects***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/scanpy_conversion
+***k. Conversion of Scanpy AnnData to CellScopes Objects***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/scanpy_conversion
 <br>
-***k. Conversion of Seurat Objects to CellScopes Objects***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/seurat_conversion
+***l. Conversion of Seurat Objects to CellScopes Objects***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/seurat_conversion
 <br>
-***l. Gene imputation using SpaGE, tangram and gimVI***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/gene_imputation
+***m. Gene imputation using SpaGE, tangram and gimVI***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/gene_imputation
 <br>
 
 Finally, we also provide tutorials for incorporating high-resolution H&E and nuclei staining images for Visium and Xenium data visualization.
 <br>
-***m. Visium data visualization with a high-resolution H&E image***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/Visium_more_viz
+***n. Visium data visualization with a high-resolution H&E image***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/Visium_more_viz
 <br>
-***n. Xenium data visualization with a high-resolution H&E/DAPI image***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/Xenium_more_viz
+***o. Xenium data visualization with a high-resolution H&E/DAPI image***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/Xenium_more_viz
 <br>
 
 ## 3. Citation
