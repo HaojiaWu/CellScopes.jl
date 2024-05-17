@@ -29,6 +29,7 @@ To implement your changes, either open a new login session or reload the .bashrc
 ```
 source ~/.bashrc
 ```
+**Note**: If your operating system is Ubuntu 24.04, we recommend installing CellScopes with Julia 1.8.4. Earlier versions of Julia may not detect the 'libR.so' file when installing the ```RCall``` dependency.
 
 #### 1.1.2. Install CellScopes and dependencies
 To install all of the necessary dependencies, run the following command line in ```Julia```. Note that this will not install the unregisterd package ```Leiden.jl```, which you may need to install manually from the GitHub repository first.
