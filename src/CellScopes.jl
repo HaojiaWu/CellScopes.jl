@@ -65,8 +65,8 @@ using KernelDensity
 using Graphs: src, dst
 using DuckDB
 using SCTransform
+using MLJMultivariateStatsInterface: PCA as MLJ_PCA
 using MLJ
-using MLJMultivariateStatsInterface
 
 
 
