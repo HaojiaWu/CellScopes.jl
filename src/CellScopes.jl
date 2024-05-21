@@ -64,11 +64,16 @@ using StatsBase: countmap
 using KernelDensity
 using Graphs: src, dst
 using DuckDB
+using CategoricalArrays
+using Clustering: kmeans
+using Logging
+
 
 include("scrna/objects.jl")
 include("spatial/sp_objects.jl")
 include("scatac/atac_objects.jl")
 include("spatial_highres_full/sp_hf_objects.jl")
+include("integration/int_objects.jl")
 include("properties.jl")
 include("spatial_highres_full/sp_hf_utils.jl")
 include("scrna/processing.jl")
@@ -85,5 +90,7 @@ include("scatac/atac_utils.jl")
 include("spatial/baysor_boundary.jl")
 include("spatial_highres_full/sp_hf_plots.jl")
 include("spatial_highres_full/sp_hf_processing.jl")
+include("integration/int_utils.jl")
+include("integration/int_plots.jl")
 
 end

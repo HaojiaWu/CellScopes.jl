@@ -249,3 +249,12 @@ function update_coordinates_hd(sp::VisiumHDObject)
     sp.alterImgData = AlterHDImgObject(alter_imgdata, pos_data, poly_data)
     return sp
 end
+
+function starts_with(s, patterns)
+    for pattern in patterns
+        if startswith(s, pattern)
+            return true
+        end
+    end
+    return false
+end
