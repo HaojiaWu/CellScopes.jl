@@ -64,10 +64,9 @@ using StatsBase: countmap
 using KernelDensity
 using Graphs: src, dst
 using DuckDB
-using CategoricalArrays
-using Clustering: kmeans
-using Logging
 using SCTransform
+using MLJ
+using MLJMultivariateStatsInterface
 
 
 
