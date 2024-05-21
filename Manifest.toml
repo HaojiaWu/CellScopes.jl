@@ -2,7 +2,7 @@
 
 julia_version = "1.8.4"
 manifest_format = "2.0"
-project_hash = "59050b57d36057ff59c93a857180e8186b201b03"
+project_hash = "a55772beeb27b7ce4e9deddf72aaa828a7f9346a"
 
 [[deps.AbstractFFTs]]
 deps = ["ChainRulesCore", "LinearAlgebra", "Test"]
@@ -1165,6 +1165,12 @@ git-tree-sha1 = "90442c50e202a5cdf21a7899c66b240fdef14035"
 uuid = "5ab0869b-81aa-558d-bb23-cbf5423bbe9b"
 version = "0.6.7"
 
+[[deps.KernelDensitySJ]]
+deps = ["DataStructures", "Roots", "Statistics"]
+git-tree-sha1 = "e698e449fef8863e3b1d589829ee131cc63987c2"
+uuid = "49dc5b4e-6806-4504-b2cc-a81764e7a38b"
+version = "0.2.1"
+
 [[deps.LAME_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "f6250b16881adf048549549fba48b1161acdac8c"
@@ -1931,6 +1937,12 @@ version = "1.5.1"
 git-tree-sha1 = "40b9edad2e5287e05bd413a38f61a8ff55b9557b"
 uuid = "5eaf0fd0-dfba-4ccb-bf02-d820a40db705"
 version = "0.2.1"
+
+[[deps.SCTransform]]
+deps = ["CodecZlib", "DelimitedFiles", "KernelDensitySJ", "LinearAlgebra", "Optim", "ProgressMeter", "SHA", "Scratch", "SparseArrays", "SpecialFunctions", "Statistics"]
+git-tree-sha1 = "b1280d518968d0f450399c7457269b82a01a9eda"
+uuid = "f56ea72b-d1ea-403e-9c0c-95d94e8a8532"
+version = "0.1.3"
 
 [[deps.SHA]]
 uuid = "ea8e919c-243c-51af-8825-aaa63cd721ce"

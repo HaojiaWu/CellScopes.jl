@@ -67,6 +67,8 @@ using DuckDB
 using CategoricalArrays
 using Clustering: kmeans
 using Logging
+using SCTransform
+
 
 
 include("scrna/objects.jl")
