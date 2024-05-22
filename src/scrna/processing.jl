@@ -104,7 +104,7 @@ function run_pca(sc_obj::get_object_group("All"); method=:svd, pratio = 1, maxou
     if package == "MLJ"
         scaled_count = ctobj_to_df(new_count)
         Y, X = MLJ.unpack(scaled_count, ==(:cell))
-        MS_PCA = @load PCA pkg=MultivariateStats
+        MS_PCA = MLJ.@load PCA pkg=MultivariateStats
         pca_model = MS_PCA(maxoutdim=maxoutdim, method=method, variance_ratio=pratio)
         pca = machine(pca_model, X)
         MLJ.fit!(pca, verbosity=2)
