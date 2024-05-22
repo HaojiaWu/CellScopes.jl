@@ -94,19 +94,30 @@ function find_variable_genes(sc_obj::get_object_group("All"); nFeatures::Int64 =
     return sc_obj
 end
 
-function run_pca(sc_obj::get_object_group("All"); method=:svd, pratio = 1, maxoutdim = 10)
+function run_pca(sc_obj::get_object_group("All"); method=:svd, pratio = 1, maxoutdim = 10, package="MultivariateStats")
     features = sc_obj.varGene.var_gene
     if length(sc_obj.scaleCount.gene_name) == length(sc_obj.rawCount.gene_name)
         new_count = subset_count(sc_obj.scaleCount; genes = features)
     else
         new_count = sc_obj.scaleCount
     end
-    pca_mat = new_count.count_mtx'
-    pca_mat = Matrix(pca_mat)
-    pca_mat = convert(Matrix{Float64}, pca_mat)
-    M = MultivariateStats.fit(PCA, pca_mat; method=method, pratio=pratio, maxoutdim=maxoutdim)
-    proj = MultivariateStats.projection(M)
-    percent_var = principalvars(M) ./ tvar(M) * 100
+    if package == "MLJ"
+        scaled_count = ctobj_to_df(new_count)
+        Y, X = MLJ.unpack(scaled_count, ==(:cell))
+        MS_PCA = @load PCA pkg=MultivariateStats
+        pca_model = MS_PCA(maxoutdim=maxoutdim, method=method, variance_ratio=pratio)
+        pca = machine(pca_model, X)
+        MLJ.fit!(pca, verbosity=2)
+        proj = MLJ.transform(pca)
+        proj = Matrix(proj)
+        M = nothing
+        percent_var = nothing
+    else
+        pca_mat = Matrix{Float64}(new_count.count_mtx')
+        M = MultivariateStats.fit(PCA, pca_mat; method=method, pratio=pratio, maxoutdim=maxoutdim)
+        proj = MultivariateStats.projection(M)
+        percent_var = principalvars(M) ./ tvar(M) * 100
+    end
     key = "PC"
     pca_obj = PCAObject(proj, M, percent_var, key , method, pratio, maxoutdim)
     reduction_obj = ReductionObject(pca_obj, nothing, nothing)
