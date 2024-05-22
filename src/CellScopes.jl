@@ -68,7 +68,6 @@ using SCTransform
 using MLJMultivariateStatsInterface: PCA as MLJ_PCA
 using MLJ
 
-
 include("scrna/objects.jl")
 include("spatial/sp_objects.jl")
 include("scatac/atac_objects.jl")

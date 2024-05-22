@@ -63,6 +63,37 @@ function scale_object(sc_obj::get_object_group("All"); features::Union{Vector{St
     return sc_obj
 end
 
+function run_sctransform(sc_obj::get_object_group("All");          
+    method=:poisson,
+    min_cells::Integer=5,
+    feature_type="Gene Expression",
+    feature_names = :name,
+    use_cache=true,
+    verbose=true,
+    chunk_size=100,
+    nthreads=8,
+    channel_size=nthreads*4
+    clip = nothing
+   )
+    count_mtx = sc_obj.rawCount.count_mtx
+    features = DataFrame(:name => String.(sc_obj.rawCount.gene_name))
+    features.feature_type .= "Gene Expression"
+    param1 = SCTransform.scparams(count_mtx, features;
+                                method=method, min_cells=min_cells, feature_type=feature_type,
+                            feature_names=feature_names, use_cache=use_cache, 
+                                verbose=verbose, chunk_size=chunk_size, nthreads=nthreads,
+                            channel_size=channel_size)
+    if isa(clip, Nothing)
+    clip = sqrt(size(count_mtx,2)/30)
+    end
+    normalized_data = SCTransform.sctransform(count_mtx, features, param1; 
+                                feature_id_columns = [:name,:feature_type], clip = clip)
+    scale_obj = ScaleCountObject(normalized_data, sc_obj.rawCount.cell_name, 
+                            sc_obj.rawCount.gene_name, true, false, clip)
+    sc_obj.scaleCount = scale_obj
+    return sc_obj
+end
+
 function find_variable_genes(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, span::Float64 = 0.3)
     gene_num = length(ct_mtx.gene_name)
     if gene_num < nFeatures
