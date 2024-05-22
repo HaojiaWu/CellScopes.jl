@@ -104,7 +104,7 @@ function run_pca(sc_obj::get_object_group("All"); method=:svd, pratio = 1, maxou
     pca_mat = new_count.count_mtx'
     pca_mat = Matrix(pca_mat)
     pca_mat = convert(Matrix{Float64}, pca_mat)
-    M = MultivariateStats.fit(MultivariateStats.PCA, pca_mat; method=method, pratio=pratio, maxoutdim=maxoutdim)
+    M = MultivariateStats.fit(PCA, pca_mat; method=method, pratio=pratio, maxoutdim=maxoutdim)
     proj = MultivariateStats.projection(M)
     percent_var = principalvars(M) ./ tvar(M) * 100
     key = "PC"

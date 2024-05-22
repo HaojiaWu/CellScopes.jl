@@ -65,9 +65,8 @@ using KernelDensity
 using Graphs: src, dst
 using DuckDB
 using SCTransform
-using MLJMultivariateStatsInterface
+using MLJMultivariateStatsInterface: PCA as MLJ_PCA
 using MLJ
-
 
 
 include("scrna/objects.jl")
