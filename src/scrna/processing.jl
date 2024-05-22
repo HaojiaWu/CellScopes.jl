@@ -72,7 +72,7 @@ function run_sctransform(sc_obj::get_object_group("All");
     verbose=true,
     chunk_size=100,
     nthreads=8,
-    channel_size=nthreads*4
+    channel_size=nthreads*4,
     clip = nothing
    )
     count_mtx = sc_obj.rawCount.count_mtx
