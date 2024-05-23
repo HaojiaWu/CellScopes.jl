@@ -63,34 +63,29 @@ function scale_object(sc_obj::get_object_group("All"); features::Union{Vector{St
     return sc_obj
 end
 
-function run_sctransform(sc_obj::get_object_group("All");          
-    method=:poisson,
-    min_cells::Integer=5,
-    feature_type="Gene Expression",
-    feature_names = :name,
-    use_cache=true,
-    verbose=true,
-    chunk_size=100,
-    nthreads=8,
-    channel_size=nthreads*4,
-    clip = nothing
-   )
-    count_mtx = sc_obj.rawCount.count_mtx
-    features = DataFrame(:name => String.(sc_obj.rawCount.gene_name))
-    features.feature_type .= "Gene Expression"
-    param1 = SCTransform.scparams(count_mtx, features;
-                                method=method, min_cells=min_cells, feature_type=feature_type,
-                            feature_names=feature_names, use_cache=use_cache, 
-                                verbose=verbose, chunk_size=chunk_size, nthreads=nthreads,
-                            channel_size=channel_size)
-    if isa(clip, Nothing)
-    clip = sqrt(size(count_mtx,2)/30)
-    end
-    normalized_data = SCTransform.sctransform(count_mtx, features, param1; 
-                                feature_id_columns = [:name,:feature_type], clip = clip)
-    scale_obj = ScaleCountObject(normalized_data, sc_obj.rawCount.cell_name, 
-                            sc_obj.rawCount.gene_name, true, false, clip)
-    sc_obj.scaleCount = scale_obj
+function run_sctransform(sc_obj)
+    seu = rimport("Seurat")
+    mtx = rimport("Matrix")
+    genes = sc_obj.rawCount.gene_name
+    raw_ct = Matrix{Int64}(sc_obj.rawCount.count_mtx)
+    @rput raw_ct
+    r_ct = mtx.Matrix(R"raw_ct", sparse=true)
+    seu_obj = seu.CreateSeuratObject(r_ct)
+    seu_obj = seu.SCTransform(seu_obj, var"vst.flavor" = "v2")
+    counts = rcopy(seu_obj["assays"]["SCT"]["counts"])
+    counts = sparse_r_to_jl(counts)
+    norm_count = rcopy(seu_obj["assays"]["SCT"]["data"])
+    norm_count = sparse_r_to_jl(norm_count)
+    scale_count = rcopy(seu_obj["assays"]["SCT"]["scale.data"])
+    sc_obj = normalize_object(sc_obj)
+    sc_obj = scale_object(sc_obj)
+    sc_obj.normCount.count_mtx = norm_count
+    sc_obj.scaleCount.count_mtx = scale_count
+    sc_obj = find_variable_genes(sc_obj)
+    var_genes = rcopy(seu_obj["assays"]["SCT"]["var.features"])
+    gene_ind = [parse(Int, match(r"\d+", s).match) for s in var_genes]
+    var_genes = genes[gene_ind]
+    sc_obj.varGene.var_gene = var_genes
     return sc_obj
 end
 
