@@ -86,6 +86,7 @@ function run_sctransform(sc_obj)
     gene_ind = [parse(Int, match(r"\d+", s).match) for s in var_genes]
     var_genes = genes[gene_ind]
     sc_obj.varGene.var_gene = var_genes
+    sc_obj.scaleCount.gene_name = var_genes
     return sc_obj
 end
 
