@@ -1,4 +1,5 @@
-## All the functions below were modified from Baysor. Please visit the original repo to learn more: https://github.com/kharchenkolab/Baysor/tree/master
+## All the functions below were modified from Baysor. Please visit the original repo to learn more:
+## https://github.com/kharchenkolab/Baysor/tree/master
 
 function split(vector::T where T <: AbstractVector; n_parts::Int)
     offset = ceil(Int, length(vector) / n_parts)
@@ -268,6 +269,7 @@ function baysor_boundary_polygons(molecules::DataFrame, cell_labels::Vector{<:In
                            grid_step::Float64=5.0, min_border_length::Int=3, shape_method::Symbol=:path, max_dev::Float64=10.0, x_col=:x, y_col=:y,
                            bandwidth::Float64=(grid_step / 2), exclude_labels::Vector{Int}=Int[], kwargs...)::Array{Matrix{Float64}, 1}
     pos_data = copy(Matrix{Float64}(molecules[:, [x_col, y_col]])')
+    @info "This function was originally from the Baysor.jl package (v0.5.2). Please visit the original repo to learn more: https://github.com/kharchenkolab/Baysor/tree/master"
     if min_x === nothing
         min_x = vec(mapslices(minimum, pos_data, dims=2))
     end

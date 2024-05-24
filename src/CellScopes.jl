@@ -64,9 +64,11 @@ using StatsBase: countmap
 using KernelDensity
 using Graphs: src, dst
 using DuckDB
-using SCTransform
 using MLJMultivariateStatsInterface: PCA as MLJ_PCA
 using MLJ
+using Clustering: kmeans
+using Logging
+using CategoricalArrays
 
 include("scrna/objects.jl")
 include("spatial/sp_objects.jl")
