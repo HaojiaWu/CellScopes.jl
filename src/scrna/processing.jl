@@ -64,7 +64,7 @@ function scale_object(sc_obj::get_object_group("All"); features::Union{Vector{St
 end
 
 function run_sctransform(sc_obj)
-    @Info "This function uses the SCTransform workflow from Seurat through RCall. Please visit Satija's lab for more details (https://satijalab.org/seurat/)." 
+    @info "This function uses the SCTransform workflow from Seurat through RCall. Please visit Satija's lab for more details (https://satijalab.org/seurat/)." 
     genes = sc_obj.rawCount.gene_name
     raw_ct = Matrix{Int64}(sc_obj.rawCount.count_mtx)
     @rput raw_ct
