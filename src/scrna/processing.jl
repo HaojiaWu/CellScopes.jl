@@ -64,7 +64,7 @@ function scale_object(sc_obj::get_object_group("All"); features::Union{Vector{St
 end
 
 function run_sctransform(sc_obj)
-    @info "This function uses the SCTransform workflow from Seurat through RCall. Please visit Satija's lab for more details (https://satijalab.org/seurat/)."
+    @info "This run_sctransform function uses the SCTransform workflow from Seurat through RCall. Please visit Satija's lab for more details (https://satijalab.org/seurat/)."
     genes = sc_obj.rawCount.gene_name
     cells = sc_obj.rawCount.cell_name
     raw_ct = Matrix{Int64}(sc_obj.rawCount.count_mtx)
@@ -364,7 +364,7 @@ function find_all_markers(sc_obj::get_object_group("All"); anno::Union{String, S
 end
 
 function run_harmony(sc_obj::get_object_group("All"), metadata::DataFrame, batch::Union{String, Symbol}; kwargs...)        
-    @info "This is a Julia implementation of the Harmony for data integration. Please read the original paper for the algorithm details: https://www.nature.com/articles/s41592-019-0619-0. The Julia codes are based on a python implementation of Harmony (harmonypy): https://github.com/slowkow/harmonypy"
+    @info "The run_harmony function is a Julia implementation of the Harmony for data integration. Please read the original paper for the algorithm details: https://www.nature.com/articles/s41592-019-0619-0. The Julia codes are based on a python implementation of Harmony (harmonypy): https://github.com/slowkow/harmonypy"
     pca_mat = sc_obj.dimReduction.pca.cell_embedding
     metadata = sc_obj.metaData
     if isa(batch, String)
