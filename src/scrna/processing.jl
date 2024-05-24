@@ -64,31 +64,36 @@ function scale_object(sc_obj::get_object_group("All"); features::Union{Vector{St
 end
 
 function run_sctransform(sc_obj)
-    @info "This function uses the SCTransform workflow from Seurat through RCall. Please visit Satija's lab for more details (https://satijalab.org/seurat/)." 
+    @info "This function uses the SCTransform workflow from Seurat through RCall. Please visit Satija's lab for more details (https://satijalab.org/seurat/)."
     genes = sc_obj.rawCount.gene_name
+    cells = sc_obj.rawCount.cell_name
     raw_ct = Matrix{Int64}(sc_obj.rawCount.count_mtx)
     @rput raw_ct
+    @rput genes
+    @rput cells
     R"""
     library(Matrix)
     library(Seurat)
+    rownames(raw_ct) <- genes
+    colnames(raw_ct) <- cells
     raw_ct_sparse <- Matrix(raw_ct, sparse = TRUE)
-    seu_obj <- CreateSeuratObject(raw_ct_sparse)
+    seu_obj <- CreateSeuratObject(raw_ct_sparse, min.cells=0, min.features=0)
     seu_obj <- SCTransform(seu_obj, vst.flavor = "v2", verbose=F)
-    counts <- as(seu_obj@assays$SCT@counts, "matrix")
     norm_count <- as(seu_obj@assays$SCT@data, "matrix")
+    all_genes <- rownames(norm_count)
     scale_count <- seu_obj@assays$SCT@scale.data
     var_genes <- seu_obj@assays$SCT@var.features
     """
+    all_genes = rcopy(R"all_genes")
     norm_count = rcopy(R"norm_count")
-    norm_count = convert(SparseMatrixCSC{Float64, Int64},Matrix(norm_count))
+    norm_count = convert(SparseMatrixCSC{Float64, Int64},norm_count)
     scale_count = rcopy(R"scale_count")
-    scale_count = convert(SparseMatrixCSC{Float64, Int64},Matrix(scale_count))
+    scale_count = convert(SparseMatrixCSC{Float64, Int64},scale_count)
     var_genes = rcopy(R"var_genes")
-    gene_ind = [parse(Int, match(r"\d+", s).match) for s in var_genes]
-    var_genes = genes[gene_ind]
     sc_obj = normalize_object(sc_obj)
     sc_obj = scale_object(sc_obj)
     sc_obj.normCount.count_mtx = norm_count
+    sc_obj.normCount.gene_name = all_genes
     sc_obj.scaleCount.count_mtx = scale_count
     sc_obj.scaleCount.gene_name = var_genes
     sc_obj = find_variable_genes(sc_obj)
