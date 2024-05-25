@@ -542,7 +542,7 @@ function get_dummies(df::DataFrame, cols::Vector{Symbol})
 end
 
 ## more functions 
-function matche_patterns(item, patterns)
+function match_patterns(item, patterns)
     for pattern in patterns
         if occursin(pattern, item)
             return true

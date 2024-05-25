@@ -385,11 +385,11 @@ count_df = CSV.read(baysor_output * "/segmentation_counts.tsv", DataFrame)
 patterns = [r"^NegControlProbe_", r"^Unassigned", r"^antisense_", r"^NegControlCodeword_", r"^BLANK_"]
 if is_match(String.(count_df.gene), patterns)
     @chain count_df begin
-        @rsubset !matches_patterns(:gene, patterns)
+        @rsubset !match_patterns(:gene, patterns)
     end
 
     @chain molecules begin
-        @rsubset !matches_patterns(:gene, patterns)
+        @rsubset !match_patterns(:gene, patterns)
     end
 end
 cells = CSV.read(baysor_output * "/segmentation_cell_stats.csv", DataFrame)
