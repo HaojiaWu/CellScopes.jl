@@ -132,7 +132,7 @@ function find_variable_genes(sc_obj::get_object_group("All"); nFeatures::Int64 =
     return sc_obj
 end
 
-function run_pca(sc_obj::get_object_group("All"); method=:svd, pratio = 1, maxoutdim = 10, package="MultivariateStats")
+function run_pca(sc_obj::get_object_group("All"); method=:svd, pratio = 1, maxoutdim = 10, package="MLJ")
     features = sc_obj.varGene.var_gene
     if length(sc_obj.scaleCount.gene_name) == length(sc_obj.rawCount.gene_name)
         new_count = subset_count(sc_obj.scaleCount; genes = features)
