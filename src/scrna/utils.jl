@@ -540,3 +540,24 @@ function get_dummies(df::DataFrame, cols::Vector{Symbol})
     end
     return result_df
 end
+
+## more functions 
+function matche_patterns(item, patterns)
+    for pattern in patterns
+        if occursin(pattern, item)
+            return true
+        end
+    end
+    return false
+end
+
+function is_match(all_genes::Vector{String}, patterns::Vector{Regex})
+    for gene in all_genes
+        for pattern in patterns
+            if occursin(pattern, gene)
+                return true
+            end
+        end
+    end
+    return false
+end
