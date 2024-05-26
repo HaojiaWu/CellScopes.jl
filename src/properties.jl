@@ -74,7 +74,7 @@ function Base.show(io::IO, count::AbstractCount)
     [println("- ", string(i)) for i in fieldnames(typeof(count))]
 end
 
-function Base.show(io::IO, obj_type::Union{AbstractDimReduction, ClusteringObject, VariableGeneObject, UndefinedObject, SpaImputeObj, VisiumImgObject, SpaCountObj, SpaMetaObj, SpaImageObj, Layer, Layers, Positions, AlterImages, AlterHDImgObject, HarmonyObject})
+function Base.show(io::IO, obj_type::Union{AbstractDimReduction, ClusteringObject, VariableGeneObject, UndefinedObject, SpaImputeObj, VisiumImgObject, SpaCountObj, SpaMetaObj, SpaImageObj, Layer, Layers, Positions, AlterImages, AlterHDImgObject, HarmonyObject, AncillaryObject, AncillaryObjects})
     println(io, string(typeof(obj_type)))
     println("All fields:")
     [println("- ", string(i)) for i in fieldnames(typeof(obj_type))]
@@ -101,6 +101,8 @@ matchtype(field) = @match field begin
     layer::Layer => println("- Layer")
     layers::Layers => println("- Layers data")
     positions::Positions => println("- Positions data")
+    ancObject::AncillaryObject => println("- Ancillary object")
+    ancObjects::AncillaryObjects => println("- Ancillary data")
     alterimg::AlterImages => println("- Processed image data")
     alterimgobj::AlterHDImgObject => println("- Alternative image data")
     polygonData::Polygons => println("- Polygon data")
@@ -127,6 +129,8 @@ function Base.show(io::IO, sp_obj::get_object_group("Spatial"))
         println(io, "StereoSeqObject in CellScopes.jl")
     elseif isa(sp_obj, VisiumHDObject)
         println(io, "VisiumHDObject in CellScopes.jl")
+    elseif isa(sp_obj, IntegratedObject)
+        println(io, "IntegratedObject in CellScopes.jl")
     else
         println(io, "VisiumObject in CellScopes.jl")
     end
