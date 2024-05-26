@@ -47,7 +47,7 @@ function CreateIntegratedObject(obj_list;
     end
 
     # prepare ancillary objects
-    seq_types = (scRNAObject, SlideSeqObject, scATACObject, VisiumObject)
+    seq_types = (scRNAObject, SlideseqObject, scATACObject, VisiumObject)
     if any(x -> typeof(x) in seq_types, obj_list)
         ancillary_objs = nothing
     else
