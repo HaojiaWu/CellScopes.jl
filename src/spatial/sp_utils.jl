@@ -869,5 +869,3 @@ function make_ct_from_df(df; gene_col = "gene")
     raw_count = RawCountObject(count_df, cell_name, gene_name)
     return raw_count
 end
-
-

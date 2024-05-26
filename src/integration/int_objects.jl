@@ -2,14 +2,15 @@
 abstract type AbstractAncillaryObject <: AbstractCellScope end
 
 mutable struct AncillaryObject <: AbstractAncillaryObject
+    spmetaData::Union{SpaMetaObj, Nothing}
     polyCount::Union{RawCountObject, Nothing}
     polynormCount::Union{NormCountObject, Nothing}
     imputeData::Union{SpaImputeObj, Nothing}
     imageData::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Nothing}
     polygonData::Union{Array{Array{Float64, 2}, 1}, Nothing}
-    function AncillaryObject(sp_obj::SpatialObject)
-        ancillary_obj = new(nothing, nothing, nothing, nothing, nothing)
-        for field in (:polyCount, :polynormCount, :imputeData, :polygonData)
+    function AncillaryObject(sp_obj)
+        ancillary_obj = fill_nothing(AncillaryObject)
+        for field in (:spmetaData, :polyCount, :polynormCount, :imputeData, :polygonData)
             if isdefined(sp_obj, field)
                 setfield!(ancillary_obj, field, getfield(sp_obj, field))
             end
@@ -48,13 +49,13 @@ function CreateIntegratedObject(obj_list;
     # prepare ancillary objects
     seq_types = (scRNAObject, SlideSeqObject, scATACObject, VisiumObject)
     if any(x -> typeof(x) in seq_types, obj_list)
-    ancillary_objs = nothing
+        ancillary_objs = nothing
     else
-    ancillary_objs = AncillaryObjects()
-    for i in 1:length(obj_list)
-        ancillary_obj = AncillaryObject(obj_list[i])
-        ancillary_objs.ancillaryObjs[sample_names[i]] = ancillary_obj
-    end
+        ancillary_objs = AncillaryObjects()
+        for i in 1:length(obj_list)
+            ancillary_obj = AncillaryObject(obj_list[i])
+            ancillary_objs.ancillaryObjs[sample_names[i]] = ancillary_obj
+        end
     end
     int_obj.ancillaryObjs = ancillary_objs
 
