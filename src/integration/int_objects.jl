@@ -37,9 +37,9 @@ mutable struct IntegratedObject <: AbstractCellScope
 end
 
 function CreateIntegratedObject(obj_list;
-    sample_names::Union{Vector{String}, Nothing}, 
-    min_gene::Union{Int64, Float64, Nothing},
-    min_cell::Union{Int64, Float64, Nothing}
+    sample_names::Union{Vector{String}, Nothing}=nothing, 
+    min_gene::Union{Int64, Float64, Nothing} = nothing,
+    min_cell::Union{Int64, Float64, Nothing} = nothing
 )
     int_obj = fill_nothing(IntegratedObject)
     if isa(sample_names, Nothing)
