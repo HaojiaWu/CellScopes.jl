@@ -9,7 +9,7 @@ function get_object_group(obj_type::String)
     elseif obj_type == "Spatial2"
         objs = Union{ImagingSpatialObject, CartanaObject, VisiumObject, XeniumObject, MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}
     elseif obj_type == "All"
-        objs = Union{scRNAObject, scATACObject, ImagingSpatialObject, CartanaObject, VisiumObject, VisiumHDObject, XeniumObject, MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}
+        objs = Union{scRNAObject, scATACObject, ImagingSpatialObject, CartanaObject, VisiumObject, VisiumHDObject, XeniumObject, MerfishObject, SlideseqObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject, IntegratedObject}
     else
         error("Obj_type can only be Sequencing, Imaging, Spatial or All")
     end

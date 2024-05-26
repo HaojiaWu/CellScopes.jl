@@ -64,12 +64,13 @@ function CreateIntegratedObject(obj_list;
     counts_all = [getfield(raw_count, :count_mtx) for raw_count in ct_objs]
     genes_all = [getfield(genes, :gene_name) for genes in ct_objs]
     cells_all = [getfield(cells, :cell_name) for cells in ct_objs]
+    cells_all = vcat(cells_all...)
     merged_mtx, genes_all2 = merge_matrices(counts_all, genes_all)
     if !isa(min_gene, Nothing) && !isa(min_cell, Nothing)
-    count_mat, genes, cells = subset_matrix(merged_mtx, genes_all2, cells_all, min_gene, min_cell)
-    merged_ct = RawCountObject(count_mat, cells, genes)
+        count_mat, genes, cells = subset_matrix(merged_mtx, genes_all2, cells_all, min_gene, min_cell)
+        merged_ct = RawCountObject(count_mat, cells, genes)
     else
-    merged_ct = RawCountObject(merged_mtx, cells_all, genes_all2)
+        merged_ct = RawCountObject(merged_mtx, cells_all, genes_all2)
     end
     int_obj.rawCount = merged_ct
 
@@ -77,10 +78,10 @@ function CreateIntegratedObject(obj_list;
     meta_data = [getfield(meta, :metaData) for meta in obj_list]
     new_meta = []
     for i in 1:length(meta_data)
-    meta1 = meta_data[i]
-    meta1.dataset .= sample_names[i]
-    meta1 = meta1[!, [:Cell_id, :dataset]]
-    new_meta[i] = meta1
+        meta1 = meta_data[i]
+        meta1.dataset .= sample_names[i]
+        meta1 = meta1[!, [:Cell_id, :dataset]]
+        new_meta[i] = meta1
     end
     combined_meta = vcat(new_meta...)
     nFeatures = vec(colSum(merged_ct.count_mtx))
