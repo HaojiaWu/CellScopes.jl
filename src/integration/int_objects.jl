@@ -43,11 +43,11 @@ function CreateIntegratedObject(obj_list;
 )
     int_obj = fill_nothing(IntegratedObject)
     if isa(sample_names, Nothing)
-    sample_names = string.("dataset_", 1:length(obj_list))
+        sample_names = string.("dataset_", 1:length(obj_list))
     end
 
     # prepare ancillary objects
-    seq_types = (scRNAObject, SlideseqObject, scATACObject, VisiumObject)
+    seq_types = [scRNAObject, SlideseqObject, scATACObject, VisiumObject]
     if any(x -> typeof(x) in seq_types, obj_list)
         ancillary_objs = nothing
     else
@@ -76,12 +76,12 @@ function CreateIntegratedObject(obj_list;
 
     # merge metadata
     meta_data = [getfield(meta, :metaData) for meta in obj_list]
-    new_meta = []
+    new_meta = Vector{DataFrame}()
     for i in 1:length(meta_data)
         meta1 = meta_data[i]
         meta1.dataset .= sample_names[i]
         meta1 = meta1[!, [:Cell_id, :dataset]]
-        new_meta[i] = meta1
+        push!(new_meta, meta1)
     end
     combined_meta = vcat(new_meta...)
     nFeatures = vec(colSum(merged_ct.count_mtx))
