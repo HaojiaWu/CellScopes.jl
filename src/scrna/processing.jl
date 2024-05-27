@@ -389,7 +389,7 @@ function run_harmony(sc_obj::get_object_group("All"), batch::Union{String, Symbo
     if isa(batch, String)
         batch = Symbol(batch)
     end
-    ho = HarmonyObject(pca_mat, meta, batch; kwargs...)
+    ho = HarmonyObject(pca_mat, metadata, batch; kwargs...)
     harmony_matrix = Matrix{Float64}(ho.Z_corr')
     sc_obj.dimReduction.pca.cell_embedding = harmony_matrix
     return sc_obj
