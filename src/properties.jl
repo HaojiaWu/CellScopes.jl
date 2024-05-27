@@ -110,7 +110,7 @@ matchtype(field) = @match field begin
     emptyObj::Nothing => print("")
 end
 
-function Base.show(io::IO, sp_obj::get_object_group("Spatial"))
+function Base.show(io::IO, sp_obj::get_object_group("All"))
     if isa(sp_obj, ImagingSpatialObject)
         println(io, "ImagingSpatialObject in CellScopes.jl")
     elseif isa(sp_obj, CartanaObject)

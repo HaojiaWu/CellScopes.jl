@@ -171,6 +171,7 @@ function run_clustering_atlas(sc_obj::get_object_group("All"); n_neighbors=30, m
         graph = nndescent(pca_vec, n_neighbors, metric)
         indices, dist_mat = knn_matrices(graph)
     end
+#=
     n = size(indices, 2)
     adj_mat = Array{Int16}(undef, n, n)
     for i in 1:n
@@ -182,6 +183,24 @@ function run_clustering_atlas(sc_obj::get_object_group("All"); n_neighbors=30, m
     if n > 10000 # Input as SparseMatrix to Leiden runs quicker for large dataset
         adj_mat = convert(SparseMatrixCSC{Int64,Int64}, adj_mat)
     end
+    Random.seed!(seed_use)
+    result = Leiden.leiden(adj_mat, resolution = res)
+=#
+    n = size(indices, 2)
+    row_indices = Vector{Int64}()
+    col_indices = Vector{Int64}()
+    values = Vector{Int64}()
+    for i in 1:n
+        for j in 1:size(indices, 1)
+            push!(row_indices, indices[j, i])
+            push!(col_indices, i)
+            push!(values, 1)
+            push!(row_indices, i)
+            push!(col_indices, indices[j, i])
+            push!(values, 1)
+        end
+    end
+    adj_mat = sparse(row_indices, col_indices, values, n, n)
     Random.seed!(seed_use)
     result = Leiden.leiden(adj_mat, resolution = res)
     df = DataFrame()
