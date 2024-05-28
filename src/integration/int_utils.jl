@@ -27,6 +27,9 @@ end
     Expr(:new, T, (:(nothing) for _ in fields)...)
 end
 
+# This function uses array indexing to improve runtime. 
+# This is for replacing the norm function in LinearAlgebra 
+# due to its slow performance for super huge dataset (e.g. 4 million cells).
 function optimized_norm(mtx::Matrix{Float64}, blocks::Vector{Int})
     num_columns = length(blocks)
     column_norms = Vector{Float64}(undef, num_columns)
