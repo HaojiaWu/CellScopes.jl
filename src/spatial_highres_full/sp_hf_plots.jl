@@ -64,19 +64,19 @@ function sp_dim_plot(sp::VisiumHDObject, anno; x_col::String = "x", y_col::Strin
     else
         img = deepcopy(sp.alterImgData.imgData.imgs[img_res])
     end
-    min_w = maximum(1, Int(round(minimum(anno_df[!, x_col]))))
-    min_h = maximum(1, Int(round(minimum(anno_df[!, y_col]))))    
+    min_w = maximum([1, Int(round(minimum(anno_df[!, x_col])))])
+    min_h = maximum([1, Int(round(minimum(anno_df[!, y_col])))])    
     max_w = minimum([size(img)[1], Int(round(maximum(anno_df[!, x_col])))])
     max_h = minimum([size(img)[2], Int(round(maximum(anno_df[!, y_col])))])
     if isa(x_lims, Nothing)
-        x_lims=[min_w,max_w]
+        x_lims=[min_w, max_w]
     else
         xlim1 = Int(round(x_lims[1] * scale_factor))
         xlim2 = Int(round(x_lims[2] * scale_factor))
         x_lims = [xlim1, xlim2]
     end
     if isa(y_lims, Nothing)
-        y_lims=[min_h,max_h]
+        y_lims=[min_h, max_h]
     else
         ylim1 = Int(round(y_lims[1] * scale_factor))
         ylim2 = Int(round(y_lims[2] * scale_factor))
@@ -167,8 +167,8 @@ function sp_feature_plot(sp::VisiumHDObject, gene_list::Union{String, Vector{Str
     else
         img = deepcopy(sp.alterImgData.imgData.imgs[img_res])
     end
-    min_w = maximum(1, Int(round(minimum(anno_df[!, x_col]))))
-    min_h = maximum(1, Int(round(minimum(anno_df[!, y_col]))))    
+    min_w = maximum([1, Int(round(minimum(anno_df[!, x_col])))])
+    min_h = maximum([1, Int(round(minimum(anno_df[!, y_col])))])    
     max_w = minimum([size(img)[1], Int(round(maximum(anno_df[!, x_col])))])
     max_h = minimum([size(img)[2], Int(round(maximum(anno_df[!, y_col])))])
     if isa(x_lims, Nothing)
