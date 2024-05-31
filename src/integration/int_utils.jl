@@ -198,6 +198,7 @@ function moe_correct_ridge(Z_orig, Z_cos, Z_corr, R, W, K, Phi_Rk, Phi_moe, lamb
     return Z_cos, Z_corr, W, Phi_Rk
 end
 
+## This function is equivalent to the get_dummies function in python pandas
 function get_dummies(df::DataFrame, cols::Vector{Symbol})
     result_df = select(df, Not(cols))
     for col in cols
@@ -208,3 +209,42 @@ function get_dummies(df::DataFrame, cols::Vector{Symbol})
     end
     return result_df
 end
+
+### more functions
+function get_type(obj_list::Vector)
+    check_same_type = all(x -> typeof(x) == typeof(obj_list[1]), obj_list)
+    return check_same_type ? "Homogeneous $(typeof(obj_list[1]))" : "Heterogeneous data types"
+end
+
+function check_type(obj::IntegratedObject)
+    return println(obj.dataType)
+end
+
+function set_default_layer(obj::IntegratedObject; layer_slot::Union{String, Nothing}=nothing)
+    if isa(layer_slot, Nothing)
+        error("Please provide the layer_slot you want to set!")
+    end
+    if get_type(obj) != "Homogenous VisiumHDObject"
+        error("This function only applies to Homogenous VisiumHDObject type.")
+    end
+    all_names = collect(keys(obj.ancillaryObjs.ancillaryObjs))
+    for i in 1:length(all_names)
+        anc_obj = obj.ancillaryObjs.ancillaryObjs[all_names[i]]
+        layer = get(anc_obj.layerData.layers, layer_slot, nothing)
+        if layer !== nothing
+            anc_obj.metaData = layer.metaData
+            anc_obj.spmetaData = layer.spmetaData
+            anc_obj.polygonData = layer.polygonData.polygons["original"]
+            anc_obj.imageData.jsonParameters  = layer.jsonParameters
+            if !isa(anc_obj.alterImgData, Nothing)
+                anc_obj.alterImgData.posData = layer.posData
+                anc_obj.alterImgData.polyData.polygons = Dict(key => value for (key, value) in layer.polygonData.polygons if key != "original")
+            end
+        end
+        obj.ancillaryObjs.ancillaryObjs[all_names[i]] = anc_obj
+    end
+    return obj
+end
+
+default_layer(obj::IntegratedObject)=obj.ancillaryObjs.ancillaryObjs[1].defaultData
+list_layers(obj::IntegratedObject) = println(keys(obj.ancillaryObjs.ancillaryObjs[1].layerData.layers))

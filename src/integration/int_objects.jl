@@ -3,15 +3,18 @@ abstract type AbstractAncillaryObject <: AbstractCellScope end
 abstract type AbstractHarmony <: AbstractSingleCell end
 
 mutable struct AncillaryObject <: AbstractAncillaryObject
-    spmetaData::Union{SpaMetaObj, Nothing}
+    layerData::Union{Layers, Nothing}
+    spmetaData::Union{SpaMetaObj, DataFrame, Nothing}
     polyCount::Union{RawCountObject, Nothing}
     polynormCount::Union{NormCountObject, Nothing}
     imputeData::Union{SpaImputeObj, Nothing}
-    imageData::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Nothing}
+    imageData::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, VisiumImgObject, Nothing}
     polygonData::Union{Array{Array{Float64, 2}, 1}, Nothing}
+    alterImgData::Union{AlterHDImgObject, Nothing}
+    defaultData::Union{String, Nothing}
     function AncillaryObject(sp_obj)
         ancillary_obj = fill_nothing(AncillaryObject)
-        for field in (:spmetaData, :polyCount, :polynormCount, :imputeData, :polygonData)
+        for field in (:layerData, :spmetaData, :polyCount, :polynormCount, :imputeData, :polygonData, :alterImgData, :defaultData)
             if isdefined(sp_obj, field)
                 setfield!(ancillary_obj, field, getfield(sp_obj, field))
             end
@@ -35,6 +38,7 @@ mutable struct IntegratedObject <: AbstractCellScope
     varGene::Union{VariableGeneObject, Nothing}
     dimReduction::Union{ReductionObject, Nothing}
     clustData::Union{ClusteringObject, Nothing}
+    dataType::Union{String, Nothing}
 end
 
 function CreateIntegratedObject(obj_list;
@@ -46,7 +50,7 @@ function CreateIntegratedObject(obj_list;
     if isa(sample_names, Nothing)
         sample_names = string.("dataset_", 1:length(obj_list))
     end
-
+    int_obj.dataType = get_type(obj_list)
     # prepare ancillary objects
     seq_types = [scRNAObject, SlideseqObject, scATACObject, VisiumObject]
     if any(x -> typeof(x) in seq_types, obj_list)
