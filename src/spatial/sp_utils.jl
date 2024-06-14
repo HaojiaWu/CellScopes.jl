@@ -869,3 +869,11 @@ function make_ct_from_df(df; gene_col = "gene")
     raw_count = RawCountObject(count_df, cell_name, gene_name)
     return raw_count
 end
+
+function add_anno(obj, old_col, new_col, old_ident, new_ident)
+    obj.metaData = map_values(obj.metaData, old_col, new_col, old_ident, new_ident)
+    if isa(obj, get_object_group(Imaging))
+        obj.spmetaData.cell = map_values(obj.spmetaData.cell, old_col, new_col, old_ident, new_ident)
+    end
+    return obj
+end
