@@ -147,15 +147,15 @@ mutable struct scRNAObject <: AbstractSingleCell
         if isa(meta_data, Nothing)
             nFeatures = vec(colSum(count_mat))
             nGenes = vec(sum(x->x>0, count_mat, dims=1))
-            meta_data = DataFrame(Cell_id = raw_count.cell_name, nFeatures=nFeatures, nGenes = nGenes)
+            meta_data = DataFrame(Cell_id = cells, nFeatures=nFeatures, nGenes = nGenes)
         end
         if prefix !== nothing
             println("Adding prefix " * prefix * " to all cells...")
-            cellnames = prefix * "_" .* raw_count.cell_name
+            cellnames = prefix * "_" .* cells
         end
         if postfix !== nothing
             println("Adding postfix " * postfix * " to all cells...")
-            cellnames = raw_count.cell_name .* "_" .* postfix
+            cellnames = cells .* "_" .* postfix
         end
         count_obj = RawCountObject(count_mat, cells, genes)
         scRNA_obj = new(count_obj)
