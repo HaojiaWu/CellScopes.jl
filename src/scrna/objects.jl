@@ -151,11 +151,11 @@ mutable struct scRNAObject <: AbstractSingleCell
         end
         if prefix !== nothing
             println("Adding prefix " * prefix * " to all cells...")
-            cellnames = prefix * "_" .* cells
+            cells = prefix * "_" .* cells
         end
         if postfix !== nothing
             println("Adding postfix " * postfix * " to all cells...")
-            cellnames = cells .* "_" .* postfix
+            cells = cells .* "_" .* postfix
         end
         count_obj = RawCountObject(count_mat, cells, genes)
         scRNA_obj = new(count_obj)
