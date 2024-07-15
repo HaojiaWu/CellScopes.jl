@@ -663,19 +663,19 @@ function from_seurat(seurat_file; data_type::String = "scRNA",
         if data_type == "scRNA"
             if version=="v5" && assay == "RNA"
                 counts = rcopy(seu_obj["assays"][assay]["layers"]["counts"])
-                norm_count = rcopy(seu_obj["assays"][assay]["layers"]["data"])
+                #norm_count = rcopy(seu_obj["assays"][assay]["layers"]["data"])
             else
                 counts = rcopy(seu_obj["assays"][assay]["counts"])
-                norm_count = rcopy(seu_obj["assays"][assay]["data"])
+                #norm_count = rcopy(seu_obj["assays"][assay]["data"])
             end
             counts = sparse_r_to_jl(counts)
             cells = rcopy(rbase.colnames(seu_obj))
             genes = rcopy(rbase.rownames(seu_obj))
             raw_count = RawCountObject(counts, cells, genes)
             cs_obj = scRNAObject(raw_count; meta_data=meta)
-            norm_count = sparse_r_to_jl(norm_count)
+            #norm_count = sparse_r_to_jl(norm_count)
             cs_obj = normalize_object(cs_obj)
-            cs_obj.normCount.count_mtx = norm_count
+            #cs_obj.normCount.count_mtx = norm_count
         elseif data_type == "spatial"
             if isa(tech, Nothing)
                 error("Please specify the spatial technology names in the 'tech' parameter. It can be 'xenium' or 'visium'.")
