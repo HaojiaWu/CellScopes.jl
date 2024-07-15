@@ -90,7 +90,7 @@ cs.dim_plot(seurat_xenium; legend_ncol=2)
 #### 2.2 plot cell annoation on tissue
 ```julia
 cs.sp_dim_plot(seurat_xenium, "cluster"; 
-    canvas_size=(600, 500), 
+    width=600, height = 500, 
     marker_size=3,legend_ncol=2)
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/seurat_xenium_tissue.png" width="400"> <br>
@@ -111,7 +111,7 @@ seurat_visium = cs.from_seurat("brain_visium.rds";
 #### 3.1 plot cell annoation on tissue
 ```julia
 cs.sp_dim_plot(seurat_visium, "cluster"; 
-    marker_size = 8, canvas_size = (600,500), 
+    marker_size = 8,  width=600, height = 500,  
     do_label=false, alpha=0.5, img_res="high")
 ```
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/seurat_visium_tissu.png" width="400"> <br>
