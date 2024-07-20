@@ -238,7 +238,7 @@ function subset_fov(sp::get_object_group("Spatial"), fov::Vector{Int64}, n_field
     elseif isa(sp, VisiumHDObject)
         if isa(sp.alterImgData, Nothing)
             df = deepcopy(sp.spmetaData)
-            rename!(df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, Symbol(x_col), Symbol(y_col)])
+            rename!(df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, :x, :y])
         else
             df = deepcopy(sp.alterImgData.posData.positions["high_pos"])
         end
