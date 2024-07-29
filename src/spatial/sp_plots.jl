@@ -1040,16 +1040,10 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
                 xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
                 xgridvisible = false,ygridvisible = false)
     if isa(sp, VisiumObject)
-        if isa(marker_size, Nothing)
-            marker_size = 50
-        end
         img = deepcopy(sp.imageData.highresImage)
         MK.image!(img)
     end
     if isa(sp, VisiumHDObject)
-        if isa(marker_size, Nothing)
-            marker_size = 5
-        end
         if isa(sp.alterImgData, Nothing)
             img = deepcopy(sp.imageData.highresImage)
         else
@@ -1065,13 +1059,23 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
     end
     if custom_img
         if isa(sp, XeniumObject)
-            if isa(marker_size, Nothing)
-                marker_size=10
-            end
             img = deepcopy(sp.imageData)
             MK.image!(img)
         end
     end
+
+    if isa(marker_size, Nothing)
+        if isa(sp, XeniumObject)
+            marker_size = 8
+        elseif isa(sp, VisiumHDObject)
+            marker_size = 5
+        elseif isa(sp, VisiumObject)
+            marker_size = 50
+        else
+            marker_size = 10
+        end
+    end
+
     if isa(group_label, Nothing) && isa(cell_highlight, Nothing)
         MK.scatter!(df[!,x_col],df[!, y_col]; strokecolor="black", color=(:gray98, alpha), strokewidth=0.5,label="", markersize=marker_size)
     elseif isa(group_label, Nothing) && isa(cell_highlight, String)
