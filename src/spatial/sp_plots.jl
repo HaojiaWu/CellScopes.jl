@@ -1009,11 +1009,13 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
         df = deepcopy(sp.spmetaData.cell)
     end
     if isa(sp, XeniumObject)
-        scale_factor = get_xn_sf(sp; adjust_coord_to_img=adjust_coord_to_img)
-        scale_x = scale_factor[1]
-        scale_y = scale_factor[2]
-        df[!, x_col] = df[!, x_col] ./ scale_x
-        df[!, y_col] = df[!, y_col] ./ scale_y
+        if custom_img
+            scale_factor = get_xn_sf(sp; adjust_coord_to_img=adjust_coord_to_img)
+            scale_x = scale_factor[1]
+            scale_y = scale_factor[2]
+            df[!, x_col] = df[!, x_col] ./ scale_x
+            df[!, y_col] = df[!, y_col] ./ scale_y
+        end
     end
     pts, centroids=split_field(df, n_fields_x, n_fields_y)
     centroids=convert.(Tuple{Float64, Float64},centroids)
