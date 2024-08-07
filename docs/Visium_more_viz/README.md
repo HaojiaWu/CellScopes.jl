@@ -25,7 +25,7 @@ curl -O https://cf.10xgenomics.com/samples/spatial-exp/2.0.0/CytAssist_FFPE_Huma
 ```
 This tiff image is in 16-bit format. It can be converted into 8-bit format with Fiji to reduce the file size. Since the image has been aligned to the visium fiducials, we can directly add it to the VisiumObject using the CellScopes function ```add_visium_img```.
 ```julia
-visium = cs.add_visium_img(visium, 
+visium = cs.add_visium_img(visium; img_path=
         "/mnt/sdb/breast_cancer_visium/CytAssist_FFPE_Human_Breast_Cancer_tissue_image_8bit.tif")
 ```
 
