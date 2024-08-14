@@ -12,7 +12,7 @@ end
 =#
 
 # Below is a replaced function with runtime optimization using techniques like memory allocation, vectorization, etc.
-function normalize_object(mtx::AbstractMatrix{<:Real}; scale_factor = 10000, pseudocount = 1)
+function normalize_object(mtx::AbstractMatrix{<:Real}; scale_factor = 10000, norm_method = "logarithm", pseudocount = 1)
     sum_val = vec(sum(mtx, dims=1)) 
     inv_sum_val = 1.0 ./ sum_val
     norm_count = @views log.((mtx .* inv_sum_val') .* scale_factor .+ pseudocount)
