@@ -1,8 +1,21 @@
 
+#= It seems julia v1.10.4 handles hcat vectorization differently so the original normalize function ceases to work.
+# Keep it for revisiting. 
+
 function normalize_object(mtx::AbstractMatrix{<:Real}; scale_factor = 10000, norm_method = "logarithm", pseudocount = 1)
     n= size(mtx)[2]
     sum_val = sum(mtx, dims=1)
     norm_count = hcat(collect(log.((mtx[:, i] ./ sum_val[i]) .* scale_factor .+ pseudocount) for i in 1:n)...)
+    return norm_count
+end
+
+=#
+
+# Below is a replaced function with runtime optimization using techniques like memory allocation, vectorization, etc.
+function normalize_object(mtx::AbstractMatrix{<:Real}; scale_factor = 10000, pseudocount = 1)
+    sum_val = vec(sum(mtx, dims=1)) 
+    inv_sum_val = 1.0 ./ sum_val
+    norm_count = @views log.((mtx .* inv_sum_val') .* scale_factor .+ pseudocount)
     return norm_count
 end
 
