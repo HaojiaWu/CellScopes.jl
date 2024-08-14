@@ -36,8 +36,6 @@ function dim_plot(sc_obj::get_object_group("All"); anno::Union{Symbol, String}="
             cell_anno=cell_order
         end
         for i in cell_anno
-            MK.xlims!(MK.current_axis(), x_lims)
-            MK.ylims!(MK.current_axis(), y_lims)
             anno_df2=filter(anno => ==(i), dim_data)
             x_ax = anno_df2[!, x_col]
             y_ax = anno_df2[!, y_col]
@@ -63,6 +61,8 @@ function dim_plot(sc_obj::get_object_group("All"); anno::Union{Symbol, String}="
                 MK.text!(i, position = (mean(x_ax) - label_offset[1], mean(y_ax) - label_offset[2]),align = (:center, :center),font = "Noto Sans Regular",fontsize = label_size,color = label_color)
             end
         end
+        MK.xlims!(MK.current_axis(), x_lims)
+        MK.ylims!(MK.current_axis(), y_lims)
         MK.current_figure()
 end
 
