@@ -230,7 +230,7 @@ mutable struct PairedSpObject <: AbstractCellScope
 end
 
 mutable struct PairedObject <: AbstractCellScope
-    pairedObject::Union{PairedSpObject, Nothing}
+    pairedData::Union{PairedSpObject, Nothing}
     rawCount::Union{RawCountObject, Nothing}
     normCount::Union{NormCountObject, Nothing}
     scaleCount::Union{ScaleCountObject, Nothing}
@@ -277,9 +277,9 @@ mutable struct PairedObject <: AbstractCellScope
         counts = RawCountObject(count_mat, cell_name, gene_name)
         pairedObj = new(paired_obj, counts)
         meta = SpaMetaObj(cell_data, molecule_data, nothing)
-        paired_obj.xnObj.spmetaData = meta
+        pairedObj.pairedData.xnObj.spmetaData = meta
         pairedObj.metaData = meta_data
-        return spObj
+        return pairedObj
         println("PairedObject was successfully created!")
     end
 end

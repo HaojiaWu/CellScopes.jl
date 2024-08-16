@@ -106,6 +106,8 @@ matchtype(field) = @match field begin
     alterimg::AlterImages => println("- Processed image data")
     alterimgobj::AlterHDImgObject => println("- Alternative image data")
     polygonData::Polygons => println("- Polygon data")
+    pairedsp::PairedSpObject => println("- Paired spatial data")
+    paired::PairedObject => println("- Paired data")
     uns::UndefinedObject => println("- Undefined slot")
     emptyObj::Nothing => print("")
 end
