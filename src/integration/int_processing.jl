@@ -57,3 +57,50 @@ function pivot_count(molecule)
     sparse_mtx = sparse(I, J, V, num_genes, num_cells)
     return sparse_mtx, gene_names, cell_names
 end
+
+function transform_coord(df, t_mat; x_old = :x, y_old = :y, x_new = :new_x, y_new = :new_y)
+    coordinates = Matrix(df[:, [x_col, y_col]])
+    ones_column = ones(size(df, 1), 1)
+    homo_coord = hcat(coordinates, ones_column)
+    trans_coord = homo_coord * transpose(t_mat)
+    df[!, x_new] = trans_coord[:, 1]
+    df[!, y_new] = trans_coord[:, 2]
+    return df
+end
+
+function generate_hd_segcount(xn_dir, vs_dir; t_mat = nothing, img_lims=nothing)
+    cell_seg = read_parquet(xn_dir * "cell_boundaries.parquet")
+    umap = CSV.read(xn_dir * "analysis/umap/gene_expression_2_components/projection.csv", DataFrame)
+    cell_seg = filter(:cell_id=> ∈(Set(umap.Barcode)), cell_seg)
+    cell_seg.x = cell_seg.vertex_x ./ 0.2125
+    cell_seg.y = cell_seg.vertex_y ./ 0.2125
+    gdf1 = combine(groupby(cell_seg, :cell_id)) do df
+        DataFrame(geometry = points_to_polygon(df))
+    end
+    vs_spot = read_parquet(vs_dir * "binned_outputs/square_002um/spatial/tissue_positions.parquet")
+    vs_spot = filter(:in_tissue => !=(0), vs_spot)
+    if isa(img_lims, Nothing)
+        img_lims = [maximum(vs_spot.pxl_row_in_fullres), maximum(vs_spot.pxl_col_in_fullres)]
+    end
+    vs_spot = vs_spot[
+        (vs_spot.pxl_row_in_fullres .> 0) .& 
+        (vs_spot.pxl_row_in_fullres .< img_lims[1]) .& 
+        (vs_spot.pxl_col_in_fullres .> 0) .& 
+        (vs_spot.pxl_col_in_fullres .< img_lims[2]), :]
+    if !isa(t_mat, Nothing)
+        vs_spot = transform_coord(vs_spot, t_mat; x_old = :pxl_col_in_fullres, y_old = :pxl_row_in_fullres, x_new=:x, y_new = :y)
+    else
+        vs_spot.x, vs_spot.y = vs_spot.pxl_col_in_fullres, vs_spot.pxl_row_in_fullres
+    end
+    points = [(x, y) for (x, y) in zip(vs_spot.x, vs_spot.y)]
+    points_df = DataFrame(geometry = points, barcode = vs_spot.barcode, x = vs_spot.x, y=vs_spot.y)
+    joined_df = FlexiJoins.innerjoin(
+            (points_df, gdf1),
+            by_pred(:geometry, GO.within, :geometry)
+        )
+    molecule = parse_molecule(vs_dir)
+    molecule = filter(:barcode => ∈(Set(joined_df.barcode)),  molecule)
+    molecule = DataFrames.leftjoin(molecule, joined_df, on = :barcode)
+    vs_mtx, gene_names, cell_names = pivot_count(molecule)
+    return vs_mtx, gene_names, cell_names
+end

@@ -220,3 +220,66 @@ mutable struct HarmonyObject <: AbstractHarmony
         return harmony_obj
     end
 end
+
+mutable struct PairedSpObject <: AbstractCellScope
+    vsObj::Union{VisiumHDObject, Nothing}
+    xnObj::Union{XeniumObject, Nothing}
+    vsMat::Union{Matrix{Float64}, Nothing} 
+    xnMat::Union{Matrix{Float64}, Nothing} 
+    PairedSpObject(vsObj, xnObj, vsMat, xnMat)=new(vsObj, xnObj, vsMat, xnMat)
+end
+
+mutable struct PairedObject <: AbstractCellScope
+    pairedObject::Union{PairedSpObject, Nothing}
+    rawCount::Union{RawCountObject, Nothing}
+    normCount::Union{NormCountObject, Nothing}
+    scaleCount::Union{ScaleCountObject, Nothing}
+    metaData::Union{DataFrame, Nothing}
+    varGene::Union{VariableGeneObject, Nothing}
+    dimReduction::Union{ReductionObject, Nothing}
+    clustData::Union{ClusteringObject, Nothing}
+    function PairedObject(paired_obj::PairedSpObject, counts::RawCountObject;        
+        prefix::Union{String, Nothing}=nothing, postfix::Union{String, Nothing}=nothing, meta_data::Union{DataFrame, Nothing} = nothing,
+        min_gene::Int64=0, min_cell::Int64=0, x_col::Union{String, Symbol} = "x", 
+        y_col::Union{String, Symbol} = "y", cell_col::Union{String, Symbol} = :cell)
+        molecule_data = paired_obj.xnObj.spmetaData.molecule
+        cell_data = paired_obj.xnObj.spmetaData.cell
+        cell_name = counts.cell_name
+        molecule_data = filter(cell_col => ∈(Set(cell_name)), molecule_data)
+        cell_data = filter(cell_col => ∈(Set(cell_name)), cell_data)
+        if isa(prefix, String)
+            println("Adding prefix " * prefix * " to all cells...")
+            counts.cell_name = prefix * "_" .* counts.cell_name
+            molecule_data[!, cell_col] = prefix * "_" .* molecule_data[!, cell_col]
+            cell_data[!, cell_col] = prefix * "_" .* cell_data[!, cell_col]
+        end
+        if isa(postfix, String)
+            println("Adding postfix " * postfix * " to all cells...")
+            counts.cell_name = counts.cell_name .* "_" .* postfix
+            molecule_data[!, cell_col] = molecule_data[!, cell_col] .* "_" .* postfix
+            cell_data[!, cell_col] = cell_data[!, cell_col] .* "_" .* postfix
+        end
+        count_mat = counts.count_mtx
+        gene_name = counts.gene_name
+        cell_name = counts.cell_name
+        if min_gene > 0 || min_cell > 0
+            count_mat, gene_name, cell_name = subset_matrix(count_mat, gene_name, cell_name, min_gene, min_cell)
+            cell_check = check_vec(cell_name, cell_data[!, cell_col])
+            cell_data = cell_data[cell_check, :]
+            mol_check = check_vec(cell_name, molecule_data[!, cell_col])
+            molecule_data = molecule_data[mol_check, :]
+        end
+        if isa(meta_data, Nothing)
+            nFeatures = vec(colSum(count_mat))
+            nGenes = vec(sum(x->x>0, count_mat, dims=1))
+            meta_data = DataFrame(Cell_id = cell_name, nFeatures=nFeatures, nGenes = nGenes)
+        end
+        counts = RawCountObject(count_mat, cell_name, gene_name)
+        pairedObj = new(paired_obj, counts)
+        meta = SpaMetaObj(cell_data, molecule_data, nothing)
+        paired_obj.xnObj.spmetaData = meta
+        pairedObj.metaData = meta_data
+        return spObj
+        println("PairedObject was successfully created!")
+    end
+end

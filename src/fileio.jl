@@ -660,3 +660,57 @@ function read_visiumHD(hd_dir::String;
     hd_obj.imageData = image_obj
     return hd_obj
 end
+
+function read_paired_data(xn_dir, vs_dir, xn_img_dir, vs_img_dir; 
+    vs_mat::Union{Matrix{Float64}, Nothing} = nothing,
+    xn_mat::Union{Matrix{Float64}, Nothing} = nothing,
+    kwargs...
+)
+    hd_obj = read_visiumHD(vs_dir)
+    xn_obj = read_xenium(xn_dir)
+    cell_coord = deepcopy(xn_obj.spmetaData.cell)
+    mol_coord = deepcopy(xn_obj.spmetaData.molecule)
+    cell_coord.x = cell_coord.x ./ 0.2125
+    cell_coord.y = cell_coord.y ./ 0.2125
+    mol_coord.x = mol_coord.x ./ 0.2125
+    mol_coord.y = mol_coord.y ./ 0.2125
+    vs_img = FileIO.load(vs_img_dir)
+    vs_img = convert(Matrix{RGB{N0f8}}, vs_img)
+    xn_img = FileIO.load(xn_img_dir)
+    xn_img = convert(Matrix{RGB{N0f8}}, xn_img)
+    vs_ct, gene_names, cell_names = generate_hd_segcount(xn_dir, vs_dir, vs_img_dir; t_mat = vs_mat)
+    cell_counts = RawCountObject(vs_ct, cell_names, gene_names)
+    if !isa(vs_mat, Nothing)
+        inv_vs_mat = inv(vs_mat)
+        cell_coord = transform_coord(cell_coord, inv_vs_mat; x_old = :x, y_old = :y, x_new=:y, y_new = :x)
+        mol_coord = transform_coord(mol_coord, inv_vs_mat; x_old = :x, y_old = :y, x_new=:y, y_new = :x)
+    end
+    xn_obj.spmetaData.cell = cell_coord
+    xn_obj.spmetaData.molecule = mol_coord
+    if !isa(xn_mat, Nothing) 
+        if isa(vs_mat, Nothing)
+            xn_mat = xn_mat
+        else
+            xn_mat = inv(vs_mat) * xn_mat
+        end
+        h1, w1 = size(xn_img)
+        new_df = DataFrame(x = repeat(1:w1, inner = h1),
+           y = repeat(1:h1, outer = w1),
+           color = vec(xn_img))
+        new_df = transform_coord(new_df, xn_mat; x_old = :x, y_old = :y, x_new=:new_y, y_new = :new_x)
+        new_df.new_x = Int64.(round.(new_df.new_x))
+        new_df.new_y = Int64.(round.(new_df.new_y))
+        new_df = new_df[(new_df.new_x .> 0) .&& (new_df.new_y .> 0), :]
+        max_y = maximum(new_df.new_y)
+        max_x = maximum(new_df.new_x)
+        new_img = fill(RGBA(1, 1, 1, 1), max_x, max_y)
+        indices = CartesianIndex.(new_df.new_x, new_df.new_y)
+        new_img[indices] = new_df.color
+        xn_img = new_img
+    end
+    xn_obj.imageData = xn_img
+    hd_obj.imageData.fullresImage = vs_img
+    paired_sp_obj = PairedSpObject(hd_obj, xn_obj, vs_mat, xn_mat)
+    paired_obj = PairedObject(paired_sp_obj, cell_counts; kwargs...)
+    return paired_obj
+end
