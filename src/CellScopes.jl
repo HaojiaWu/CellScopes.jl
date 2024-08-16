@@ -69,6 +69,8 @@ using MLJ
 using Clustering: kmeans
 using Logging
 using CategoricalArrays
+import GeoInterface as GI, GeometryOps as GO
+using FlexiJoins
 
 include("scrna/objects.jl")
 include("spatial/sp_objects.jl")
