@@ -185,7 +185,9 @@ function read_xenium(xenium_dir::String; prefix = nothing, min_gene::Int64 = 0, 
     count_cells.cluster = clustering.Cluster
     spObj = XeniumObject(count_molecules, count_cells, raw_count;
             prefix = prefix, min_gene = min_gene, min_cell = min_gene)
-    clustering.cell = prefix .*  "_" .* string.(clustering.Barcode)
+    if !isa(prefix, Nothing)
+        clustering.cell = prefix .*  "_" .* string.(clustering.Barcode)
+    end
     all_cells = spObj.rawCount.cell_name
     clustering = filter(:cell=> ∈(Set(all_cells)), clustering)
     spObj.spmetaData.cell.cluster = string.(clustering.Cluster)
@@ -666,8 +668,11 @@ function read_paired_data(xn_dir, vs_dir, xn_img_path, vs_img_path;
     xn_mat::Union{Matrix{Float64}, Nothing} = nothing,
     kwargs...
 )
+    @info("Step I. Reading visiumHD data...")
     hd_obj = read_visiumHD(vs_dir)
+    @info("Step II. Reading Xenium data...")
     xn_obj = read_xenium(xn_dir)
+    @info("Step III. Pairing both data...")
     cell_coord = deepcopy(xn_obj.spmetaData.cell)
     mol_coord = deepcopy(xn_obj.spmetaData.molecule)
     cell_coord.x = cell_coord.x ./ 0.2125
@@ -714,5 +719,6 @@ function read_paired_data(xn_dir, vs_dir, xn_img_path, vs_img_path;
     hd_obj.imageData.fullresImage = vs_img
     paired_sp_obj = PairedSpObject(hd_obj, xn_obj, vs_mat, xn_mat)
     paired_obj = PairedObject(paired_sp_obj, cell_counts; kwargs...)
+    @info("All done!")
     return paired_obj
 end

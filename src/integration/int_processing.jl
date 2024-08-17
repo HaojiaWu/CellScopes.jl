@@ -74,7 +74,7 @@ function generate_hd_segcount(xn_dir, vs_dir; t_mat = nothing, img_lims=nothing)
     cell_seg = filter(:cell_id=> ∈(Set(umap.Barcode)), cell_seg)
     cell_seg.x = cell_seg.vertex_x ./ 0.2125
     cell_seg.y = cell_seg.vertex_y ./ 0.2125
-    gdf1 = combine(groupby(cell_seg, :cell_id)) do df
+    gdf1 = DataFrames.combine(groupby(cell_seg, :cell_id)) do df
         DataFrame(geometry = points_to_polygon(df))
     end
     vs_spot = read_parquet(vs_dir * "binned_outputs/square_002um/spatial/tissue_positions.parquet")
