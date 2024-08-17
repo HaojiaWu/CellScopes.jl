@@ -191,7 +191,7 @@ mutable struct XeniumObject <: AbstractImagingObj
     polynormCount::Union{NormCountObject, Nothing}
     coordData::Union{SpaCoordObj, Nothing}
     imputeData::Union{SpaImputeObj, Nothing}
-    imageData::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}}
+    imageData::Union{Matrix{RGB{N0f8}},Matrix{Gray{N0f8}}, Matrix{RGBA{N0f8}}}
     polygonData::Array{Array{Float64, 2}, 1}
 
     function XeniumObject(molecule_data::DataFrame, cell_data::DataFrame, counts::RawCountObject; 
