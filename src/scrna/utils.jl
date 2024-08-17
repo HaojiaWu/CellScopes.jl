@@ -202,7 +202,7 @@ function update_object(sp_obj::get_object_group("All"))
         else
             poly_all_cell = string.(sp_obj.spmetaData.polygon.polygon_number)
         end
-        if isdefined(sp_obj.spmetaData, :polygon)
+        if isdefined(sp_obj, :spmetaData)
             if sp_obj.spmetaData.polygon !== nothing
                 sp_obj.spmetaData.polygon = filter(:mapped_cell => ∈(cell_set), sp_obj.spmetaData.polygon)
             end
