@@ -111,7 +111,7 @@ function reformat_polygons(xn_dir, t_mat)
     cell_seg = filter(:cell_id=> ∈(Set(umap.Barcode)), cell_seg)
     cell_seg.vertex_x = cell_seg.vertex_x ./ 0.2125
     cell_seg.vertex_y = cell_seg.vertex_y ./ 0.2125
-    inv_vs_mat = inv(vs_mat)
+    inv_vs_mat = inv(t_mat)
     cell_seg = transform_coord(cell_seg, inv_vs_mat; x_old = :vertex_x, y_old = :vertex_y, x_new=:vertex_y, y_new = :vertex_x)
     grouped = groupby(cell_seg, :cell_id)
     cell_ids = unique(cell_seg.cell_id)
