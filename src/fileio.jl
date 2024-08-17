@@ -185,8 +185,9 @@ function read_xenium(xenium_dir::String; prefix = nothing, min_gene::Int64 = 0, 
     count_cells.cluster = clustering.Cluster
     spObj = XeniumObject(count_molecules, count_cells, raw_count;
             prefix = prefix, min_gene = min_gene, min_cell = min_gene)
+    clustering.cell = string.(clustering.Barcode)
     if !isa(prefix, Nothing)
-        clustering.cell = prefix .*  "_" .* string.(clustering.Barcode)
+        clustering.cell = prefix .*  "_" .* string.(clustering.cell)
     end
     all_cells = spObj.rawCount.cell_name
     clustering = filter(:cell=> ∈(Set(all_cells)), clustering)
