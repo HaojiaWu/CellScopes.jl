@@ -678,7 +678,7 @@ function read_paired_data(xn_dir, vs_dir, xn_img_path, vs_img_path;
     vs_img = convert(Matrix{RGB{N0f8}}, vs_img)
     xn_img = FileIO.load(xn_img_path)
     xn_img = convert(Matrix{RGB{N0f8}}, xn_img)
-    vs_ct, gene_names, cell_names = generate_hd_segcount(xn_dir, vs_dir; t_mat = vs_mat, img_lims=size(vs_img)])
+    vs_ct, gene_names, cell_names = generate_hd_segcount(xn_dir, vs_dir; t_mat = vs_mat, img_lims=size(vs_img))
     cell_counts = RawCountObject(vs_ct, cell_names, gene_names)
     if !isa(vs_mat, Nothing)
         inv_vs_mat = inv(vs_mat)
