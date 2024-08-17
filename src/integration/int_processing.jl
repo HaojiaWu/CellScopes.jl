@@ -59,7 +59,7 @@ function pivot_count(molecule)
 end
 
 function transform_coord(df, t_mat; x_old = :x, y_old = :y, x_new = :new_x, y_new = :new_y)
-    coordinates = Matrix(df[:, [x_col, y_col]])
+    coordinates = Matrix(df[:, [x_old, y_old]])
     ones_column = ones(size(df, 1), 1)
     homo_coord = hcat(coordinates, ones_column)
     trans_coord = homo_coord * transpose(t_mat)
