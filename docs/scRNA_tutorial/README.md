@@ -273,7 +273,7 @@ cells = cells[cell_kept];
 ```
 *236.710203 seconds (4.22 M allocations: 24.603 GiB, 0.52% gc time, 0.74% compilation time)*
 ```julia
-@time mca = cs.run_umap(mca; dims_use  = 30, min_dist = 0.6, n_neighbors=30, n_epochs=100)
+@time mca = cs.run_umap(mca; dims_use = 1:30, min_dist = 0.6, n_neighbors=30, n_epochs=100)
 ```
 *1075.675636 seconds (63.08 M allocations: 23.239 GiB, 1.64% gc time, 0.37% compilation time)*
 ```julia
