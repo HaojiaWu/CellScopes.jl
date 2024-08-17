@@ -104,3 +104,27 @@ function generate_hd_segcount(xn_dir, vs_dir; t_mat = nothing, img_lims=nothing)
     vs_mtx, gene_names, cell_names = pivot_count(molecule)
     return vs_mtx, gene_names, cell_names
 end
+
+function reformat_polygons(xn_dir, t_mat)
+    cell_seg = read_parquet(xn_dir * "cell_boundaries.parquet")
+    umap = CSV.read(xn_dir * "analysis/umap/gene_expression_2_components/projection.csv", DataFrame)
+    cell_seg = filter(:cell_id=> ∈(Set(umap.Barcode)), cell_seg)
+    cell_seg.vertex_x = cell_seg.vertex_x ./ 0.2125
+    cell_seg.vertex_y = cell_seg.vertex_y ./ 0.2125
+    inv_vs_mat = inv(vs_mat)
+    cell_seg = transform_coord(cell_seg, inv_vs_mat; x_old = :vertex_x, y_old = :vertex_y, x_new=:vertex_y, y_new = :vertex_x)
+    grouped = groupby(cell_seg, :cell_id)
+    cell_ids = unique(cell_seg.cell_id)
+    poly = Vector{Matrix{Float64}}(undef, length(cell_ids))
+    n = length(cell_ids)
+    println("Reformatting cell polygons...")
+    p = Progress(n, dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, color=:blue)
+    for idx in 1:length(cell_ids)
+        cell_data = grouped[idx]
+        cell_1 = Matrix(cell_data[!, 2:end])
+        poly[idx] = cell_1
+        next!(p)
+    end
+    println("Cell polygons reformatted!")
+    return poly
+end

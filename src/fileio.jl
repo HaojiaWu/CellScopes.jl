@@ -120,7 +120,7 @@ function read_visium(visium_dir::String;
     return vsm_obj
 end
 
-function read_xenium(xenium_dir::String; prefix = "xenium", min_gene::Int64 = 0, min_cell::Int64 = 0, version="1.1")
+function read_xenium(xenium_dir::String; prefix = nothing, min_gene::Int64 = 0, min_cell::Int64 = 0, version="1.1")
     gene_file = xenium_dir * "/cell_feature_matrix/features.tsv.gz"
     cell_file = xenium_dir * "/cell_feature_matrix/barcodes.tsv.gz"
     count_file = xenium_dir * "/cell_feature_matrix/matrix.mtx.gz"
@@ -661,7 +661,7 @@ function read_visiumHD(hd_dir::String;
     return hd_obj
 end
 
-function read_paired_data(xn_dir, vs_dir, xn_img_dir, vs_img_dir; 
+function read_paired_data(xn_dir, vs_dir, xn_img_path, vs_img_path; 
     vs_mat::Union{Matrix{Float64}, Nothing} = nothing,
     xn_mat::Union{Matrix{Float64}, Nothing} = nothing,
     kwargs...
@@ -674,16 +674,18 @@ function read_paired_data(xn_dir, vs_dir, xn_img_dir, vs_img_dir;
     cell_coord.y = cell_coord.y ./ 0.2125
     mol_coord.x = mol_coord.x ./ 0.2125
     mol_coord.y = mol_coord.y ./ 0.2125
-    vs_img = FileIO.load(vs_img_dir)
+    vs_img = FileIO.load(vs_img_path)
     vs_img = convert(Matrix{RGB{N0f8}}, vs_img)
-    xn_img = FileIO.load(xn_img_dir)
+    xn_img = FileIO.load(xn_img_path)
     xn_img = convert(Matrix{RGB{N0f8}}, xn_img)
-    vs_ct, gene_names, cell_names = generate_hd_segcount(xn_dir, vs_dir, vs_img_dir; t_mat = vs_mat)
+    vs_ct, gene_names, cell_names = generate_hd_segcount(xn_dir, vs_dir; t_mat = vs_mat, img_lims=size(vs_img)])
     cell_counts = RawCountObject(vs_ct, cell_names, gene_names)
     if !isa(vs_mat, Nothing)
         inv_vs_mat = inv(vs_mat)
         cell_coord = transform_coord(cell_coord, inv_vs_mat; x_old = :x, y_old = :y, x_new=:y, y_new = :x)
         mol_coord = transform_coord(mol_coord, inv_vs_mat; x_old = :x, y_old = :y, x_new=:y, y_new = :x)
+        poly = reformat_polygons(xn_dir, vs_mat)
+        xn_obj.polygonData = poly
     end
     xn_obj.spmetaData.cell = cell_coord
     xn_obj.spmetaData.molecule = mol_coord
