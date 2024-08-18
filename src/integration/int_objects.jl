@@ -235,9 +235,11 @@ mutable struct PairedObject <: AbstractCellScope
     normCount::Union{NormCountObject, Nothing}
     scaleCount::Union{ScaleCountObject, Nothing}
     metaData::Union{DataFrame, Nothing}
+    spmetaData::Union{SpaMetaObj, Nothing}
     varGene::Union{VariableGeneObject, Nothing}
     dimReduction::Union{ReductionObject, Nothing}
     clustData::Union{ClusteringObject, Nothing}
+    polygonData::Array{Array{Float64, 2}, 1}
     function PairedObject(paired_obj::PairedSpObject, counts::RawCountObject;        
         prefix::Union{String, Nothing}=nothing, postfix::Union{String, Nothing}=nothing, meta_data::Union{DataFrame, Nothing} = nothing,
         min_gene::Int64=0, min_cell::Int64=0, x_col::Union{String, Symbol} = "x", 

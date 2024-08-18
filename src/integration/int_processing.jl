@@ -102,7 +102,8 @@ function generate_hd_segcount(xn_dir, vs_dir; t_mat = nothing, img_lims=nothing)
     molecule = filter(:barcode => ∈(Set(joined_df.barcode)),  molecule)
     molecule = DataFrames.leftjoin(molecule, joined_df, on = :barcode)
     vs_mtx, gene_names, cell_names = pivot_count(molecule)
-    return vs_mtx, gene_names, cell_names
+    cell_count = RawCountObject(vs_mtx, cell_names, gene_names)
+    return cell_count, molecule
 end
 
 function reformat_polygons(xn_dir, t_mat)

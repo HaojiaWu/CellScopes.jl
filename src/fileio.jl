@@ -684,14 +684,17 @@ function read_paired_data(xn_dir, vs_dir, xn_img_path, vs_img_path;
     vs_img = convert(Matrix{RGB{N0f8}}, vs_img)
     xn_img = FileIO.load(xn_img_path)
     xn_img = convert(Matrix{RGB{N0f8}}, xn_img)
-    vs_ct, gene_names, cell_names = generate_hd_segcount(xn_dir, vs_dir; t_mat = vs_mat, img_lims=size(vs_img))
-    cell_counts = RawCountObject(vs_ct, cell_names, gene_names)
+    println("Generating cell count...")
+    cell_counts, molecule_data = generate_hd_segcount(xn_dir, vs_dir; t_mat = vs_mat, img_lims=size(vs_img))
+    println("Transforming coordinates...")
     if !isa(vs_mat, Nothing)
         inv_vs_mat = inv(vs_mat)
         cell_coord = transform_coord(cell_coord, inv_vs_mat; x_old = :x, y_old = :y, x_new=:y, y_new = :x)
         mol_coord = transform_coord(mol_coord, inv_vs_mat; x_old = :x, y_old = :y, x_new=:y, y_new = :x)
         poly = reformat_polygons(xn_dir, vs_mat)
         xn_obj.polygonData = poly
+        polygon_df = DataFrame(polygon_number = 1:length(poly), mapped_cell = cell_coord.cell, cluster=cell_coord.cluster)
+        xn_obj.spmetaData.polygon = polygon_df
     end
     xn_obj.spmetaData.cell = cell_coord
     xn_obj.spmetaData.molecule = mol_coord
@@ -720,6 +723,13 @@ function read_paired_data(xn_dir, vs_dir, xn_img_path, vs_img_path;
     hd_obj.imageData.fullresImage = vs_img
     paired_sp_obj = PairedSpObject(hd_obj, xn_obj, vs_mat, xn_mat)
     paired_obj = PairedObject(paired_sp_obj, cell_counts; kwargs...)
+    cell_kept = cell_counts.cell_name
+    cell_data = filter(:cell => ∈(Set(cell_kept)), cell_coord)
+    orig_poly = deepcopy(paired_obj.pairedData.xnObj.spmetaData.polygon)
+    poly_data = filter(:mapped_cell => ∈(cell_kept), orig_poly)
+    meta = SpaMetaObj(cell_data, molecule_data, poly_data)
+    paired_obj.spmetaData = meta
+    paired_obj.polygonData = paired_obj.pairedData.xnObj.polygonData[orig_poly.polygon_number]
     @info("All done!")
     return paired_obj
 end
