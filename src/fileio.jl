@@ -724,6 +724,7 @@ function read_paired_data(xn_dir, vs_dir, xn_img_path, vs_img_path;
     paired_sp_obj = PairedSpObject(hd_obj, xn_obj, vs_mat, xn_mat)
     paired_obj = PairedObject(paired_sp_obj, cell_counts; kwargs...)
     cell_kept = cell_counts.cell_name
+    cell_coord = deepcopy(paired_obj.pairedData.xnObj.spmetaData.cell)
     cell_data = filter(:cell => ∈(Set(cell_kept)), cell_coord)
     orig_poly = deepcopy(paired_obj.pairedData.xnObj.spmetaData.polygon)
     poly_data = filter(:mapped_cell => ∈(cell_kept), orig_poly)
