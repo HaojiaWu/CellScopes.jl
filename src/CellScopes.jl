@@ -8,6 +8,7 @@ end
 
 using Pkg
 using TOML
+using Serialization
 using MatrixMarket
 using DataFrames
 using CSV

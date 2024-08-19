@@ -46,6 +46,18 @@ function load(filename::String)
     return cs
 end
 
+function save_cs(filename::String, obj)
+    open(filename, "w") do io
+        serialize(io, obj)
+    end
+end
+
+function load_cs(filename::String)
+    open(filename, "r") do io
+        return deserialize(io)
+    end
+end
+
 function read_visium(visium_dir::String; 
     min_gene::Int64 = 0, 
     min_cell::Int64 = 0
