@@ -91,7 +91,7 @@ function sp_feature_plot(sp::get_object_group("Spatial2"), gene_list::Union{Stri
     y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order::Bool=true, scale::Bool = false,titlesize::Int64=24, 
     height::Real = 500, width::Real = 500, combine = true, img_res::String = "low",  adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3, use_imputed=false, imp_type::Union{String, Nothing} = nothing,
     color_keys=["gray94","orange","red3"], gene_colors = nothing, alpha = [1.0,1.0], clip = 0, legend_fontsize = 10, do_legend=false, legend_size = 10, bg_color = "white",
-    custom_img=false, adjust_coord_to_img="auto")
+    custom_img=false, adjust_coord_to_img="auto", return_plot = true)
     if isa(gene_list, String)
         gene_list = [gene_list]
     end
