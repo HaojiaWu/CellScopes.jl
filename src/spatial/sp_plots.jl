@@ -719,6 +719,9 @@ function sp_dim_plot(sp::get_object_group("Spatial2"), anno::Union{Symbol, Strin
             anno_df[!, y_col] = anno_df[!, y_col] ./ scale_y
             x_lims = x_lims ./ scale_x
             y_lims = y_lims ./ scale_y
+            if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
+                img = img[round(Int,x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
+            end
             img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
             MK.image!(ax1, img2)
         end
