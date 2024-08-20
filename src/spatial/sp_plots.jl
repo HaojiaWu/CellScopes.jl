@@ -188,14 +188,7 @@ function sp_feature_plot(sp::get_object_group("Spatial2"), gene_list::Union{Stri
                 colors = get(c_map, gene_expr, :extrema)
                 plt_color = "#" .* hex.(colors)
                 total_col = length(plt_color)
-                alpha_new = []
-                for i in gene_expr
-                    if i > maximum(gene_expr) * clip
-                        alpha_new = [alpha_new; alpha[2]]
-                    else
-                        alpha_new = [alpha_new; alpha[1]]
-                    end
-                end
+                alpha_new = [x > clip ? alpha[2] : alpha[1] for x in gene_expr]
                 plt_color = [(i, j) for (i,j) in zip(plt_color, alpha_new)]
                 df_plt.plt_color = plt_color
                 if order
