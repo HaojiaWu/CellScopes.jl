@@ -271,7 +271,11 @@ function sp_feature_plot(sp::get_object_group("Spatial2"), gene_list::Union{Stri
             MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.plt_color, strokewidth = 0, markersize = marker_size)
             MK.Colorbar(fig[n_row,n_col2], label = "", colormap = c_map, width=10, limits = (0, maximum(gene_expr)))
         end
-        MK.current_figure()
+        if return_plot
+            return fig
+        else
+            return MK.current_figure()
+        end
     elseif layer === "transcripts"
             if isa(sp, Union{VisiumObject, SlideseqObject})
                 error("Visium or SlideSeq object doesn't support transcript plot.")
@@ -348,7 +352,11 @@ function sp_feature_plot(sp::get_object_group("Spatial2"), gene_list::Union{Stri
                 if do_legend
                     MK.Legend(fig[1, 2], ax2, framecolor=:white, labelsize=legend_fontsize)
                 end
-                MK.current_figure()
+                if return_plot
+                    return fig
+                else
+                    return MK.current_figure()
+                end
             else
                 fig = MK.Figure(size = (width * n_cols, height * n_rows))
                 for (i, gene) in enumerate(gene_list)
@@ -407,7 +415,11 @@ function sp_feature_plot(sp::get_object_group("Spatial2"), gene_list::Union{Stri
                         end
                     end
                 end
-                MK.current_figure()
+                if return_plot
+                    return fig
+                else
+                    return MK.current_figure()
+                end
             end
     else
         error("Layer must be \"cells\" or \"transcripts\"")
@@ -617,7 +629,7 @@ function sp_dim_plot(sp::get_object_group("Spatial2"), anno::Union{Symbol, Strin
     x_lims=nothing, y_lims=nothing,width=900, height=1000,stroke_width=0.5,stroke_color=:transparent,  bg_color=:white,
         marker_size=2, label_size=50, label_color="black", label_offset=(0,0), do_label=false, do_legend=true, alpha::Real = 1,
         legend_size = 10, legend_fontsize = 16, legend_ncol = 1,img_res::String = "low", custom_img=false, adjust_coord_to_img="auto",
-        adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3
+        adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3, return_plot = false
     )
     coord_limits = spatial_range(sp)
     if isa(sp, VisiumObject)
@@ -769,7 +781,11 @@ function sp_dim_plot(sp::get_object_group("Spatial2"), anno::Union{Symbol, Strin
             MK.text!(i, position = (mean(x_ax) - label_offset[1], mean(y_ax) - label_offset[2]),align = (:center, :center),font = "Noto Sans Regular",fontsize = label_size,color = label_color)
         end
     end
-    return MK.current_figure()
+    if return_plot
+        return fig
+    else
+        return MK.current_figure()
+    end
 end
 
 function sp_highlight_cells(sp::get_object_group("Imaging"), cell_hightlight::String, anno::Union{String,Symbol};
