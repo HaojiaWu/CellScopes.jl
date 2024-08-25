@@ -726,12 +726,12 @@ function read_paired_data(xn_dir, vs_dir, xn_img_path, vs_img_path;
         new_df = new_df[(new_df.new_x .> 0) .&& (new_df.new_y .> 0), :]
         max_y = maximum(new_df.new_y)
         max_x = maximum(new_df.new_x)
-        new_img = fill(RGBA(1, 1, 1, 1), max_x, max_y)
+        new_img = fill(RGB{N0f8}(1.0, 1.0, 1.0), max_x, max_y)
         indices = CartesianIndex.(new_df.new_x, new_df.new_y)
         new_img[indices] = new_df.color
-        xn_img = new_img
     end
-    xn_obj.imageData = xn_img
+    new_img = smoothe_img!(new_img)
+    xn_obj.imageData = new_img
     hd_obj.imageData.fullresImage = vs_img
     paired_sp_obj = PairedSpObject(hd_obj, xn_obj, vs_mat, xn_mat)
     paired_obj = PairedObject(paired_sp_obj, cell_counts; kwargs...)
@@ -740,9 +740,11 @@ function read_paired_data(xn_dir, vs_dir, xn_img_path, vs_img_path;
     cell_data = filter(:cell => ∈(Set(cell_kept)), cell_coord)
     orig_poly = deepcopy(xn_obj.spmetaData.polygon)
     poly_data = filter(:mapped_cell => ∈(cell_kept), orig_poly)
+    poly = xn_obj.polygonData[poly_data.polygon_number]
+    poly_data = DataFrame(polygon_number = 1:length(poly), mapped_cell = cell_data.cell, cluster=cell_data.cluster)
+    paired_obj.polygonData = poly
     meta = SpaMetaObj(cell_data, molecule_data, poly_data)
     paired_obj.spmetaData = meta
-    paired_obj.polygonData = xn_obj.polygonData[orig_poly.polygon_number]
     @info("All done!")
     return paired_obj
 end

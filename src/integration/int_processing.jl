@@ -126,6 +126,28 @@ function reformat_polygons(xn_dir, t_mat)
         poly[idx] = cell_1
         next!(p)
     end
+    poly = [mat[:, 1:2] for mat in poly]
     println("Cell polygons reformatted!")
     return poly
+end
+
+function normalize_paired_object(sp::PairedObject; kwargs...)
+    sp = normalize_object(sp; kwargs...)
+    sp = normalize_object(sp.pairedData.xnObj; kwargs...)
+    sp = normalize_object(sp.pairedData.vsObj; kwargs...)
+    return sp
+end
+
+### interpolate the out-of-bound pixels arising from rounding errors with the nearby color
+function smoothe_img!(img)
+    h, w = size(img)
+    for y in 2:h-1, x in 2:w-1
+        if img[y, x] == RGB{N0f8}(1.0, 1.0, 1.0)  
+            neighbors = [img[y-1, x], img[y+1, x], img[y, x-1], img[y, x+1]]
+            valid_neighbors = neighbors[neighbors .!= RGB{N0f8}(1.0, 1.0, 1.0)]
+            if length(valid_neighbors) > 0
+                img[y, x] = mean(valid_neighbors)
+            end
+        end
+    end
 end

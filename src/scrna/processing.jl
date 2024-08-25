@@ -13,10 +13,21 @@ end
 
 # Below is a replaced function with runtime optimization using techniques like memory allocation, vectorization, etc.
 function normalize_object(mtx::AbstractMatrix{<:Real}; scale_factor = 10000, norm_method = "logarithm", pseudocount = 1)
-    sum_val = vec(sum(mtx, dims=1)) 
+    mtx = convert(AbstractMatrix{Float64}, mtx)
+    sum_val = sum(mtx, dims=1)
     inv_sum_val = 1.0 ./ sum_val
-    norm_count = @views log.((mtx .* inv_sum_val') .* scale_factor .+ pseudocount)
-    return norm_count
+    inv_sum_val = vec(inv_sum_val)
+    if size(inv_sum_val, 1) != size(mtx, 2)
+        throw(DimensionMismatch("Number of columns in mtx does not match length of inv_sum_val."))
+    end
+    if norm_method == "logarithm"
+        @views @. mtx = log((mtx .* inv_sum_val') * scale_factor + pseudocount)
+    elseif norm_method == "none"
+        @views @. mtx = (mtx .* inv_sum_val') * scale_factor
+    else
+        throw(ArgumentError("Unknown normalization method: $norm_method"))
+    end
+    return mtx
 end
 
 function normalize_object(ct_obj::RawCountObject; scale_factor = 10000, norm_method = "logarithm", pseudocount = 1)
@@ -33,6 +44,7 @@ function normalize_object(sc_obj::get_object_group("All"); scale_factor = 10000,
     end
     return sc_obj
 end
+
 
 #= This function was deprecated because it had a long runtime for large datasets
 function scale_object(count_mtx::AbstractMatrix{<:Real}; scale_max = 10.0, do_scale::Bool = true, do_center::Bool = true)
@@ -61,17 +73,17 @@ function scale_object(count_mtx::AbstractMatrix{<:Real}; scale_max = 10.0, do_sc
     return count_mtx
 end
 
-function scale_object(ct_obj::NormCountObject; features::Union{Vector{String}, Nothing}=nothing, scale_max = 10.0, do_scale::Bool = true, do_center::Bool = true)
+function scale_object(ct_obj::NormCountObject; features::Union{Vector{String}, Nothing}=nothing, kwargs...)
     if features !== nothing
         ct_obj = subset_count(ct_obj; genes = features)
     end
-    scale_count = scale_object(ct_obj.count_mtx; scale_max=scale_max, do_scale=do_scale, do_center=do_center)
+    scale_count = scale_object(ct_obj.count_mtx; kwargs...)
     scale_obj = ScaleCountObject(scale_count, ct_obj.cell_name, ct_obj.gene_name, do_scale, do_center, scale_max)
     return scale_obj
 end
 
-function scale_object(sc_obj::get_object_group("All"); features::Union{Vector{String}, Nothing}=nothing, scale_max = 10.0, do_scale::Bool = true, do_center::Bool = true)
-    scale_obj = scale_object(sc_obj.normCount; features = features, scale_max=scale_max, do_scale=do_scale, do_center=do_center)
+function scale_object(sc_obj::get_object_group("All"); kwargs...)
+    scale_obj = scale_object(sc_obj.normCount; kwargs...)
     sc_obj.scaleCount = scale_obj
     return sc_obj
 end
@@ -138,8 +150,8 @@ function find_variable_genes(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, sp
     return vst_data, Features
 end
 
-function find_variable_genes(sc_obj::get_object_group("All"); nFeatures::Int64 = 2000, span::Float64 = 0.3)
-    vst_data, Features = find_variable_genes(sc_obj.rawCount;  nFeatures = nFeatures, span = span)
+function find_variable_genes(sc_obj::get_object_group("All"); kwargs...)
+    vst_data, Features = find_variable_genes(sc_obj.rawCount;  kwargs...)
     var_obj = VariableGeneObject(Features, vst_data)
     sc_obj.varGene = var_obj
     return sc_obj
