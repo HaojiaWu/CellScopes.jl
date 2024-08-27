@@ -151,3 +151,126 @@ function smoothe_img!(img)
         end
     end
 end
+
+function process_xn_transcript_data(xn_obj, gene_list;
+    x_lims = nothing,
+    y_lims = nothing,
+    x_col = "x",  
+    y_col = "y",  
+    gene_colors = nothing,
+    bg_tx = false
+)
+    if isa(gene_list, String)
+        gene_list = [gene_list]
+    end
+    if isa(gene_colors, String)
+        gene_colors = [gene_colors]
+    end
+    df_plt=deepcopy(xn_obj.spmetaData.molecule)
+    df_plt.gene = String.(df_plt.gene)
+    if isa(x_lims, Nothing)
+        x_lims=(minimum(df_plt[!, x_col])-0.05*maximum(df_plt[!, x_col]),1.05*maximum(df_plt[!, x_col]))
+    end
+    if isa(y_lims, Nothing)
+        y_lims=(minimum(df_plt[!, y_col])-0.05*maximum(df_plt[!, y_col]),1.05*maximum(df_plt[!, y_col]))
+    end
+    if isa(gene_colors, Nothing)
+        c_map=Colors.distinguishable_colors(length(gene_list), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
+        gene_colors = "#" .* hex.(c_map)
+    end
+    gene_color=Dict(gene_list .=> gene_colors)
+    gene_color["others"] = "gray95"
+    from = collect(keys(gene_color))
+    to = collect(values(gene_color))
+    gene_set = Set(from)
+    df_plt.new_gene = ifelse.(in.(df_plt.gene, Ref(gene_set)), df_plt.gene, "others")
+    df_plt = map_values(df_plt, :new_gene, :forcolor, from, to)
+    df_plt.new_gene = string.(df_plt.new_gene)
+    df_plt.forcolor = [(i, alpha) for i in df_plt.forcolor]
+    if bg_tx
+        all_genes = ["others"; from[from .!= "others"]]
+        all_colors = ["gray95"; to[to .!= "gray95"]]
+    else
+        all_genes = gene_list
+        all_colors = gene_colors
+    end
+    df_plt = @views filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], df_plt)
+    df_plt[!, x_col] = df_plt[!, x_col] .- x_lims[1]
+    df_plt[!, y_col] = df_plt[!, y_col] .- y_lims[1]
+    return df_plt, all_genes, all_colors
+end
+
+function process_hd_dimplot_data(hd_obj;
+    anno::Union{Symbol, String}="cluster", 
+    anno_color::Union{Nothing, Dict} = nothing,
+    x_col = "x",  
+    y_col = "y", 
+    cell_highlight::Union{String, Int64, Vector, Tuple, Nothing}=nothing,
+    x_lims = nothing, 
+    y_lims = nothing,
+    pt_bg_color = "transparent",
+    alpha::Real = 0.5,
+    adjust_contrast= 1.0,
+    adjust_brightness = 0.0
+)
+    anno_df = deepcopy(hd_obj.spmetaData)
+    x_col = Symbol(x_col)
+    y_col = Symbol(y_col)
+    anno = Symbol(anno)
+    rename!(anno_df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
+    if isa(anno_df[!, x_col], Vector{String})
+        anno_df[!, x_col] = Float64.(anno_df[!, x_col])
+    end
+    if isa(anno_df[!, y_col], Vector{String})
+        anno_df[!, y_col] = Float64.(anno_df[!, y_col])
+    end
+    if isa(cell_highlight, String)
+        cell_highlight = [cell_highlight]
+    end
+    poly = deepcopy(hd_obj.polygonData)
+    all_celltypes = unique(anno_df[!,anno])
+    if isa(cell_highlight, Nothing)
+        cell_highlight = all_celltypes
+    end
+    other_cells = setdiff(all_celltypes, cell_highlight)
+    other_color = Dict(other_cells .=> repeat([pt_bg_color], length(other_cells)))
+    if isa(anno_color, Nothing)
+        c_map=Colors.distinguishable_colors(length(cell_highlight), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
+        c_map = "#" .* hex.(c_map)
+        cell_color=Dict(cell_highlight .=> c_map)
+        anno_color = merge(cell_color, other_color)
+    else
+        anno_color = merge(anno_color, other_color)
+    end
+    anno_df = DataFrames.transform(anno_df, anno => ByRow(x -> anno_color[x]) => :new_color)
+    anno_df.new_color = [(i, alpha) for i in anno_df.new_color]
+    plt_color = anno_df.new_color
+    img = deepcopy(hd_obj.imageData.fullresImage)
+    min_w = maximum([1, Int(round(minimum(anno_df[!, x_col])))])
+    min_h = maximum([1, Int(round(minimum(anno_df[!, y_col])))])    
+    max_w = minimum([size(img)[1], Int(round(maximum(anno_df[!, x_col])))])
+    max_h = minimum([size(img)[2], Int(round(maximum(anno_df[!, y_col])))])
+    if isa(x_lims, Nothing)
+        x_lims=[min_w, max_w]
+    else
+        xlim1 = Int(round(x_lims[1]))
+        xlim2 = Int(round(x_lims[2] ))
+        x_lims = [xlim1, xlim2]
+    end
+    if isa(y_lims, Nothing)
+        y_lims=[min_h, max_h]
+    else
+        ylim1 = Int(round(y_lims[1]))
+        ylim2 = Int(round(y_lims[2] ))
+        y_lims = [ylim1, ylim2]
+    end
+    img = img[x_lims[1]:x_lims[2], y_lims[1]:y_lims[2]]
+    img = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
+    select_fov = filter([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], anno_df)
+    select_fov = filter(anno => ∈(Set(cell_highlight)), select_fov)
+    polygon_num = select_fov.ID
+    poly = poly[polygon_num]
+    poly = [m .- [x_lims[1]-1 y_lims[1]-1] for m in poly]
+    plt_color = select_fov.new_color
+    return img, poly, cell_color, plt_color
+end
