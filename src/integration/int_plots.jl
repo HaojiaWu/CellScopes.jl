@@ -173,7 +173,7 @@ elseif data_use == "individual"
     hd_obj = sp.pairedData.vsObj
     img_vs, poly, cell_color, plt_color = process_hd_dimplot_data(hd_obj; anno=vs_anno, anno_color=vs_anno_color, x_col = x_col, y_col = y_col, pt_bg_color=pt_bg_color, 
         cell_highlight=vs_cell_highlight, x_lims = x_lims, y_lims = y_lims,alpha = alpha, adjust_contrast = adjust_contrast, adjust_brightness = adjust_brightness)
-
+    plt_color=[(i, alpha) for i in plt_color]
     fig = MK.Figure(size=(width, height))
     ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
         xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
@@ -245,7 +245,6 @@ else
 end
 end
 
-
 function paired_dim_plot(sp::PairedObject;
     mode::String = "cell",
     bg_mode::String = "gene",
@@ -264,7 +263,6 @@ function paired_dim_plot(sp::PairedObject;
     stroke_color=:transparent, 
     label_size=50, 
     label_color="black", 
-    label_offset=(0,0), 
     do_label=false, 
     alpha::Real = 0.5, 
     legend_ncol = 1,
@@ -274,7 +272,7 @@ function paired_dim_plot(sp::PairedObject;
     scale =  false,
     x_col = "x", 
     y_col = "y",
-    hd_layer = "2_um",
+    hd_layer = "8_um",
     x_lims = nothing, 
     y_lims = nothing,
     marker_size = 2, 
@@ -362,7 +360,7 @@ function paired_dim_plot(sp::PairedObject;
             cells = string.(collect(keys(cell_color)))
             colors = collect(values(cell_color))
             for (cell1, color1) in zip(cells, colors)
-                MK.scatter!(ax1, [NaN], [NaN], color = color1, strokewidth = 0.5,strokecolor=stroke_color, markersize = 2*legend_size, label = cell1)
+                MK.scatter!(ax1, [NaN], [NaN], color = color1, strokewidth = 0.5,strokecolor=stroke_color, markersize = 3*legend_size, label = cell1)
             end
             c_map2 = [(i, alpha) for i in c_map]
             MK.Colorbar(fig[1,2], colormap = c_map2,  width=15, limits = (0, maximum(gene_expr)))
@@ -379,6 +377,9 @@ function paired_dim_plot(sp::PairedObject;
         MK.ylims!(MK.current_axis(), y_lims .- y_lims[1] .+ 1)
         return MK.current_figure() 
     elseif mode == "bin"
+        if hd_layer == "2_um"
+            error("""Your bin size in hd_layer was set to "2_um". Please set it back to "8_um" or "16_um".""")
+        end
         sp.pairedData.vsObj = set_default_layer(sp.pairedData.vsObj; layer_slot = hd_layer)
         hd_obj = sp.pairedData.vsObj
         img, poly, cell_color, plt_color = process_hd_dimplot_data(hd_obj; anno=vs_anno, anno_color=vs_anno_color, x_col = x_col, y_col = y_col, pt_bg_color=pt_bg_color, 
@@ -393,7 +394,8 @@ function paired_dim_plot(sp::PairedObject;
         xn_obj = sp.pairedData.xnObj
         df_plt, all_genes, all_colors = process_xn_transcript_data(xn_obj, bg_gene; x_lims = x_lims, y_lims = y_lims, x_col = x_col,  
                             y_col = y_col,  gene_colors = gene_colors, bg_tx = bg_tx)
-        
+        all_colors=[(i, alpha) for i in all_colors]
+        plt_color=[(i, alpha) for i in plt_color]
         fig = MK.Figure(size=(width, height))
         ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
             xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
@@ -425,7 +427,7 @@ function paired_dim_plot(sp::PairedObject;
             y_ax = df_plt[!, y_col][df_plt.new_gene .== gene]
             if do_legend
                 MK.scatter!(ax2, x_ax , y_ax;  visible=false,
-                                color=ann_color, strokewidth=0, markersize=2*legend_size, label=gene)
+                                color=ann_color, strokewidth=0, markersize=3*legend_size, label=gene)
                 MK.scatter!(ax1, x_ax , y_ax; color = ann_color, strokewidth = 0, markersize = marker_size)
             else
                 MK.scatter!(ax1, x_ax , y_ax; color = ann_color, strokewidth = 0, markersize = marker_size)
@@ -439,6 +441,101 @@ function paired_dim_plot(sp::PairedObject;
         MK.ylims!(MK.current_axis(), y_lims .- y_lims[1] .+ 1)
         return MK.current_figure()
     else
-        error("The parameter mode can only be cell or bin!")
+        error("""The parameter mode can only be "cell" or "bin"!""")
     end
+end
+
+function paired_feature_plot(sp::PairedObject, gene::String;
+    mode = "bin",
+    tx_list::Union{String, Vector{String}, Tuple{String}, Nothing}=nothing,
+    color_keys::Union{Vector{String}, Tuple{String}}=["gray94","lemonchiffon","orange","red3"],
+    x_col = "x",  
+    y_col = "y", 
+    hd_layer = "8_um",
+    clip = 0.0,
+    scale =  false,
+    x_lims = nothing, 
+    y_lims = nothing,
+    adjust_contrast= 1.0,
+    adjust_brightness = 0.0,
+    img_use = "xn_img",
+    plot_img = true,
+    marker_size = 10, 
+    bg_color = :white,
+    gene_colors = nothing,
+    bg_tx = false,
+    legend_size = 10, 
+    legend_fontsize = 20, 
+    do_legend = false,
+    alpha::Real = 0.5, 
+    stroke_width=0.5,
+    stroke_color=:transparent, 
+    height = 500, 
+    width = 500        
+)
+    if mode == "bin"
+        hd_obj = sp.pairedData.vsObj
+        img, poly, gene_expr, plt_color, c_map = process_hd_featureplot_data(hd_obj, gene; color_keys = color_keys, x_col = x_col,  
+                y_col = y_col, hd_layer = hd_layer, clip = clip,  x_lims = x_lims,  y_lims = y_lims,
+                adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness)
+        if img_use == "xn_img"
+            img = deepcopy(sp.pairedData.xnObj.imageData)
+            if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
+                img = img[round(Int,x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
+            end
+            img = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
+        end
+    elseif mode == "cell"
+        img, poly, gene_expr, plt_color, c_map = process_paired_featureplot_data(sp, gene; color_keys = color_keys, x_col = x_col,  
+            y_col = y_col, clip = clip,  x_lims = x_lims,  y_lims = y_lims,
+            adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness, img_use = img_use)
+    else
+        error("""The parameter mode can only be "cell" or "bin"!""")
+    end
+    if isa(tx_list, Nothing)
+        tx_list = gene
+    end
+    xn_obj = sp.pairedData.xnObj
+    df_plt, all_genes, all_colors = process_xn_transcript_data(xn_obj, tx_list; x_lims = x_lims, y_lims = y_lims, x_col = x_col,  
+                    y_col = y_col,  gene_colors = gene_colors, bg_tx = bg_tx)
+    all_colors=[(i, alpha) for i in all_colors]
+    plt_color=[(i, alpha) for i in plt_color]
+    fig = MK.Figure(size=(width, height))
+    ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+        xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false, 
+        xgridvisible = false, ygridvisible = false)
+    ax2 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+        xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
+        xgridvisible = false,ygridvisible = false)        
+    if plot_img
+        MK.image!(ax1, img)
+    end
+    MK.Label(fig[0, 1], "Xenium transcript(s) on " * "VisiumHD " * gene * " expression" , fontsize=18, halign=:center, valign=:bottom)
+    MK.poly!(ax1, [MK.Point2.(eachrow(p)) for p in poly]; strokecolor=stroke_color, 
+            color=plt_color, strokewidth=stroke_width,label="")
+    if do_legend
+        c_map2 = [(i, alpha) for i in c_map]
+        MK.Colorbar(fig[1,2], colormap = c_map2,  width=15, limits = (0, maximum(gene_expr)))
+        MK.Label(fig[0, 2], gene, fontsize=18)
+        MK.colgap!(fig.layout, 1)
+    end
+    MK.colsize!(fig.layout, 1, MK.Aspect(1, 1.1))
+    for (gene, ann_color) in zip(all_genes, all_colors)
+        x_ax = df_plt[!, x_col][df_plt.new_gene .== gene]
+        y_ax = df_plt[!, y_col][df_plt.new_gene .== gene]
+        if do_legend
+            MK.scatter!(ax2, x_ax , y_ax;  visible=false,
+                            color=ann_color, strokewidth=0, markersize=2*legend_size, label=gene)
+            MK.scatter!(ax1, x_ax , y_ax; color = ann_color, strokewidth = 0, markersize = marker_size)
+        else
+            MK.scatter!(ax1, x_ax , y_ax; color = ann_color, strokewidth = 0, markersize = marker_size)
+        end
+    end
+    if do_legend
+        MK.Legend(fig[1, 3], ax2, "Transcript", framecolor=:white, labelsize=legend_fontsize, titlesize=20, titlefont=:regular)
+    end
+    MK.rowgap!(fig.layout, 3)
+    MK.xlims!(MK.current_axis(), x_lims .- x_lims[1] .+ 1)
+    MK.ylims!(MK.current_axis(), y_lims .- y_lims[1] .+ 1)
+    return MK.current_figure()            
 end
