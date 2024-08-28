@@ -338,7 +338,7 @@ function paired_dim_plot(sp::PairedObject;
         polygons = [m .- [x_lims[1]-1 y_lims[1]-1] for m in polygons]
 
         ### background data processing
-        hd_obj = paired_obj.pairedData.vsObj
+        hd_obj = sp.pairedData.vsObj
         img, poly2, gene_expr, plt_color, c_map = process_hd_featureplot_data(hd_obj, bg_gene; color_keys = color_keys, x_col = x_col,  
                 y_col = y_col, hd_layer = hd_layer, clip = clip,  x_lims = x_lims,  y_lims = y_lims,
                 adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness)
