@@ -274,7 +274,7 @@ function paired_dim_plot(sp::PairedObject;
     scale =  false,
     x_col = "x", 
     y_col = "y",
-    hd_layer = "8_um",
+    hd_layer = "2_um",
     x_lims = nothing, 
     y_lims = nothing,
     marker_size = 2, 
@@ -289,190 +289,156 @@ function paired_dim_plot(sp::PairedObject;
     height = 500, 
     width = 500
 )
-if mode == "cell"
-    ## Cell seg data processing
-    if isa(x_lims, Nothing)
-        x_lims=(minimum(sp.spmetaData.cell.x)-0.05*maximum(sp.spmetaData.cell.x),1.05*maximum(sp.spmetaData.cell.x))
-    end
-    if isa(y_lims, Nothing)
-        y_lims=(minimum(sp.spmetaData.cell.y)-0.05*maximum(sp.spmetaData.cell.y),1.05*maximum(sp.spmetaData.cell.y))
-    end
-    if isa(cell_highlight, String)
-        cell_highlight = [cell_highlight]
-    end
-    if isa(anno_color, String)
-        anno_color = [anno_color]
-    end
-    anno_df=deepcopy(sp.spmetaData.polygon)
-    polygons=deepcopy(sp.polygonData)
-    if isa(anno, String)
-        anno=Symbol(anno)
-    end
-    all_celltypes = unique(anno_df[!,anno])
-    if isa(cell_highlight, Nothing)
-        cell_highlight = all_celltypes
-    end
-    other_cells = setdiff(all_celltypes, cell_highlight)
-    other_color = Dict(other_cells .=> repeat([pt_bg_color], length(other_cells)))
-    if isa(anno_color, Nothing)
-        c_map= Colors.distinguishable_colors(length(cell_highlight), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
-        c_map = "#" .* hex.(c_map)
-        cell_color=Dict(cell_highlight .=> c_map)
-        anno_color = merge(cell_color, other_color)
-    else
-        if length(cell_highlight) !== length(anno_color)
-            error("The number of colors must equal to the number of cell types!")
+    if mode == "cell"
+        ## Cell seg data processing
+        if isa(x_lims, Nothing)
+            x_lims=(minimum(sp.spmetaData.cell.x)-0.05*maximum(sp.spmetaData.cell.x),1.05*maximum(sp.spmetaData.cell.x))
         end
-        cell_color=Dict(cell_highlight .=> anno_color)
-        anno_color = merge(cell_color, other_color)
-    end
-    anno_df = DataFrames.transform(anno_df, anno => ByRow(x -> anno_color[x]) => :new_color)
-    anno_df.new_color = [(i, alpha) for i in anno_df.new_color]
-    plt_color = anno_df.new_color
-    select_fov = filter([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], sp.spmetaData.cell)
-    subset_poly = filter(:mapped_cell => ∈(Set(select_fov.cell)), sp.spmetaData.polygon)
-    subset_poly = filter(anno => ∈(Set(cell_highlight)), subset_poly)
-    polygon_num = subset_poly.polygon_number
-    polygons = polygons[polygon_num]
-    plt_color1 = plt_color[polygon_num]
-    polygons = [m .- [x_lims[1]-1 y_lims[1]-1] for m in polygons]
+        if isa(y_lims, Nothing)
+            y_lims=(minimum(sp.spmetaData.cell.y)-0.05*maximum(sp.spmetaData.cell.y),1.05*maximum(sp.spmetaData.cell.y))
+        end
+        if isa(cell_highlight, String)
+            cell_highlight = [cell_highlight]
+        end
+        if isa(anno_color, String)
+            anno_color = [anno_color]
+        end
+        anno_df=deepcopy(sp.spmetaData.polygon)
+        polygons=deepcopy(sp.polygonData)
+        if isa(anno, String)
+            anno=Symbol(anno)
+        end
+        all_celltypes = unique(anno_df[!,anno])
+        if isa(cell_highlight, Nothing)
+            cell_highlight = all_celltypes
+        end
+        other_cells = setdiff(all_celltypes, cell_highlight)
+        other_color = Dict(other_cells .=> repeat([pt_bg_color], length(other_cells)))
+        if isa(anno_color, Nothing)
+            c_map= Colors.distinguishable_colors(length(cell_highlight), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
+            c_map = "#" .* hex.(c_map)
+            cell_color=Dict(cell_highlight .=> c_map)
+            anno_color = merge(cell_color, other_color)
+        else
+            if length(cell_highlight) !== length(anno_color)
+                error("The number of colors must equal to the number of cell types!")
+            end
+            cell_color=Dict(cell_highlight .=> anno_color)
+            anno_color = merge(cell_color, other_color)
+        end
+        anno_df = DataFrames.transform(anno_df, anno => ByRow(x -> anno_color[x]) => :new_color)
+        anno_df.new_color = [(i, alpha) for i in anno_df.new_color]
+        plt_color = anno_df.new_color
+        select_fov = filter([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], sp.spmetaData.cell)
+        subset_poly = filter(:mapped_cell => ∈(Set(select_fov.cell)), sp.spmetaData.polygon)
+        subset_poly = filter(anno => ∈(Set(cell_highlight)), subset_poly)
+        polygon_num = subset_poly.polygon_number
+        polygons = polygons[polygon_num]
+        plt_color1 = plt_color[polygon_num]
+        polygons = [m .- [x_lims[1]-1 y_lims[1]-1] for m in polygons]
 
-    ### background data processing
-    sp.pairedData.vsObj = set_default_layer(sp.pairedData.vsObj; layer_slot = hd_layer)
-    if isa(sp.pairedData.vsObj.normCount, Nothing)
-        sp.pairedData.vsObj = normalize_object(sp.pairedData.vsObj)
-    end
-    norm_count=sp.pairedData.vsObj.normCount
-    anno_df = deepcopy(sp.pairedData.vsObj.spmetaData)
-    x_col = Symbol(x_col)
-    y_col = Symbol(y_col)
-    rename!(anno_df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
-
-    if isa(anno_df[!, x_col], Vector{String})
-        anno_df[!, x_col] = Float64.(anno_df[!, x_col])
-    end
-    if isa(anno_df[!, y_col], Vector{String})
-        anno_df[!, y_col] = Float64.(anno_df[!, y_col])
-    end
-    poly = deepcopy(sp.pairedData.vsObj.polygonData)
-    c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3]),parse(Colorant, color_keys[4])])
-    if img_use in ["xn_img", "vs_img"]
+        ### background data processing
+        hd_obj = paired_obj.pairedData.vsObj
+        img, poly2, gene_expr, plt_color, c_map = process_hd_featureplot_data(hd_obj, bg_gene; color_keys = color_keys, x_col = x_col,  
+                y_col = y_col, hd_layer = hd_layer, clip = clip,  x_lims = x_lims,  y_lims = y_lims,
+                adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness)
         if img_use == "xn_img"
             img = deepcopy(sp.pairedData.xnObj.imageData)
-        elseif img_use == "vs_img"
-            img = deepcopy(sp.pairedData.vsObj.imageData.fullresImage)
-        else
-            error("img_use can only be vs_img or xn_img!")
+            if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
+                img = img[round(Int,x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
+            end
+            img = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
         end
-        if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
-            img = img[round(Int,x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
+        fig = MK.Figure(size=(width, height))
+        ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+            xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false, 
+            xgridvisible = false, ygridvisible = false)
+        if plot_img
+            MK.image!(ax1, img)
         end
-        img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
-    end
-    poly = [m .- [x_lims[1]-1 y_lims[1]-1] for m in poly]
-
-    fig = MK.Figure(size=(width, height))
-    ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
-        xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false, 
-        xgridvisible = false, ygridvisible = false)
-    if plot_img
-        MK.image!(ax1, img2)
-    end
-    MK.poly!(ax1, [MK.Point2.(eachrow(p)) for p in polygons]; strokecolor=stroke_color, color=plt_color1, strokewidth=stroke_width)
-    gene_expr = subset_count(norm_count; genes = [bg_gene])
-    gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
-    anno_df.gene = gene_expr
-    select_fov = filter([:x, :y, :gene] => (x, y, gene) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2] && gene > clip, anno_df)
-    polygon_num = select_fov.ID
-    poly2 = poly[polygon_num]
-    gene_expr = select_fov.gene
-    if scale
-        gene_expr = unit_range_scale(gene_expr)
-    end
-    colors = get(c_map, gene_expr, :extrema)
-    plt_color="#" .* hex.(colors)
-    MK.Label(fig[0, 1], "VisiumHD " * bg_gene * " transcript on Xenium cell seg", fontsize=18, halign=:center, valign=:bottom)
-    if do_legend
-        cells = string.(collect(keys(cell_color)))
-        colors = collect(values(cell_color))
-        for (cell1, color1) in zip(cells, colors)
-            MK.scatter!(ax1, [NaN], [NaN], color = color1, strokewidth = 0.5,strokecolor=stroke_color, markersize = legend_size, label = cell1)
-        end
-        c_map2 = [(i, alpha) for i in c_map]
-        MK.Colorbar(fig[1,2], colormap = c_map2,  width=15, limits = (0, maximum(gene_expr)))
-        MK.Label(fig[0, 2], bg_gene, fontsize=18)
-        MK.Legend(fig[1, 3], ax1, String.(anno), framecolor=:white, labelsize=legend_fontsize, 
-            nbanks=legend_ncol, titlesize=20, titlefont=:regular)
-        MK.colgap!(fig.layout, 1)
-    end
-    MK.colsize!(fig.layout, 1, MK.Aspect(1, 1.1))
-    MK.poly!(ax1, [MK.Point2.(eachrow(p)) for p in poly2]; strokecolor=stroke_color, 
-            color=plt_color, strokewidth=stroke_width,label="")
-    MK.rowgap!(fig.layout, 3)
-    MK.xlims!(MK.current_axis(), x_lims .- x_lims[1] .+ 1)
-    MK.ylims!(MK.current_axis(), y_lims .- y_lims[1] .+ 1)
-    return MK.current_figure() 
-elseif mode == "bin"
-    sp.pairedData.vsObj = set_default_layer(sp.pairedData.vsObj; layer_slot = hd_layer)
-    hd_obj = sp.pairedData.vsObj
-    img, poly, cell_color, plt_color = process_hd_dimplot_data(hd_obj; anno=vs_anno, anno_color=vs_anno_color, x_col = x_col, y_col = y_col, pt_bg_color=pt_bg_color, 
-        cell_highlight=vs_cell_highlight, x_lims = x_lims, y_lims = y_lims,alpha = alpha, adjust_contrast = adjust_contrast, adjust_brightness = adjust_brightness)
-    if img_use == "xn_img"
-        img = deepcopy(sp.pairedData.xnObj.imageData)
-        if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
-            img = img[round(Int,x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
-        end
-        img = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
-    end
-    xn_obj = sp.pairedData.xnObj
-    df_plt, all_genes, all_colors = process_xn_transcript_data(xn_obj, bg_gene; x_lims = x_lims, y_lims = y_lims, x_col = x_col,  
-                        y_col = y_col,  gene_colors = gene_colors, bg_tx = bg_tx)
-    
-    fig = MK.Figure(size=(width, height))
-    ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
-        xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
-        xgridvisible = false,ygridvisible = false)
-    ax2 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
-        xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
-        xgridvisible = false,ygridvisible = false)
-    if plot_img
-        MK.image!(ax1, img)
-    end
-    MK.Label(fig[0, 1], "Xenium transcript on VisiumHD cell bin", fontsize=18, halign=:center, valign=:bottom)
-    if do_legend
-        if !isa(vs_cell_order, Nothing)
-        cells = vs_cell_order
-        else
-        cells = string.(collect(keys(cell_color)))
-        end
-        colors = [cell_color[i] for i in cells]
-        for (cell1, color1) in zip(cells, colors)
-            MK.scatter!(ax1,[NaN], [NaN], color = color1, marker=:rect,
-                            strokewidth = 0.5,strokecolor=stroke_color, markersize = 2*marker_size, label = cell1)
-        end
-        MK.Legend(fig[1, 2], ax1, vs_anno, framecolor=:white, labelsize=legend_fontsize, nbanks=legend_ncol, titlesize=20, titlefont=:regular)
-    end
-    MK.colsize!(fig.layout, 1, MK.Aspect(1, 1.1))
-    MK.poly!(ax1, [MK.Point2.(eachrow(p)) for p in poly]; strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width)
-    for (gene, ann_color) in zip(all_genes, all_colors)
-        x_ax = df_plt[!, x_col][df_plt.new_gene .== gene]
-        y_ax = df_plt[!, y_col][df_plt.new_gene .== gene]
+        MK.poly!(ax1, [MK.Point2.(eachrow(p)) for p in polygons]; strokecolor=stroke_color, color=plt_color1, strokewidth=stroke_width)
+        MK.Label(fig[0, 1], "VisiumHD " * bg_gene * " transcript on Xenium cell seg", fontsize=18, halign=:center, valign=:bottom)
         if do_legend
-            MK.scatter!(ax2, x_ax , y_ax;  visible=false,
-                            color=ann_color, strokewidth=0, markersize=2*legend_size, label=gene)
-            MK.scatter!(ax1, x_ax , y_ax; color = ann_color, strokewidth = 0, markersize = marker_size)
-        else
-            MK.scatter!(ax1, x_ax , y_ax; color = ann_color, strokewidth = 0, markersize = marker_size)
+            cells = string.(collect(keys(cell_color)))
+            colors = collect(values(cell_color))
+            for (cell1, color1) in zip(cells, colors)
+                MK.scatter!(ax1, [NaN], [NaN], color = color1, strokewidth = 0.5,strokecolor=stroke_color, markersize = 2*legend_size, label = cell1)
+            end
+            c_map2 = [(i, alpha) for i in c_map]
+            MK.Colorbar(fig[1,2], colormap = c_map2,  width=15, limits = (0, maximum(gene_expr)))
+            MK.Label(fig[0, 2], bg_gene, fontsize=18)
+            MK.Legend(fig[1, 3], ax1, String.(anno), framecolor=:white, labelsize=legend_fontsize, 
+                nbanks=legend_ncol, titlesize=20, titlefont=:regular)
+            MK.colgap!(fig.layout, 1)
         end
+        MK.colsize!(fig.layout, 1, MK.Aspect(1, 1.1))
+        MK.poly!(ax1, [MK.Point2.(eachrow(p)) for p in poly2]; strokecolor=stroke_color, 
+                color=plt_color, strokewidth=stroke_width,label="")
+        MK.rowgap!(fig.layout, 3)
+        MK.xlims!(MK.current_axis(), x_lims .- x_lims[1] .+ 1)
+        MK.ylims!(MK.current_axis(), y_lims .- y_lims[1] .+ 1)
+        return MK.current_figure() 
+    elseif mode == "bin"
+        sp.pairedData.vsObj = set_default_layer(sp.pairedData.vsObj; layer_slot = hd_layer)
+        hd_obj = sp.pairedData.vsObj
+        img, poly, cell_color, plt_color = process_hd_dimplot_data(hd_obj; anno=vs_anno, anno_color=vs_anno_color, x_col = x_col, y_col = y_col, pt_bg_color=pt_bg_color, 
+            cell_highlight=vs_cell_highlight, x_lims = x_lims, y_lims = y_lims,alpha = alpha, adjust_contrast = adjust_contrast, adjust_brightness = adjust_brightness)
+        if img_use == "xn_img"
+            img = deepcopy(sp.pairedData.xnObj.imageData)
+            if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
+                img = img[round(Int,x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
+            end
+            img = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
+        end
+        xn_obj = sp.pairedData.xnObj
+        df_plt, all_genes, all_colors = process_xn_transcript_data(xn_obj, bg_gene; x_lims = x_lims, y_lims = y_lims, x_col = x_col,  
+                            y_col = y_col,  gene_colors = gene_colors, bg_tx = bg_tx)
+        
+        fig = MK.Figure(size=(width, height))
+        ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+            xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
+            xgridvisible = false,ygridvisible = false)
+        ax2 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+            xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
+            xgridvisible = false,ygridvisible = false)
+        if plot_img
+            MK.image!(ax1, img)
+        end
+        MK.Label(fig[0, 1], "Xenium transcript on VisiumHD cell bin", fontsize=18, halign=:center, valign=:bottom)
+        if do_legend
+            if !isa(vs_cell_order, Nothing)
+            cells = vs_cell_order
+            else
+            cells = string.(collect(keys(cell_color)))
+            end
+            colors = [cell_color[i] for i in cells]
+            for (cell1, color1) in zip(cells, colors)
+                MK.scatter!(ax1,[NaN], [NaN], color = color1, marker=:rect,
+                                strokewidth = 0.5,strokecolor=stroke_color, markersize = 2*marker_size, label = cell1)
+            end
+            MK.Legend(fig[1, 2], ax1, vs_anno, framecolor=:white, labelsize=legend_fontsize, nbanks=legend_ncol, titlesize=20, titlefont=:regular)
+        end
+        MK.colsize!(fig.layout, 1, MK.Aspect(1, 1.1))
+        MK.poly!(ax1, [MK.Point2.(eachrow(p)) for p in poly]; strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width)
+        for (gene, ann_color) in zip(all_genes, all_colors)
+            x_ax = df_plt[!, x_col][df_plt.new_gene .== gene]
+            y_ax = df_plt[!, y_col][df_plt.new_gene .== gene]
+            if do_legend
+                MK.scatter!(ax2, x_ax , y_ax;  visible=false,
+                                color=ann_color, strokewidth=0, markersize=2*legend_size, label=gene)
+                MK.scatter!(ax1, x_ax , y_ax; color = ann_color, strokewidth = 0, markersize = marker_size)
+            else
+                MK.scatter!(ax1, x_ax , y_ax; color = ann_color, strokewidth = 0, markersize = marker_size)
+            end
+        end
+        if do_legend
+            MK.Legend(fig[1, 3], ax2, "Transcript", framecolor=:white, labelsize=legend_fontsize, titlesize=20, titlefont=:regular)
+        end
+        MK.rowgap!(fig.layout, 3)
+        MK.xlims!(MK.current_axis(), x_lims .- x_lims[1] .+ 1)
+        MK.ylims!(MK.current_axis(), y_lims .- y_lims[1] .+ 1)
+        return MK.current_figure()
+    else
+        error("The parameter mode can only be cell or bin!")
     end
-    if do_legend
-        MK.Legend(fig[1, 3], ax2, "Transcript", framecolor=:white, labelsize=legend_fontsize, titlesize=20, titlefont=:regular)
-    end
-    MK.rowgap!(fig.layout, 3)
-    MK.xlims!(MK.current_axis(), x_lims .- x_lims[1] .+ 1)
-    MK.ylims!(MK.current_axis(), y_lims .- y_lims[1] .+ 1)
-    return MK.current_figure()
-else
-    error("The parameter mode can only be cell or bin!")
-end
 end

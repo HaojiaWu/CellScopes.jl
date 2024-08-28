@@ -274,3 +274,72 @@ function process_hd_dimplot_data(hd_obj;
     plt_color = select_fov.new_color
     return img, poly, cell_color, plt_color
 end
+
+function process_hd_featureplot_data(hd_obj, gene;
+    color_keys::Union{Vector{String}, Tuple{String}}=["gray94","lemonchiffon","orange","red3"],
+    x_col = "x",  
+    y_col = "y", 
+    hd_layer = "8_um",
+    clip = 0.0,
+    scale =  false,
+    x_lims = nothing, 
+    y_lims = nothing,
+    adjust_contrast= 1.0,
+    adjust_brightness = 0.0
+)
+
+    hd_obj = set_default_layer(hd_obj; layer_slot = hd_layer)
+    if isa(hd_obj.normCount, Nothing)
+        hd_obj = normalize_object(hd_obj)
+    end
+    norm_count=hd_obj.normCount
+    anno_df = deepcopy(hd_obj.spmetaData)
+    x_col = Symbol(x_col)
+    y_col = Symbol(y_col)
+    rename!(anno_df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, x_col, y_col])
+
+    if isa(anno_df[!, x_col], Vector{String})
+        anno_df[!, x_col] = Float64.(anno_df[!, x_col])
+    end
+    if isa(anno_df[!, y_col], Vector{String})
+        anno_df[!, y_col] = Float64.(anno_df[!, y_col])
+    end
+    poly = deepcopy(hd_obj.polygonData)
+    c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3]),parse(Colorant, color_keys[4])])
+    img = deepcopy(hd_obj.imageData.fullresImage)
+    min_w = maximum([1, Int(round(minimum(anno_df[!, x_col])))])
+    min_h = maximum([1, Int(round(minimum(anno_df[!, y_col])))])    
+    max_w = minimum([size(img)[1], Int(round(maximum(anno_df[!, x_col])))])
+    max_h = minimum([size(img)[2], Int(round(maximum(anno_df[!, y_col])))])
+    if isa(x_lims, Nothing)
+        x_lims=[min_w, max_w]
+    else
+        xlim1 = Int(round(x_lims[1]))
+        xlim2 = Int(round(x_lims[2] ))
+        x_lims = [xlim1, xlim2]
+    end
+    if isa(y_lims, Nothing)
+        y_lims=[min_h, max_h]
+    else
+        ylim1 = Int(round(y_lims[1]))
+        ylim2 = Int(round(y_lims[2] ))
+        y_lims = [ylim1, ylim2]
+    end
+    img = img[x_lims[1]:x_lims[2], y_lims[1]:y_lims[2]]
+    img = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
+    poly = [m .- [x_lims[1]-1 y_lims[1]-1] for m in poly]
+
+    gene_expr = subset_count(norm_count; genes = [gene])
+    gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
+    anno_df.gene = gene_expr
+    select_fov = filter([:x, :y, :gene] => (x, y, gene) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2] && gene > clip, anno_df)
+    polygon_num = select_fov.ID
+    poly2 = poly[polygon_num]
+    gene_expr = select_fov.gene
+    if scale
+        gene_expr = unit_range_scale(gene_expr)
+    end
+    colors = get(c_map, gene_expr, :extrema)
+    plt_color="#" .* hex.(colors)
+    return img, poly2, gene_expr, plt_color, c_map
+end
