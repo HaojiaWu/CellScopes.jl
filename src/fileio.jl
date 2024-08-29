@@ -137,8 +137,10 @@ function read_xenium(xenium_dir::String; prefix = nothing, min_gene::Int64 = 0, 
     cell_file = xenium_dir * "/cell_feature_matrix/barcodes.tsv.gz"
     count_file = xenium_dir * "/cell_feature_matrix/matrix.mtx.gz"
     cell_meta = xenium_dir * "/cells.csv.gz"
-    transcript_meta = xenium_dir * "/transcripts.csv.gz"
-    seg_file = xenium_dir * "/cell_boundaries.csv.gz"
+    #transcript_meta = xenium_dir * "/transcripts.csv.gz"
+    transcript_meta = xenium_dir * "/transcripts.parquet"
+    #seg_file = xenium_dir * "/cell_boundaries.csv.gz"
+    seg_file = xenium_dir * "/cell_boundaries.parquet"
     cluster_file = xenium_dir * "/analysis/clustering/gene_expression_graphclust/clusters.csv"
     umap_file = xenium_dir * "analysis/umap/gene_expression_2_components/projection.csv"
     xenium_umap =  DataFrame(CSV.File(umap_file))
@@ -146,10 +148,12 @@ function read_xenium(xenium_dir::String; prefix = nothing, min_gene::Int64 = 0, 
     cells = DataFrame(CSVFiles.load(CSVFiles.File(format"TSV", cell_file); header_exists=false))
     clustering =  DataFrame(CSV.File(cluster_file))
     cell_ids_filter = clustering.Barcode
-    seg = DataFrame(CSVFiles.load(CSVFiles.File(format"CSV", seg_file); header_exists=true))
+    #seg = DataFrame(CSVFiles.load(CSVFiles.File(format"CSV", seg_file); header_exists=true))
+    seg = read_parquet(seg_file)
     cell_ids = unique(seg.cell_id)
     cell_kept = check_vec(cell_ids_filter, cell_ids)
-    count_molecules =  DataFrame(CSV.File(transcript_meta))
+    #count_molecules =  DataFrame(CSV.File(transcript_meta))
+    count_molecules = read_parquet(transcript_meta)
     count_cells =  DataFrame(CSV.File(cell_meta))
     counts = MatrixMarket.mmread(gunzip(count_file))
     counts = counts[:, cell_kept]
