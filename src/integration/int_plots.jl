@@ -144,15 +144,28 @@ elseif data_use == "individual"
     if isa(xn_anno, String)
         anno=Symbol(xn_anno)
     end
-    if isa(xn_anno_color, Nothing)
-        cell_anno=unique(anno_df[!,xn_anno])
-        c_map=Colors.distinguishable_colors(length(cell_anno), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
-        c_map = "#" .* hex.(c_map)
-        xn_anno_color=Dict(cell_anno .=> c_map)
-    else
-        xn_anno_color = xn_anno_color
+
+    if isa(xn_cell_highlight, String)
+        xn_cell_highlight = [xn_cell_highlight]
     end
+    all_celltypes = unique(anno_df[!,xn_anno])
+    if isa(xn_cell_highlight, Nothing)
+        xn_cell_highlight = all_celltypes
+    end
+    other_cells = setdiff(all_celltypes, xn_cell_highlight)
+    other_color = Dict(other_cells .=> repeat([pt_bg_color], length(other_cells)))
+    if isa(xn_anno_color, Nothing)
+        c_map=Colors.distinguishable_colors(length(xn_cell_highlight), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
+        c_map = "#" .* hex.(c_map)
+        cell_color=Dict(xn_cell_highlight .=> c_map)
+        anno_color = merge(cell_color, other_color)
+    else
+        cell_color=Dict(xn_cell_highlight .=> xn_anno_color)
+        xn_anno_color = merge(cell_color, other_color)
+    end
+
     anno_df=DataFrames.transform(anno_df, xn_anno => ByRow(x -> xn_anno_color[x]) => :new_color)
+    anno_df = filter(xn_anno => ∈(Set(xn_cell_highlight)), anno_df)
     anno_df = filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], anno_df)
     anno_df[!, x_col] = anno_df[!, x_col] .- x_lims[1]
     anno_df[!, y_col] = anno_df[!, y_col] .- y_lims[1]
@@ -162,14 +175,7 @@ elseif data_use == "individual"
         img = img[round(Int,x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
     end
     img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
-    if isa(xn_cell_highlight, String)
-        xn_cell_highlight = [xn_cell_highlight]
-    end
-    all_celltypes = unique(anno_df[!,vs_anno])
-    if isa(xn_cell_highlight, Nothing)
-        xn_cell_highlight = all_celltypes
-    end
-    anno_df = filter(xn_anno => ∈(Set(xn_cell_highlight)), anno_df)
+
     # visium processing
     if hd_layer == "2_um"
         error("""Your bin size in hd_layer was set to "2_um". Please set it back to "8_um" or "16_um".""")
