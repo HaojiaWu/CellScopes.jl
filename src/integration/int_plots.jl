@@ -5,8 +5,8 @@ function sp_dim_plot(sp::PairedObject;
     data_use::String = "individual", 
     img_use::String = "vs_img",
     anno_color::Union{Nothing, Dict} = nothing, 
-    xn_anno_color::Union{Nothing, Dict} = nothing, 
-    vs_anno_color::Union{Nothing, Dict} = nothing, 
+    xn_anno_color::Union{Vector{String}, Nothing}= nothing, 
+    vs_anno_color::Union{Vector{String}, Nothing} = nothing, 
     cell_order::Union{Vector{String}, Nothing}=nothing, 
     xn_cell_order::Union{Vector{String}, Nothing}=nothing, 
     vs_cell_order::Union{Vector{String}, Nothing}=nothing,
@@ -29,6 +29,7 @@ function sp_dim_plot(sp::PairedObject;
     y_col = "y", 
     x_lims = nothing, 
     y_lims = nothing,
+    hd_layer = "8_um",
     marker_size = 2, 
     bg_color = :white,  
     adjust_contrast = 1.0,
@@ -170,6 +171,10 @@ elseif data_use == "individual"
     end
     anno_df = filter(xn_anno => ∈(Set(xn_cell_highlight)), anno_df)
     # visium processing
+    if hd_layer == "2_um"
+        error("""Your bin size in hd_layer was set to "2_um". Please set it back to "8_um" or "16_um".""")
+    end
+    sp.pairedData.vsObj = set_default_layer(sp.pairedData.vsObj; layer_slot = hd_layer)
     hd_obj = sp.pairedData.vsObj
     img_vs, poly, cell_color, plt_color = process_hd_dimplot_data(hd_obj; anno=vs_anno, anno_color=vs_anno_color, x_col = x_col, y_col = y_col, pt_bg_color=pt_bg_color, 
         cell_highlight=vs_cell_highlight, x_lims = x_lims, y_lims = y_lims,alpha = alpha, adjust_contrast = adjust_contrast, adjust_brightness = adjust_brightness)
