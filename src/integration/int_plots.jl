@@ -406,7 +406,7 @@ function paired_dim_plot(sp::PairedObject;
         df_plt, all_genes, all_colors = process_xn_transcript_data(xn_obj, bg_gene; x_lims = x_lims, y_lims = y_lims, x_col = x_col,  
                             y_col = y_col,  gene_colors = gene_colors, bg_tx = bg_tx)
         all_colors=[(i, alpha) for i in all_colors]
-        plt_color=[(i, alpha) for i in plt_color]
+        #plt_color=[(i, alpha) for i in plt_color]
         fig = MK.Figure(size=(width, height))
         ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
             xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
@@ -417,7 +417,7 @@ function paired_dim_plot(sp::PairedObject;
         if plot_img
             MK.image!(ax1, img)
         end
-        MK.Label(fig[0, 1], "Xenium transcript on VisiumHD cell bin", fontsize=18, halign=:center, valign=:bottom)
+        MK.Label(fig[0, 1], "Xenium transcript(s) on VisiumHD cell bin", fontsize=18, halign=:center, valign=:bottom)
         if do_legend
             if !isa(vs_cell_order, Nothing)
             cells = vs_cell_order
