@@ -4,7 +4,7 @@ function sp_dim_plot(sp::PairedObject;
     vs_anno::Union{Symbol, String}="cluster", 
     data_use::String = "individual", 
     img_use::String = "vs_img",
-    anno_color::Union{Nothing, Dict} = nothing, 
+    anno_color::Union{Vector{String}, Nothing} = nothing, 
     xn_anno_color::Union{Vector{String}, Nothing}= nothing, 
     vs_anno_color::Union{Vector{String}, Nothing} = nothing, 
     cell_order::Union{Vector{String}, Nothing}=nothing, 

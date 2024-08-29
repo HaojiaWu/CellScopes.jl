@@ -202,7 +202,7 @@ end
 
 function process_hd_dimplot_data(hd_obj;
     anno::Union{Symbol, String}="cluster", 
-    anno_color::Union{Nothing, Dict} = nothing,
+    anno_color::Union{Vector{String}, Nothing} = nothing,
     x_col = "x",  
     y_col = "y", 
     cell_highlight::Union{String, Int64, Vector, Tuple, Nothing}=nothing,
