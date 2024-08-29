@@ -158,7 +158,7 @@ elseif data_use == "individual"
         c_map=Colors.distinguishable_colors(length(xn_cell_highlight), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
         c_map = "#" .* hex.(c_map)
         cell_color=Dict(xn_cell_highlight .=> c_map)
-        anno_color = merge(cell_color, other_color)
+        xn_anno_color = merge(cell_color, other_color)
     else
         cell_color=Dict(xn_cell_highlight .=> xn_anno_color)
         xn_anno_color = merge(cell_color, other_color)
