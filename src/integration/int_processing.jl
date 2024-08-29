@@ -240,7 +240,8 @@ function process_hd_dimplot_data(hd_obj;
         cell_color=Dict(cell_highlight .=> c_map)
         anno_color = merge(cell_color, other_color)
     else
-        anno_color = merge(anno_color, other_color)
+        cell_color=Dict(cell_highlight .=> anno_color)
+        anno_color = merge(cell_color, other_color)
     end
     anno_df = DataFrames.transform(anno_df, anno => ByRow(x -> anno_color[x]) => :new_color)
     anno_df.new_color = [(i, alpha) for i in anno_df.new_color]
