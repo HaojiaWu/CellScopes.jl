@@ -221,10 +221,13 @@ elseif data_use == "individual"
         ax3 = MK.Axis(fig[1,3]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
             xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false, xgridvisible = false,ygridvisible = false)
         MK.Label(fig[0, 3], "Visium " * vs_anno , fontsize=20, halign=:center, valign=:bottom)
+        MK.colsize!(fig.layout, 3, MK.Aspect(1, 1))
     else
         ax3 = MK.Axis(fig[1,2]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
             xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false, xgridvisible = false,ygridvisible = false)
         MK.Label(fig[0, 2], "Visium " * vs_anno , fontsize=20, halign=:center, valign=:bottom)
+        MK.colsize!(fig.layout, 2, MK.Aspect(1, 1))
+
     end
     if do_label
         for i in cell_anno
@@ -253,7 +256,7 @@ elseif data_use == "individual"
     end
     MK.poly!(ax3, [MK.Point2.(eachrow(p)) for p in poly]; strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width)
     MK.rowgap!(fig.layout, 3)
-    MK.colsize!(fig.layout, 1, MK.Aspect(1, 1.1))
+    MK.colsize!(fig.layout, 1, MK.Aspect(1, 1))
     MK.xlims!(MK.current_axis(), x_lims .- x_lims[1] .+ 1)
     MK.ylims!(MK.current_axis(), y_lims .- y_lims[1] .+ 1)
     return MK.current_figure()
