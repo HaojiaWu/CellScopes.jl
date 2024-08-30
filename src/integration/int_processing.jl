@@ -358,49 +358,174 @@ function process_paired_featureplot_data(sp::PairedObject, gene::String;
     img_use = "xn_img"
 )
 
-if isa(sp.normCount, Nothing)
-    sp = normalize_object(sp)
-end
-norm_count=sp.normCount
-anno_df = deepcopy(sp.spmetaData.cell)
-x_col = Symbol(x_col)
-y_col = Symbol(y_col)
-if isa(anno_df[!, x_col], Vector{String})
-    anno_df[!, x_col] = Float64.(anno_df[!, x_col])
-end
-if isa(anno_df[!, y_col], Vector{String})
-    anno_df[!, y_col] = Float64.(anno_df[!, y_col])
-end
-poly = deepcopy(sp.polygonData)
-c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3]),parse(Colorant, color_keys[4])])
-if img_use == "xn_img"
-    img = deepcopy(sp.pairedData.xnObj.imageData)
-elseif img_use == "vs_img"
-    img = deepcopy(sp.pairedData.vsObj.imageData.fullresImage)
-else
-    error("img_use can only be vs_img or xn_img!")
-end
-if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
-    img = img[round(Int,x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
-end
-img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
-poly = [m .- [x_lims[1]-1 y_lims[1]-1] for m in poly]
+    if isa(sp.normCount, Nothing)
+        sp = normalize_object(sp)
+    end
+    norm_count=sp.normCount
+    anno_df = deepcopy(sp.spmetaData.cell)
+    x_col = Symbol(x_col)
+    y_col = Symbol(y_col)
+    if isa(anno_df[!, x_col], Vector{String})
+        anno_df[!, x_col] = Float64.(anno_df[!, x_col])
+    end
+    if isa(anno_df[!, y_col], Vector{String})
+        anno_df[!, y_col] = Float64.(anno_df[!, y_col])
+    end
+    poly = deepcopy(sp.polygonData)
+    c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3]),parse(Colorant, color_keys[4])])
+    if img_use == "xn_img"
+        img = deepcopy(sp.pairedData.xnObj.imageData)
+    elseif img_use == "vs_img"
+        img = deepcopy(sp.pairedData.vsObj.imageData.fullresImage)
+    else
+        error("img_use can only be vs_img or xn_img!")
+    end
+    if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
+        img = img[round(Int,x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
+    end
+    img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
+    poly = [m .- [x_lims[1]-1 y_lims[1]-1] for m in poly]
 
-gene_expr = subset_count(norm_count; genes = [gene])
-gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
-anno_df = reorder(anno_df, :cell, norm_count.cell_name)
-anno_df.gene = gene_expr
-select_fov = filter([:x, :y, :gene] => (x, y, gene) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2] && gene > clip, anno_df)
-poly_df = deepcopy(sp.spmetaData.polygon)
-cell_use = String.(select_fov.cell)
-poly_df = filter(:mapped_cell => ∈(Set(cell_use)), poly_df)
-polygon_num = poly_df.polygon_number
-poly2 = poly[polygon_num]
-gene_expr = select_fov.gene
-if scale
-    gene_expr = unit_range_scale(gene_expr)
+    gene_expr = subset_count(norm_count; genes = [gene])
+    gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
+    anno_df = reorder(anno_df, :cell, norm_count.cell_name)
+    anno_df.gene = gene_expr
+    select_fov = filter([:x, :y, :gene] => (x, y, gene) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2] && gene > clip, anno_df)
+    poly_df = deepcopy(sp.spmetaData.polygon)
+    cell_use = String.(select_fov.cell)
+    poly_df = filter(:mapped_cell => ∈(Set(cell_use)), poly_df)
+    polygon_num = poly_df.polygon_number
+    poly2 = poly[polygon_num]
+    gene_expr = select_fov.gene
+    if scale
+        gene_expr = unit_range_scale(gene_expr)
+    end
+    colors = get(c_map, gene_expr, :extrema)
+    plt_color="#" .* hex.(colors)
+    return img2, poly2, gene_expr, plt_color, c_map
 end
-colors = get(c_map, gene_expr, :extrema)
-plt_color="#" .* hex.(colors)
-return img2, poly2, gene_expr, plt_color, c_map
+
+function process_xn_dimplot_data(sp;
+    anno::Union{Symbol, String}="cluster", 
+    anno_color::Union{Vector{String}, Nothing} = nothing,
+    x_col = "x",  
+    y_col = "y", 
+    cell_highlight::Union{String, Int64, Vector, Tuple, Nothing}=nothing,
+    x_lims = nothing, 
+    y_lims = nothing,
+    pt_bg_color = "transparent",
+    alpha::Real = 0.5,
+    adjust_contrast= 1.0,
+    adjust_brightness = 0.0,
+    cell_shape = "point"
+)
+    if cell_shape == "point"
+        anno_df=deepcopy(sp.spmetaData.cell)
+        anno_df[!, anno] = string.(anno_df[!, anno])
+        if isa(x_lims, Nothing)
+            x_lims=(minimum(anno_df[!,x_col])-0.05*maximum(anno_df[!,x_col]),1.05*maximum(anno_df[!,x_col]))
+        end
+        if isa(y_lims, Nothing)
+            y_lims=(minimum(anno_df[!,y_col])-0.05*maximum(anno_df[!,y_col]),1.05*maximum(anno_df[!,y_col]))
+        end
+        if isa(anno, String)
+            anno=Symbol(anno)
+        end
+    
+        if isa(cell_highlight, String)
+            cell_highlight = [cell_highlight]
+        end
+        all_celltypes = unique(anno_df[!,anno])
+        if isa(cell_highlight, Nothing)
+            cell_highlight = all_celltypes
+        end
+        other_cells = setdiff(all_celltypes, cell_highlight)
+        other_color = Dict(other_cells .=> repeat([pt_bg_color], length(other_cells)))
+        if isa(anno_color, Nothing)
+            c_map=Colors.distinguishable_colors(length(cell_highlight), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
+            c_map = "#" .* hex.(c_map)
+            cell_color=Dict(cell_highlight .=> c_map)
+            anno_color = merge(cell_color, other_color)
+        else
+            c_map = anno_color
+            cell_color=Dict(cell_highlight .=> c_map)
+            anno_color = merge(cell_color, other_color)
+        end
+    
+        anno_df=DataFrames.transform(anno_df, anno => ByRow(x -> anno_color[x]) => :new_color)
+        anno_df = filter(anno => ∈(Set(cell_highlight)), anno_df)
+        anno_df = filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], anno_df)
+        anno_df[!, x_col] = anno_df[!, x_col] .- x_lims[1]
+        anno_df[!, y_col] = anno_df[!, y_col] .- y_lims[1]
+        anno_df.new_color = [(i, alpha) for i in anno_df.new_color]
+        if isa(sp, PairedObject)
+            img = deepcopy(sp.pairedData.xnObj.imageData)
+        else
+            img = deepcopy(sp.imageData)
+        end
+        if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
+            img = img[round(Int,x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
+        end
+        img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
+        return img2, anno_df, c_map
+    elseif cell_shape == "polygon"
+        if isa(x_lims, Nothing)
+            x_lims=(minimum(sp.spmetaData.cell.x)-0.05*maximum(sp.spmetaData.cell.x),1.05*maximum(sp.spmetaData.cell.x))
+        end
+        if isa(y_lims, Nothing)
+            y_lims=(minimum(sp.spmetaData.cell.y)-0.05*maximum(sp.spmetaData.cell.y),1.05*maximum(sp.spmetaData.cell.y))
+        end
+        if isa(cell_highlight, String)
+            cell_highlight = [cell_highlight]
+        end
+        if isa(anno_color, String)
+            anno_color = [anno_color]
+        end
+        anno_df=deepcopy(sp.spmetaData.polygon)
+        polygons=deepcopy(sp.polygonData)
+        if isa(anno, String)
+            anno=Symbol(anno)
+        end
+        all_celltypes = unique(anno_df[!,anno])
+        if isa(cell_highlight, Nothing)
+            cell_highlight = all_celltypes
+        end
+        other_cells = setdiff(all_celltypes, cell_highlight)
+        other_color = Dict(other_cells .=> repeat([pt_bg_color], length(other_cells)))
+        if isa(anno_color, Nothing)
+            c_map= Colors.distinguishable_colors(length(cell_highlight), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
+            c_map = "#" .* hex.(c_map)
+            cell_color=Dict(cell_highlight .=> c_map)
+            anno_color = merge(cell_color, other_color)
+        else
+            if length(cell_highlight) !== length(anno_color)
+                error("The number of colors must equal to the number of cell types!")
+            end
+            c_map = anno_color
+            cell_color=Dict(cell_highlight .=> c_map)
+            anno_color = merge(cell_color, other_color)
+        end
+        anno_df = DataFrames.transform(anno_df, anno => ByRow(x -> anno_color[x]) => :new_color)
+        anno_df.new_color = [(i, alpha) for i in anno_df.new_color]
+        plt_color = anno_df.new_color
+        select_fov = filter([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], sp.spmetaData.cell)
+        subset_poly = filter(:mapped_cell => ∈(Set(select_fov.cell)), sp.spmetaData.polygon)
+        subset_poly = filter(anno => ∈(Set(cell_highlight)), subset_poly)
+        polygon_num = subset_poly.polygon_number
+        polygons = polygons[polygon_num]
+        plt_color1 = plt_color[polygon_num]
+        polygons = [m .- [x_lims[1]-1 y_lims[1]-1] for m in polygons]
+        if isa(sp, PairedObject)
+            img = deepcopy(sp.pairedData.xnObj.imageData)
+        else
+            img = deepcopy(sp.imageData)
+        end
+        if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
+            img = img[round(Int,x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
+        end
+        img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
+        return img2, polygons, cell_color, plt_color1, c_map
+    else
+        error("""cell_shape can only be "point" or "polygon"!""")
+    end
 end

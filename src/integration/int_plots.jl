@@ -38,231 +38,220 @@ function sp_dim_plot(sp::PairedObject;
     legend_fontsize = 20, 
     do_legend = false,
     height = 500, 
-    width = 500
+    width = 500,
+    xn_cell_shape = "point"
 )
-if data_use == "cellseg"
-    anno_df=deepcopy(sp.spmetaData.cell)
-    anno_df[!, anno] = string.(anno_df[!, anno])
-    if isa(x_lims, Nothing)
-        x_lims=(minimum(anno_df[!,x_col])-0.05*maximum(anno_df[!,x_col]),1.05*maximum(anno_df[!,x_col]))
-    end
-    if isa(y_lims, Nothing)
-        y_lims=(minimum(anno_df[!,y_col])-0.05*maximum(anno_df[!,y_col]),1.05*maximum(anno_df[!,y_col]))
-    end
-    if isa(anno, String)
-        anno=Symbol(anno)
-    end
-    if isa(anno_color, Nothing)
-        cell_anno=unique(anno_df[!,anno])
-        c_map=Colors.distinguishable_colors(length(cell_anno), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
-        c_map = "#" .* hex.(c_map)
-        anno_color1=Dict(cell_anno .=> c_map)
-
-    else
-        anno_color1 = anno_color
-    end
-    anno_df=DataFrames.transform(anno_df, anno => ByRow(x -> anno_color1[x]) => :new_color)
-    anno_df = filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], anno_df)
-    anno_df[!, x_col] = anno_df[!, x_col] .- x_lims[1]
-    anno_df[!, y_col] = anno_df[!, y_col] .- y_lims[1]
-    anno_df.new_color = [(i, alpha) for i in anno_df.new_color]
-    if isa(cell_highlight, String)
-        cell_highlight = [cell_highlight]
-    end
-    all_celltypes = unique(anno_df[!,vs_anno])
-    if isa(cell_highlight, Nothing)
-        cell_highlight = all_celltypes
-    end
-    anno_df = filter(anno => ∈(Set(cell_highlight)), anno_df)
-    fig = MK.Figure(size=(width, height))
-    ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
-        xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
-        xgridvisible = false,ygridvisible = false);
-    ax2 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
-        xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
-        xgridvisible = false,ygridvisible = false)
-    if img_use in ["xn_img", "vs_img"]
-        if img_use == "xn_img"
-            img = deepcopy(sp.pairedData.xnObj.imageData)
-        elseif img_use == "vs_img"
-            img = deepcopy(sp.pairedData.vsObj.imageData.fullresImage)
+    if data_use == "cellseg"
+        if xn_cell_shape == "point"
+            img, anno_df = process_xn_dimplot_data(sp; anno=anno, anno_color=anno_color, x_col = x_col,  y_col = y_col, 
+                cell_highlight= cell_highlight, x_lims = x_lims, y_lims = y_lims, pt_bg_color = pt_bg_color, alpha=alpha,
+                adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness, cell_shape = xn_cell_shape
+            )
         else
-            error("img_use can only be vs_img or xn_img!")
+            img, polygons, cell_color, plt_color1, c_map = process_xn_dimplot_data(sp; anno= anno, anno_color= anno_color, x_col = x_col,  y_col = y_col, 
+                cell_highlight= cell_highlight, x_lims = x_lims, y_lims = y_lims, pt_bg_color = pt_bg_color, alpha=alpha,
+                adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness, cell_shape = xn_cell_shape
+            )
         end
-        if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
-            img = img[round(Int,x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
+        if img_use == "vs_img"
+            img = deepcopy(sp.pairedData.vsObj.imageData.fullresImage)
+            if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
+                img = img[round(Int,x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
+            end
+            img = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
         end
-        img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
+        fig = MK.Figure(size=(width, height))
+        ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+            xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
+            xgridvisible = false,ygridvisible = false);
+        ax2 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+            xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
+            xgridvisible = false,ygridvisible = false)
+        if plot_img
+            MK.image!(ax1, img)
+        end
+        if xn_cell_shape == "point"
+            if isa(cell_order, Nothing)
+                cell_anno=unique(anno_df[!,anno])
+            else
+                cell_anno = cell_order
+            end
+            for i in cell_anno
+                anno_df3=filter(anno => ==(i), anno_df)
+                x_ax = anno_df3[!, x_col]
+                y_ax = anno_df3[!, y_col]
+                colors = unique(anno_df3.new_color)
+                if do_legend
+                    MK.scatter!(ax2, x_ax , y_ax; strokecolor=stroke_color, visible=false,
+                        color=colors[1], strokewidth=0, markersize=legend_size, label=i)
+                    MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
+                        color=colors[1], strokewidth=0, markersize=marker_size, label=i)
+                else
+                    MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
+                        color=colors[1], strokewidth=0, markersize=marker_size)
+                end
+            end
+        if do_legend
+            MK.Legend(fig[1, 2], ax1, String(anno), framecolor=:white, labelsize=legend_fontsize, nbanks=legend_ncol, titlesize=20, titlefont=:regular)
+        end
+            if do_label
+                for i in cell_anno
+                    anno_df3 = filter(anno => ==(i), anno_df)
+                    x_ax = anno_df3[!, x_col]
+                    y_ax = anno_df3[!, y_col]
+                    MK.text!(ax1, i, position = (mean(x_ax) - label_offset[1], mean(y_ax) - label_offset[2]),align = (:center, :center),font = "Noto Sans Regular",fontsize = label_size,color = label_color)
+                end
+            end
+        else
+            MK.poly!(ax1, [MK.Point2.(eachrow(p)) for p in polygons]; strokecolor=stroke_color, color=plt_color1, strokewidth=stroke_width)
+            if do_legend
+                cells = string.(collect(keys(cell_color)))
+                colors = collect(values(cell_color))
+                for (cell1, color1) in zip(cells, colors)
+                    MK.scatter!(ax1, [NaN], [NaN], color = color1, strokewidth = 0.5,strokecolor=stroke_color, markersize = marker_size, label = cell1)
+                end
+                c_map2 = [(i, alpha) for i in c_map]
+                MK.Legend(fig[1, 2], ax1, String(anno), framecolor=:white, labelsize=legend_fontsize, 
+                    nbanks=legend_ncol, titlesize=20, titlefont=:regular)
+                MK.colgap!(fig.layout, 1)
+            end
+            MK.colsize!(fig.layout, 1, MK.Aspect(1, 1))
+        end
+
+        MK.xlims!(MK.current_axis(), x_lims .- x_lims[1] .+ 1)
+        MK.ylims!(MK.current_axis(), y_lims .- y_lims[1] .+ 1)
+        return MK.current_figure()
+
+    elseif data_use == "individual"
+        ### xenium processing
+        xn_obj = sp.pairedData.xnObj
+        if xn_cell_shape == "point"
+            img2, anno_df = process_xn_dimplot_data(xn_obj; anno=xn_anno, anno_color=xn_anno_color, x_col = x_col,  y_col = y_col, 
+                cell_highlight=xn_cell_highlight, x_lims = x_lims, y_lims = y_lims, pt_bg_color = pt_bg_color, alpha=alpha,
+                adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness, cell_shape = xn_cell_shape
+            )
+        else
+            img2, polygons, cell_color, plt_color1, c_map = process_xn_dimplot_data(xn_obj; anno=xn_anno, anno_color=xn_anno_color, x_col = x_col,  y_col = y_col, 
+                cell_highlight=xn_cell_highlight, x_lims = x_lims, y_lims = y_lims, pt_bg_color = pt_bg_color, alpha=alpha,
+                adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness, cell_shape = xn_cell_shape
+            )
+        end
+        # visium processing
+        if hd_layer == "2_um"
+            error("""Your bin size in hd_layer was set to "2_um". Please set it back to "8_um" or "16_um".""")
+        end
+        sp.pairedData.vsObj = set_default_layer(sp.pairedData.vsObj; layer_slot = hd_layer)
+        hd_obj = sp.pairedData.vsObj
+        img_vs, poly, cell_color, plt_color = process_hd_dimplot_data(hd_obj; anno=vs_anno, anno_color=vs_anno_color, x_col = x_col, y_col = y_col, pt_bg_color=pt_bg_color, 
+            cell_highlight=vs_cell_highlight, x_lims = x_lims, y_lims = y_lims,alpha = alpha, adjust_contrast = adjust_contrast, adjust_brightness = adjust_brightness)
+        plt_color=[(i, alpha) for i in plt_color]
+        fig = MK.Figure(size=(width, height))
+        ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+            xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
+            xgridvisible = false,ygridvisible = false);
+        ax2 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+            xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
+            xgridvisible = false,ygridvisible = false)
+        MK.Label(fig[0, 1], "Xenium " * xn_anno , fontsize=20, halign=:center, valign=:bottom)
         if plot_img
             MK.image!(ax1, img2)
         end
-    end
-    if isa(cell_order, Nothing)
-        cell_anno=unique(anno_df[!,anno])
-    else
-        cell_anno = cell_order
-    end
-    for i in cell_anno
-        anno_df3=filter(anno => ==(i), anno_df)
-        x_ax = anno_df3[!, x_col]
-        y_ax = anno_df3[!, y_col]
-        colors = unique(anno_df3.new_color)
+        if xn_cell_shape == "point"
+            if isa(xn_cell_order, Nothing)
+                cell_anno=unique(anno_df[!,xn_anno])
+            else
+                cell_anno = xn_cell_order
+            end
+            for i in cell_anno
+                anno_df3=filter(xn_anno => ==(i), anno_df)
+                x_ax = anno_df3[!, x_col]
+                y_ax = anno_df3[!, y_col]
+                colors = unique(anno_df3.new_color)
+                if do_legend
+                    MK.scatter!(ax2, x_ax , y_ax; strokecolor=stroke_color, visible=false,
+                        color=colors[1], strokewidth=0, markersize=legend_size, label=i)
+                    MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
+                        color=colors[1], strokewidth=0, markersize=marker_size, label=i)
+                else
+                    MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
+                        color=colors[1], strokewidth=0, markersize=marker_size)
+                end
+            end
+            if do_legend
+                MK.Legend(fig[1, 2], ax2, String(xn_anno), framecolor=:white, labelsize=legend_fontsize, nbanks=xn_legend_ncol, titlesize=20, titlefont=:regular)
+                ax3 = MK.Axis(fig[1,3]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+                    xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false, xgridvisible = false,ygridvisible = false)
+                MK.Label(fig[0, 3], "VisiumHD " * vs_anno , fontsize=20, halign=:center, valign=:bottom)
+                MK.colsize!(fig.layout, 3, MK.Aspect(1, 1))
+            else
+                ax3 = MK.Axis(fig[1,2]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+                    xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false, xgridvisible = false,ygridvisible = false)
+                MK.Label(fig[0, 2], "VisiumHD " * vs_anno , fontsize=20, halign=:center, valign=:bottom)
+                MK.colsize!(fig.layout, 2, MK.Aspect(1, 1))
+            end
+            if do_label
+                for i in cell_anno
+                    anno_df3 = filter(anno => ==(i), anno_df)
+                    x_ax = anno_df3[!, x_col]
+                    y_ax = anno_df3[!, y_col]
+                    MK.text!(ax1, i, position = (mean(x_ax) - label_offset[1], mean(y_ax) - label_offset[2]),align = (:center, :center),font = "Noto Sans Regular",fontsize = label_size,color = label_color)
+                end
+            end
+        else
+            MK.poly!(ax1, [MK.Point2.(eachrow(p)) for p in polygons]; strokecolor=stroke_color, color=plt_color1, strokewidth=stroke_width)
+            if do_legend
+                cells = string.(collect(keys(cell_color)))
+                colors = collect(values(cell_color))
+                for (cell1, color1) in zip(cells, colors)
+                    MK.scatter!(ax1, [NaN], [NaN], color = color1, strokewidth = 0.5,strokecolor=stroke_color, markersize = marker_size, label = cell1)
+                end
+                c_map2 = [(i, alpha) for i in c_map]
+                MK.Legend(fig[1, 2], ax1, String.(xn_anno), framecolor=:white, labelsize=legend_fontsize, 
+                    nbanks=xn_legend_ncol, titlesize=20, titlefont=:regular)
+                MK.colgap!(fig.layout, 1)
+            end
+            MK.colsize!(fig.layout, 1, MK.Aspect(1, 1))
+        end
         if do_legend
-            MK.scatter!(ax2, x_ax , y_ax; strokecolor=stroke_color, visible=false,
-                color=colors[1], strokewidth=0, markersize=legend_size, label=i)
-            MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
-                color=colors[1], strokewidth=0, markersize=marker_size, label=i)
+            ax3 = MK.Axis(fig[1,3]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+                xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false, xgridvisible = false,ygridvisible = false)
+            MK.Label(fig[0, 3], "VisiumHD " * vs_anno , fontsize=20, halign=:center, valign=:bottom)
         else
-            MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
-                color=colors[1], strokewidth=0, markersize=marker_size)
+            ax3 = MK.Axis(fig[1,2]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+                xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false, xgridvisible = false,ygridvisible = false)
+            MK.Label(fig[0, 2], "VisiumHD " * vs_anno , fontsize=20, halign=:center, valign=:bottom)
         end
-    end
-
-    if do_legend
-        MK.Legend(fig[1, 2], ax2, framecolor=:white, labelsize=legend_fontsize, nbanks=legend_ncol)
-    end
-    if do_label
-        for i in cell_anno
-            anno_df3 = filter(anno => ==(i), anno_df)
-            x_ax = anno_df3[!, x_col]
-            y_ax = anno_df3[!, y_col]
-            MK.text!(ax1, i, position = (mean(x_ax) - label_offset[1], mean(y_ax) - label_offset[2]),align = (:center, :center),font = "Noto Sans Regular",fontsize = label_size,color = label_color)
+        if plot_img
+            MK.image!(ax3, img_vs)
         end
-    end
-    return MK.current_figure()
-    
-elseif data_use == "individual"
-    ### xenium processing
-    anno_df=deepcopy(sp.pairedData.xnObj.spmetaData.cell)
-    anno_df[!, xn_anno] = string.(anno_df[!, xn_anno])
-    if isa(x_lims, Nothing)
-        x_lims=(minimum(anno_df[!,x_col])-0.05*maximum(anno_df[!,x_col]),1.05*maximum(anno_df[!,x_col]))
-    end
-    if isa(y_lims, Nothing)
-        y_lims=(minimum(anno_df[!,y_col])-0.05*maximum(anno_df[!,y_col]),1.05*maximum(anno_df[!,y_col]))
-    end
-    if isa(xn_anno, String)
-        anno=Symbol(xn_anno)
-    end
-
-    if isa(xn_cell_highlight, String)
-        xn_cell_highlight = [xn_cell_highlight]
-    end
-    all_celltypes = unique(anno_df[!,xn_anno])
-    if isa(xn_cell_highlight, Nothing)
-        xn_cell_highlight = all_celltypes
-    end
-    other_cells = setdiff(all_celltypes, xn_cell_highlight)
-    other_color = Dict(other_cells .=> repeat([pt_bg_color], length(other_cells)))
-    if isa(xn_anno_color, Nothing)
-        c_map=Colors.distinguishable_colors(length(xn_cell_highlight), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
-        c_map = "#" .* hex.(c_map)
-        cell_color=Dict(xn_cell_highlight .=> c_map)
-        xn_anno_color = merge(cell_color, other_color)
-    else
-        cell_color=Dict(xn_cell_highlight .=> xn_anno_color)
-        xn_anno_color = merge(cell_color, other_color)
-    end
-
-    anno_df=DataFrames.transform(anno_df, xn_anno => ByRow(x -> xn_anno_color[x]) => :new_color)
-    anno_df = filter(xn_anno => ∈(Set(xn_cell_highlight)), anno_df)
-    anno_df = filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], anno_df)
-    anno_df[!, x_col] = anno_df[!, x_col] .- x_lims[1]
-    anno_df[!, y_col] = anno_df[!, y_col] .- y_lims[1]
-    anno_df.new_color = [(i, alpha) for i in anno_df.new_color]
-    img = deepcopy(sp.pairedData.xnObj.imageData)
-    if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
-        img = img[round(Int,x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
-    end
-    img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
-
-    # visium processing
-    if hd_layer == "2_um"
-        error("""Your bin size in hd_layer was set to "2_um". Please set it back to "8_um" or "16_um".""")
-    end
-    sp.pairedData.vsObj = set_default_layer(sp.pairedData.vsObj; layer_slot = hd_layer)
-    hd_obj = sp.pairedData.vsObj
-    img_vs, poly, cell_color, plt_color = process_hd_dimplot_data(hd_obj; anno=vs_anno, anno_color=vs_anno_color, x_col = x_col, y_col = y_col, pt_bg_color=pt_bg_color, 
-        cell_highlight=vs_cell_highlight, x_lims = x_lims, y_lims = y_lims,alpha = alpha, adjust_contrast = adjust_contrast, adjust_brightness = adjust_brightness)
-    plt_color=[(i, alpha) for i in plt_color]
-    fig = MK.Figure(size=(width, height))
-    ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
-        xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
-        xgridvisible = false,ygridvisible = false);
-    ax2 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
-        xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
-        xgridvisible = false,ygridvisible = false)
-    MK.Label(fig[0, 1], "Xenium " * xn_anno , fontsize=20, halign=:center, valign=:bottom)
-    if plot_img
-        MK.image!(ax1, img2)
-    end
-    if isa(xn_cell_order, Nothing)
-        cell_anno=unique(anno_df[!,xn_anno])
-    else
-        cell_anno = xn_cell_order
-    end
-    for i in cell_anno
-        anno_df3=filter(xn_anno => ==(i), anno_df)
-        x_ax = anno_df3[!, x_col]
-        y_ax = anno_df3[!, y_col]
-        colors = unique(anno_df3.new_color)
         if do_legend
-            MK.scatter!(ax2, x_ax , y_ax; strokecolor=stroke_color, visible=false,
-                color=colors[1], strokewidth=0, markersize=legend_size, label=i)
-            MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
-                color=colors[1], strokewidth=0, markersize=marker_size, label=i)
+            if !isa(vs_cell_order, Nothing)
+            cells = vs_cell_order
+            else
+            cells = string.(collect(keys(cell_color)))
+            end
+            colors = [cell_color[i] for i in cells]
+            for (cell1, color1) in zip(cells, colors)
+                MK.scatter!(ax3,[NaN], [NaN], color = color1, marker=:rect,
+                                strokewidth = 0.5,strokecolor=stroke_color, markersize = legend_size, label = cell1)
+            end
+            MK.Legend(fig[1, 4], ax3, String.(vs_anno), framecolor=:white, labelsize=legend_fontsize, nbanks=vs_legend_ncol, titlesize=20, titlefont=:regular)
+            MK.rowgap!(fig.layout, 3)
+            MK.colgap!(fig.layout, 1)
+            MK.colsize!(fig.layout, 1, MK.Aspect(1, 1))
+            MK.colsize!(fig.layout, 3, MK.Aspect(1, 1))
         else
-            MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
-                color=colors[1], strokewidth=0, markersize=marker_size)
+            MK.rowgap!(fig.layout, 3)
+            MK.colsize!(fig.layout, 1, MK.Aspect(1, 1))
+            MK.colsize!(fig.layout, 2, MK.Aspect(1, 1))
         end
-    end
-    if do_legend
-        MK.Legend(fig[1, 2], ax2, framecolor=:white, labelsize=legend_fontsize, nbanks=xn_legend_ncol)
-        ax3 = MK.Axis(fig[1,3]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
-            xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false, xgridvisible = false,ygridvisible = false)
-        MK.Label(fig[0, 3], "Visium " * vs_anno , fontsize=20, halign=:center, valign=:bottom)
-        MK.colsize!(fig.layout, 3, MK.Aspect(1, 1))
+        MK.poly!(ax3, [MK.Point2.(eachrow(p)) for p in poly]; strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width)
+        MK.xlims!(MK.current_axis(), x_lims .- x_lims[1] .+ 1)
+        MK.ylims!(MK.current_axis(), y_lims .- y_lims[1] .+ 1)
+        return MK.current_figure()
     else
-        ax3 = MK.Axis(fig[1,2]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
-            xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false, xgridvisible = false,ygridvisible = false)
-        MK.Label(fig[0, 2], "Visium " * vs_anno , fontsize=20, halign=:center, valign=:bottom)
-        MK.colsize!(fig.layout, 2, MK.Aspect(1, 1))
-
+        error("data_use can only be cellseg or individual.")
     end
-    if do_label
-        for i in cell_anno
-            anno_df3 = filter(anno => ==(i), anno_df)
-            x_ax = anno_df3[!, x_col]
-            y_ax = anno_df3[!, y_col]
-            MK.text!(ax1, i, position = (mean(x_ax) - label_offset[1], mean(y_ax) - label_offset[2]),align = (:center, :center),font = "Noto Sans Regular",fontsize = label_size,color = label_color)
-        end
-    end
-    if plot_img
-        MK.image!(ax3, img_vs)
-    end
-    if do_legend
-        if !isa(vs_cell_order, Nothing)
-        cells = vs_cell_order
-        else
-        cells = string.(collect(keys(cell_color)))
-        end
-        colors = [cell_color[i] for i in cells]
-        for (cell1, color1) in zip(cells, colors)
-            MK.scatter!(ax3,[NaN], [NaN], color = color1, marker=:rect,
-                            strokewidth = 0.5,strokecolor=stroke_color, markersize = legend_size, label = cell1)
-        end
-        MK.Legend(fig[1, 4], ax3, framecolor=:white, labelsize=legend_fontsize, nbanks=vs_legend_ncol)
-
-    end
-    MK.poly!(ax3, [MK.Point2.(eachrow(p)) for p in poly]; strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width)
-    MK.rowgap!(fig.layout, 3)
-    MK.colsize!(fig.layout, 1, MK.Aspect(1, 1))
-    MK.xlims!(MK.current_axis(), x_lims .- x_lims[1] .+ 1)
-    MK.ylims!(MK.current_axis(), y_lims .- y_lims[1] .+ 1)
-    return MK.current_figure()
-else
-    error("data_use can only be cellseg or individual.")
-end
 end
 
 function paired_dim_plot(sp::PairedObject;
