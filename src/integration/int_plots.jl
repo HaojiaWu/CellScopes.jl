@@ -192,6 +192,7 @@ elseif data_use == "individual"
     ax2 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
         xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
         xgridvisible = false,ygridvisible = false)
+    MK.Label(fig[0, 1], "Xenium " * xn_anno , fontsize=20, halign=:center, valign=:bottom)
     if plot_img
         MK.image!(ax1, img2)
     end
@@ -219,9 +220,11 @@ elseif data_use == "individual"
         MK.Legend(fig[1, 2], ax2, framecolor=:white, labelsize=legend_fontsize, nbanks=xn_legend_ncol)
         ax3 = MK.Axis(fig[1,3]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
             xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false, xgridvisible = false,ygridvisible = false)
+        MK.Label(fig[0, 3], "Visium " * vs_anno , fontsize=20, halign=:center, valign=:bottom)
     else
         ax3 = MK.Axis(fig[1,2]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
             xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false, xgridvisible = false,ygridvisible = false)
+        MK.Label(fig[0, 2], "Visium " * vs_anno , fontsize=20, halign=:center, valign=:bottom)
     end
     if do_label
         for i in cell_anno
@@ -246,8 +249,10 @@ elseif data_use == "individual"
                             strokewidth = 0.5,strokecolor=stroke_color, markersize = legend_size, label = cell1)
         end
         MK.Legend(fig[1, 4], ax3, framecolor=:white, labelsize=legend_fontsize, nbanks=vs_legend_ncol)
+
     end
     MK.poly!(ax3, [MK.Point2.(eachrow(p)) for p in poly]; strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width)
+    MK.rowgap!(fig.layout, 3)
     MK.xlims!(MK.current_axis(), x_lims .- x_lims[1] .+ 1)
     MK.ylims!(MK.current_axis(), y_lims .- y_lims[1] .+ 1)
     return MK.current_figure()
