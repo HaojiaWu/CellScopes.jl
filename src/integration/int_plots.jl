@@ -253,6 +253,7 @@ elseif data_use == "individual"
     end
     MK.poly!(ax3, [MK.Point2.(eachrow(p)) for p in poly]; strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width)
     MK.rowgap!(fig.layout, 3)
+    MK.colsize!(fig.layout, 1, MK.Aspect(1, 1.1))
     MK.xlims!(MK.current_axis(), x_lims .- x_lims[1] .+ 1)
     MK.ylims!(MK.current_axis(), y_lims .- y_lims[1] .+ 1)
     return MK.current_figure()
