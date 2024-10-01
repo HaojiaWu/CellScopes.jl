@@ -734,7 +734,7 @@ function read_paired_data(xn_dir, vs_dir, xn_img_path, vs_img_path;
         indices = CartesianIndex.(new_df.new_x, new_df.new_y)
         new_img[indices] = new_df.color
     end
-    new_img = smoothe_img!(new_img)
+    new_img = smoothe_img(new_img)
     xn_obj.imageData = new_img
     hd_obj.imageData.fullresImage = vs_img
     paired_sp_obj = PairedSpObject(hd_obj, xn_obj, vs_mat, xn_mat)
