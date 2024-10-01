@@ -139,7 +139,7 @@ function normalize_paired_object(sp::PairedObject; kwargs...)
 end
 
 ### interpolate the out-of-bound pixels arising from rounding errors with the nearby color
-function smoothe_img!(img)
+function smoothe_img(img)
     h, w = size(img)
     for y in 2:h-1, x in 2:w-1
         if img[y, x] == RGB{N0f8}(1.0, 1.0, 1.0)  
@@ -150,6 +150,7 @@ function smoothe_img!(img)
             end
         end
     end
+    return img
 end
 
 function process_xn_transcript_data(xn_obj, gene_list;
@@ -165,6 +166,10 @@ function process_xn_transcript_data(xn_obj, gene_list;
     end
     if isa(gene_colors, String)
         gene_colors = [gene_colors]
+    end
+    all_genes = xn_obj.rawCount.gene_name
+    if !all(x -> x in all_genes, gene_list)
+        error("Some genes are missing. Please make sure that all genes in the gene_list are present in the Xenium data!")
     end
     df_plt=deepcopy(xn_obj.spmetaData.molecule)
     df_plt.gene = String.(df_plt.gene)
