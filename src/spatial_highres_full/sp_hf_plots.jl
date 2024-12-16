@@ -1,6 +1,6 @@
-function sp_dim_plot(sp::VisiumHDObject, anno; x_col::String = "x", y_col::String = "y",
+function sp_dim_plot(sp::VisiumHDObject, anno; x_col::String = "x", y_col::String = "y",cell_shape = "polygon",
     cell_highlight::Union{String, Int64, Vector, Tuple, Nothing}=nothing, img_res = "low",
-    anno_color::Union{Nothing, Dict} = nothing, adjust_contrast =1.0, adjust_brightness=0.0,
+    anno_color::Union{Nothing, Dict} = nothing, adjust_contrast =1.0, adjust_brightness=0.0,marker_size=2,
     pt_bg_color = "gray90", x_lims=nothing, y_lims=nothing,width = 500, height = 500, alpha=1,
     stroke_width=0, stroke_color="black", cell_order::Union{Vector{String}, Nothing}=nothing,
     legend_fontsize = 30, do_legend=false, legend_size = 30 , bg_color = "white", return_plot=false
@@ -27,12 +27,14 @@ function sp_dim_plot(sp::VisiumHDObject, anno; x_col::String = "x", y_col::Strin
     if isa(cell_highlight, String)
         cell_highlight = [cell_highlight]
     end
-    if isa(sp.alterImgData, Nothing)
-        poly = deepcopy(sp.polygonData)
-        poly = poly .* scale_factor
-    else
-        poly = deepcopy(sp.alterImgData.polyData.polygons[img_res * "_poly"])
-        poly = poly .* scale_factor
+    if cell_shape == "polygon"
+        if isa(sp.alterImgData, Nothing)
+            poly = deepcopy(sp.polygonData)
+            poly = poly .* scale_factor
+        else
+            poly = deepcopy(sp.alterImgData.polyData.polygons[img_res * "_poly"])
+            poly = poly .* scale_factor
+        end
     end
     all_celltypes = unique(anno_df[!,anno])
     if isa(cell_highlight, Nothing)
@@ -86,9 +88,11 @@ function sp_dim_plot(sp::VisiumHDObject, anno; x_col::String = "x", y_col::Strin
     img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
     select_fov = filter([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], anno_df)
     select_fov = filter(anno => x -> x ∈ (Set(cell_highlight)), select_fov)
-    polygon_num = select_fov.ID
-    poly = poly[polygon_num]
-    poly = [m .- [x_lims[1]-1 y_lims[1]-1] for m in poly]
+    if cell_shape == "polygon"
+        polygon_num = select_fov.ID
+        poly = poly[polygon_num]
+        poly = [m .- [x_lims[1]-1 y_lims[1]-1] for m in poly]
+    end
     plt_color = select_fov.new_color
     fig = MK.Figure(size=(width, height))
     ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
@@ -101,13 +105,26 @@ function sp_dim_plot(sp::VisiumHDObject, anno; x_col::String = "x", y_col::Strin
                cells = string.(collect(keys(cell_color)))
             end
             colors = [cell_color[i] for i in cells]
-            for (cell1, color1) in zip(cells, colors)
-                MK.scatter!(ax1,[NaN], [NaN], color = color1, marker=:rect,
-                                strokewidth = 0.5,strokecolor=stroke_color, markersize = legend_size, label = cell1)
+            if cell_shape == "polygon"
+                for (cell1, color1) in zip(cells, colors)
+                    MK.scatter!(ax1,[NaN], [NaN], color = color1, marker=:rect,
+                                    strokewidth = 0.5,strokecolor=stroke_color, markersize = legend_size, label = cell1)
+                end
+            else
+                for (cell1, color1) in zip(cells, colors)
+                    MK.scatter!(ax1,[NaN], [NaN], color = color1, marker=:circle,
+                                    strokewidth = 0.5,strokecolor=stroke_color, markersize = legend_size, label = cell1)
+                end
             end
             MK.Legend(fig[1, 2], ax1, framecolor=:white, labelsize=legend_fontsize)
         end
-        MK.poly!(ax1, [MK.Point2.(eachrow(p)) for p in poly]; strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width)
+        if cell_shape == "polygon"
+            MK.poly!(ax1, [MK.Point2.(eachrow(p)) for p in poly]; strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width)
+        else
+            select_fov[!, "x"] = select_fov[!, "x"] .- x_lims[1]
+            select_fov[!, "y"] = select_fov[!, "y"] .- y_lims[1]
+            MK.scatter!(ax1, select_fov.x , select_fov.y; strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width,markersize= marker_size)
+        end
     MK.xlims!(MK.current_axis(), x_lims .- x_lims[1] .+ 1)
     MK.ylims!(MK.current_axis(), y_lims .- y_lims[1] .+ 1)
     if return_plot
