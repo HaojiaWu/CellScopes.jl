@@ -5,6 +5,8 @@
 
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/CellScopes2.png" width="1000"> <br>
 
+In CellScope V2, we introduced a suite of functions that enable users to integrate multiple spatial datasets from the same platform (e.g., Xenium) using Harmony. In addition, we provided tools for paired analysis of Xenium and VisiumHD datasets generated from the same or adjacent tissue sections.
+
 ## 1. Installation
 #### 1.1. Install Julia 1.10.4
 To install ```CellScopes.jl```, you will need to have Julia 1.6 or higher installed. It is recommended to use Julia 1.10.4 or higher to avoid issues with dependencies. Here we will show how to install Julia in the Linux system.
