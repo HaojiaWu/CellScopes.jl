@@ -5,7 +5,7 @@
 
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/CellScopes2.png" width="1000"> <br>
 
-In CellScope V2, we introduced a suite of functions that enable users to integrate multiple spatial datasets from the same platform (e.g., Xenium) using Harmony. In addition, we provided tools for paired analysis of Xenium and VisiumHD datasets generated from the same or adjacent tissue sections.
+In CellScope V2, we introduced a suite of functions that enable users to integrate multiple spatial datasets from the same platform (e.g., Xenium) using Harmony. In addition, we provided codes for paired analysis of Xenium and VisiumHD datasets generated from the same or adjacent tissue sections.
 
 ## 1. Installation
 #### 1.1. Install Julia 1.10.4
