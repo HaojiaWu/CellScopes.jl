@@ -87,7 +87,7 @@ end
 
 function scale_object(sc_obj::get_object_group("All"); kwargs...)
     norm_count_obj = deepcopy(sc_obj.normCount)
-    scale_obj = scale_object(snorm_count_obj; kwargs...)
+    scale_obj = scale_object(norm_count_obj; kwargs...)
     sc_obj.scaleCount = scale_obj
     return sc_obj
 end
