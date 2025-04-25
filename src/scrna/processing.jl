@@ -31,13 +31,15 @@ function normalize_object(mtx::AbstractMatrix{<:Real}; scale_factor = 10000, nor
 end
 
 function normalize_object(ct_obj::RawCountObject; scale_factor = 10000, norm_method = "logarithm", pseudocount = 1)
-    norm_count = normalize_object(ct_obj.count_mtx; scale_factor=scale_factor, norm_method=norm_method, pseudocount=pseudocount)
+    ct_mtx = deepcopy(ct_obj.count_mtx)
+    norm_count = normalize_object(ct_mtx; scale_factor=scale_factor, norm_method=norm_method, pseudocount=pseudocount)
     norm_obj = NormCountObject(norm_count, ct_obj.cell_name, ct_obj.gene_name, scale_factor, norm_method, pseudocount)
     return norm_obj
 end
 
 function normalize_object(sc_obj::get_object_group("All"); scale_factor = 10000, norm_method = "logarithm", pseudocount = 1)
-    norm_obj = normalize_object(sc_obj.rawCount; scale_factor = scale_factor, norm_method = norm_method, pseudocount = pseudocount)
+    raw_count_obj = deepcopy(sc_obj.rawCount)
+    norm_obj = normalize_object(raw_count_obj; scale_factor = scale_factor, norm_method = norm_method, pseudocount = pseudocount)
     sc_obj.normCount = norm_obj
     if isa(sc_obj, Union{MerfishObject, CartanaObject, XeniumObject})
         replace!(sc_obj.normCount.count_mtx, NaN=>0)
@@ -77,13 +79,15 @@ function scale_object(ct_obj::NormCountObject; features::Union{Vector{String}, N
     if features !== nothing
         ct_obj = subset_count(ct_obj; genes = features)
     end
-    scale_count = scale_object(ct_obj.count_mtx; kwargs...)
+    ct_mtx = deepcopy(ct_obj.count_mtx)
+    scale_count = scale_object(ct_mtx; kwargs...)
     scale_obj = ScaleCountObject(scale_count, ct_obj.cell_name, ct_obj.gene_name, do_scale, do_center, scale_max)
     return scale_obj
 end
 
 function scale_object(sc_obj::get_object_group("All"); kwargs...)
-    scale_obj = scale_object(sc_obj.normCount; kwargs...)
+    norm_count_obj = deepcopy(sc_obj.normCount)
+    scale_obj = scale_object(snorm_count_obj; kwargs...)
     sc_obj.scaleCount = scale_obj
     return sc_obj
 end
