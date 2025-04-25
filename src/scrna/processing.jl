@@ -136,7 +136,7 @@ function find_variable_genes(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, sp
     vst_data = [mean_val var_val zeros(length(mean_val)) zeros(length(mean_val))]
     vst_data = DataFrame(vst_data, :auto)
     rename!(vst_data, ["mean", "variance", "variance_expected","variance_standardized"])
-    #vst_data = filter(:variance => >(0.0), vst_data)
+    vst_data = filter(:variance => >(0.0), vst_data)
     fit_data = loess(log10.(vst_data.mean), log10.(vst_data.variance), span=span)
     vst_data.variance_expected = 10 .^ Loess.predict(fit_data, log10.(vst_data.mean))
     mean1 = sparsevec(vst_data.mean)
