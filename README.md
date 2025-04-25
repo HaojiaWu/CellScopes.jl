@@ -5,6 +5,8 @@
 
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/CellScopes2.png" width="1000"> <br>
 
+In CellScope V2, we introduced a suite of functions that enable users to integrate multiple spatial datasets from the same platform (e.g., Xenium) using Harmony. In addition, we provided codes for paired analysis of Xenium and VisiumHD datasets generated from the same or adjacent tissue sections.
+
 ## 1. Installation
 #### 1.1. Install Julia 1.10.4
 To install ```CellScopes.jl```, you will need to have Julia 1.6 or higher installed. It is recommended to use Julia 1.10.4 or higher to avoid issues with dependencies. Here we will show how to install Julia in the Linux system.
@@ -39,7 +41,7 @@ Pkg.add(url="https://github.com/TheHumphreysLab/CellScopes.jl") # Install CellSc
 
 ## 2. Tutorials
 ```CellScopes``` supports analysis for single-cell RNA sequencing (scRNA-seq), single-cell ATAC-seq (scATAC-seq), Visium, Slide-seq, Cartana, MERFISH, seqFISH, STARmap and Xenium datasets. For more information, please refer to the tutorials provided below.
-<br>
+### 2.1. Standalone analysis
 ***a. dRNA HybISS by Cartana***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/cartana_tutorial
 <br>
 ***b. scRNA-seq***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/scRNA_tutorial
@@ -61,21 +63,25 @@ Pkg.add(url="https://github.com/TheHumphreysLab/CellScopes.jl") # Install CellSc
 ***j. Visium HD***: https://github.com/HaojiaWu/CellScopes.jl/blob/main/docs/VisiumHD_tutorial
 <br>
 
+### 2.2. Interaction with other tools
 In addition to these standalone CellScopes analyses, we also provide tutorials how CellScopes can interact with other popular tools such as Seurat, Scanpy and tools for gene imputation and spot deconvolution.
 <br>
 ***k. Conversion of Scanpy AnnData to CellScopes Objects***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/scanpy_conversion
 <br>
 ***l. Conversion of Seurat Objects to CellScopes Objects***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/seurat_conversion
 <br>
-***m. Gene imputation using SpaGE, tangram and gimVI***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/gene_imputation
+***m. Gene imputation using SpaGE***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/gene_imputation
 <br>
 
-Finally, we also provide tutorials for incorporating high-resolution H&E and nuclei staining images for Visium and Xenium data visualization.
+### 2.3. Incorporation of high-res images
+We also provide tutorials for incorporating high-resolution H&E and nuclei staining images for Visium and Xenium data visualization.
 <br>
 ***n. Visium data visualization with a high-resolution H&E image***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/Visium_more_viz
 <br>
 ***o. Xenium data visualization with a high-resolution H&E/DAPI image***: https://github.com/HaojiaWu/CellScopes.jl/tree/main/docs/Xenium_more_viz
 <br>
+### 2.4. Data integration
+Coming soon!
 
 ## 3. Citation
 If the tool is helpful to your study, please consider citing our paper: <br />
