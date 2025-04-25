@@ -73,7 +73,7 @@ function scale_object(count_mtx::AbstractMatrix{<:Real}; scale_max = 10.0, do_sc
     return count_mtx
 end
 
-function scale_object(ct_obj::NormCountObject; features::Union{Vector{String}, Nothing}=nothing, do_scale::Bool = true, kwargs...)
+function scale_object(ct_obj::NormCountObject; features::Union{Vector{String}, Nothing}=nothing, scale_max = 10.0, do_scale::Bool = true, do_center::Bool = true, kwargs...)
     if features !== nothing
         ct_obj = subset_count(ct_obj; genes = features)
     end
