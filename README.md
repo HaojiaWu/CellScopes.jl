@@ -1,6 +1,6 @@
 ![Project Status: Legacy](https://img.shields.io/badge/status-legacy-lightgrey)
 
-⚠️ **This project is no longer maintained. Please move to the main branch.** ⚠️
+⚠️ **This version is no longer maintained. Please move to the main branch.** ⚠️
 
 # CellScopes.jl <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/logo.png" width="60" height="60"> <br>
 <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/cs_demo.png"> <br>
