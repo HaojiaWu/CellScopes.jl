@@ -36,7 +36,7 @@ To install all of the necessary dependencies, run the following command line in 
 ```julia
 using Pkg;
 Pkg.add(url="https://github.com/bicycle1885/Leiden.jl") # Install the unregistered dependency Leiden.jl
-Pkg.add(url="https://github.com/TheHumphreysLab/CellScopes.jl") # Install CellScopes.jl
+Pkg.add(url="https://github.com/HaojiaWu/CellScopes.jl") # Install CellScopes.jl
 ```
 
 ## 2. Tutorials
