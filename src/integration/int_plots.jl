@@ -126,12 +126,12 @@ function sp_dim_plot(sp::PairedObject;
         ### xenium processing
         xn_obj = sp.pairedData.xnObj
         if xn_cell_shape == "point"
-            img2, anno_df = process_xn_dimplot_data(xn_obj; anno=xn_anno, anno_color=xn_anno_color, x_col = x_col,  y_col = y_col, 
+            img2, anno_df = process_xn_dimplot_data(sp; anno=xn_anno, anno_color=xn_anno_color, x_col = x_col,  y_col = y_col, 
                 cell_highlight=xn_cell_highlight, x_lims = x_lims, y_lims = y_lims, pt_bg_color = pt_bg_color, alpha=alpha,
                 adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness, cell_shape = xn_cell_shape
             )
         else
-            img2, polygons, cell_color, plt_color1, c_map = process_xn_dimplot_data(xn_obj; anno=xn_anno, anno_color=xn_anno_color, x_col = x_col,  y_col = y_col, 
+            img2, polygons, cell_color, plt_color1, c_map = process_xn_dimplot_data(sp; anno=xn_anno, anno_color=xn_anno_color, x_col = x_col,  y_col = y_col, 
                 cell_highlight=xn_cell_highlight, x_lims = x_lims, y_lims = y_lims, pt_bg_color = pt_bg_color, alpha=alpha,
                 adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness, cell_shape = xn_cell_shape
             )
