@@ -248,3 +248,14 @@ end
 
 default_layer(obj::IntegratedObject)=obj.ancillaryObjs.ancillaryObjs[1].defaultData
 list_layers(obj::IntegratedObject) = println(keys(obj.ancillaryObjs.ancillaryObjs[1].layerData.layers))
+
+function adjust_lims(x)
+    xmin = x[1] < 1 ? 1 : floor(Int, x[1])
+    xmax = ceil(Int, x[2])
+    return (xmin, xmax)
+end
+
+function flip_bg_color(img::Matrix{RGB{Float64}}; eps=0.5)
+    white = RGB(1.0, 1.0, 1.0)
+    return map(px -> (red(px)^2 + green(px)^2 + blue(px)^2 < eps^2) ? white : px, img)
+end
