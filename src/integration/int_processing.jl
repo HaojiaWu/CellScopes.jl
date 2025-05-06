@@ -360,7 +360,8 @@ function process_paired_featureplot_data(sp::PairedObject, gene::String;
     y_lims = nothing,
     adjust_contrast= 1.0,
     adjust_brightness = 0.0,
-    img_use = "xn_img"
+    img_use = "xn_img",
+    cell_shape = "point"
 )
 
     if isa(sp.normCount, Nothing)
@@ -407,7 +408,11 @@ function process_paired_featureplot_data(sp::PairedObject, gene::String;
     end
     colors = get(c_map, gene_expr, :extrema)
     plt_color="#" .* hex.(colors)
-    return img2, poly2, gene_expr, plt_color, c_map
+    if cell_shape == "point"
+        return img2, select_fov, gene_expr, plt_color, c_map
+    else
+        return img2, poly2, gene_expr, plt_color, c_map
+    end
 end
 
 function process_xn_dimplot_data(sp;

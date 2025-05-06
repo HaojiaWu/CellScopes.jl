@@ -496,7 +496,7 @@ function paired_feature_plot(sp::PairedObject, gene::String;
         end
     elseif mode == "cell"
         img, poly, gene_expr, plt_color, c_map = process_paired_featureplot_data(sp, gene; color_keys = color_keys, x_col = x_col,  
-            y_col = y_col, clip = clip,  x_lims = x_lims,  y_lims = y_lims,
+            y_col = y_col, clip = clip,  x_lims = x_lims,  y_lims = y_lims, cell_shape = "point",
             adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness, img_use = img_use)
     else
         error("""The parameter mode can only be "cell" or "bin"!""")
