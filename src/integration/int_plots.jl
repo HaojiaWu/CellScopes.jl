@@ -348,7 +348,7 @@ function paired_dim_plot(sp::PairedObject;
         hd_obj = sp.pairedData.vsObj
         img, poly2, gene_expr, plt_color, c_map = process_hd_featureplot_data(hd_obj, bg_gene; color_keys = color_keys, x_col = x_col,  
                 y_col = y_col, hd_layer = hd_layer, clip = clip,  x_lims = x_lims,  y_lims = y_lims,
-                adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness)
+                adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness, cell_shape = "bin")
         if img_use == "xn_img"
             img = deepcopy(sp.pairedData.xnObj.imageData)
             if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
@@ -486,7 +486,7 @@ function paired_feature_plot(sp::PairedObject, gene::String;
         hd_obj = sp.pairedData.vsObj
         img, poly, gene_expr, plt_color, c_map = process_hd_featureplot_data(hd_obj, gene; color_keys = color_keys, x_col = x_col,  
                 y_col = y_col, hd_layer = hd_layer, clip = clip,  x_lims = x_lims,  y_lims = y_lims,
-                adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness)
+                adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness, cell_shape = "bin")
         if img_use == "xn_img"
             img = deepcopy(sp.pairedData.xnObj.imageData)
             if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)

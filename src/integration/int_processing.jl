@@ -290,6 +290,7 @@ function process_hd_featureplot_data(hd_obj, gene;
     scale =  false,
     x_lims = nothing, 
     y_lims = nothing,
+    cell_shape = "point",
     adjust_contrast= 1.0,
     adjust_brightness = 0.0
 )
@@ -347,7 +348,11 @@ function process_hd_featureplot_data(hd_obj, gene;
     end
     colors = get(c_map, gene_expr, :extrema)
     plt_color="#" .* hex.(colors)
-    return img, poly2, gene_expr, plt_color, c_map
+    if cell_shape == "point"
+        return img, poly2, gene_expr, plt_color, c_map
+    else
+        return img, select_fov, gene_expr, plt_color, c_map
+    end
 end
 
 function process_paired_featureplot_data(sp::PairedObject, gene::String;
