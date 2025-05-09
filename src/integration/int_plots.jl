@@ -278,7 +278,6 @@ function paired_dim_plot(sp::PairedObject;
     plot_img = true,
     img_use::String = "vs_img",
     clip = 0.0,
-    scale =  false,
     x_col = "x", 
     y_col = "y",
     hd_layer = "8_um",
@@ -462,7 +461,6 @@ function paired_feature_plot(sp::PairedObject, gene::String;
     y_col = "y", 
     hd_layer = "8_um",
     clip = 0.0,
-    scale =  false,
     x_lims = nothing, 
     y_lims = nothing,
     adjust_contrast= 1.0,
@@ -566,7 +564,6 @@ function gemini_dim_plot(sp::PairedObject;
     label_offset=(0,0), 
     do_label=false, 
     alpha::Real = 1, 
-    legend_ncol = 1,
     xn_legend_ncol = 1, 
     vs_legend_ncol = 1, 
     plot_img = true,
@@ -715,4 +712,152 @@ function gemini_dim_plot(sp::PairedObject;
         MK.ylims!(ax1, y_lims...)
         MK.ylims!(ax3, y_lims...)
         return MK.current_figure()
+end
+
+function gemini_feature_plot(sp::PairedObject, gene::String;
+    color_keys_xn::Union{Vector{String}, Tuple{String}}=["gray85","cyan","blue","blue3"],
+    color_keys_vs::Union{Vector{String}, Tuple{String}}=["gray85","green3","green","darkgreen"],
+    x_col = "x",  
+    y_col = "y", 
+    hd_layer = "8_um",
+    clip = 0.0,
+    order=true,
+    adjust_contrast= 1.0,
+    adjust_brightness = 0.0,
+    plot_img = true,
+    marker_size = 2, 
+    canvas_color = :white,
+    bg_color = :gray85,
+    do_legend = false,
+    alpha::Real = 0.5, 
+    stroke_width=0.5,
+    cell_shape = "point",
+    stroke_color=:transparent,
+    break_ratio=0.5,
+    aspect_ratio=0.7,
+    only_expr=false,
+    height = 1000, 
+    width = 600        
+)
+    if break_ratio < 0.05 || break_ratio > 0.95
+        error("break_ratio should not be < 0.05 or > 0.95")
+    end
+    x_coord_xn = deepcopy(sp.spmetaData.cell.x)
+    y_coord_xn = deepcopy(sp.spmetaData.cell.y)
+    x_coord_vs = deepcopy(sp.pairedData.vsObj.spmetaData.pxl_row_in_fullres)
+    y_coord_vs = deepcopy(sp.pairedData.vsObj.spmetaData.pxl_col_in_fullres)
+    x_lims_xn=(minimum(x_coord_xn)-0.05*maximum(x_coord_xn), maximum(x_coord_xn) * break_ratio)
+    x_lims_xn=adjust_lims(x_lims_xn)
+    x_lims_vs=(maximum(x_coord_vs) * break_ratio, size(sp.pairedData.vsObj.imageData.fullresImage)[1])
+    x_lims_vs=adjust_lims(x_lims_vs)
+    y_lims=(minimum(y_coord_xn)-0.05*maximum(y_coord_xn),1.05*maximum(y_coord_xn))
+    y_lims2=(minimum(y_coord_vs)-0.05*maximum(y_coord_vs),1.05*maximum(y_coord_vs))
+    
+    # visiumHD gene expr processing
+    hd_obj = sp.pairedData.vsObj
+    img, poly, gene_expr, plt_color, c_map = process_hd_featureplot_data(hd_obj, gene; color_keys = color_keys_vs, x_col = x_col,  
+            y_col = y_col, hd_layer = hd_layer, clip = clip,  x_lims = x_lims_vs,  y_lims = y_lims, cell_shape = cell_shape,
+            adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness)
+
+    # xenium gene expr processing
+    img_xn, df_plt, gene_expr_xn, plt_color_xn, c_map_xn = process_paired_featureplot_data(sp, gene; color_keys = color_keys_xn, x_col = x_col,  
+        y_col = y_col, clip = clip,  x_lims = x_lims_xn,  y_lims = y_lims, cell_shape = cell_shape,
+        adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness, img_use = "xn_img")
+    img_xn = flip_bg_color(img_xn)
+    plt_color_xn=[(i, alpha) for i in plt_color_xn]
+    df_plt.gene .= gene_expr_xn
+    if sum(gene_expr) > 0.0
+        df_plt.plt_color = plt_color_xn
+        if order
+            df_plt = sort(df_plt,:gene);
+        end
+    else
+        plt_color_xn = repeat([color_keys_xn[1]], length(gene_expr_xn))
+        df_plt.plt_color = plt_color_xn
+    end
+    df_plt[!, x_col] = df_plt[!, x_col] .- x_lims_xn[1]
+    df_plt[!, y_col] = df_plt[!, y_col] .- y_lims[1]
+    fig = MK.Figure(size=(width, height))
+    ax1 = MK.Axis(fig[1,1]; backgroundcolor = canvas_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+        xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false, xautolimitmargin = (0.05, 0), 
+        xgridvisible = false, ygridvisible = false)      
+    if plot_img
+        MK.image!(ax1, img_xn)
+    end
+    MK.Label(fig[0, 1], "Xenium", fontsize=18, halign=:center, valign=:bottom)
+    if !only_expr
+        all_cells = deepcopy(sp.spmetaData.cell)
+        bg_cells = filter(:cell => !(∈(Set(df_plt.cell))), all_cells)
+        bg_cells = filter([:x, :y] => (x, y) -> x_lims_xn[1] < x < x_lims_xn[2] && y_lims[1] < y < y_lims[2], bg_cells)
+        bg_cells[!, x_col] = bg_cells[!, x_col] .- x_lims_xn[1]
+        bg_cells[!, y_col] = bg_cells[!, y_col] .- y_lims[1]
+        MK.scatter!(ax1, bg_cells[!, x_col], bg_cells[!, y_col]; color = bg_color, strokewidth = 0, markersize = marker_size)
+    end
+    MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.plt_color, strokewidth = 0, markersize = marker_size)
+    if do_legend
+        c_map2 = [(i, alpha) for i in c_map_xn]
+        MK.Colorbar(fig[1,0], colormap = c_map2,  width=15, limits = (0, maximum(gene_expr_xn)), tickalign = 0, flipaxis = false)
+        MK.Label(fig[0, 0], gene, fontsize=16)
+    end
+    MK.colsize!(fig.layout, 1, MK.Aspect(1, aspect_ratio))
+    ax2 = MK.Axis(fig[1,2]; backgroundcolor = canvas_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+        xautolimitmargin = (0, 0.05), 
+        xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false, xgridvisible = false,ygridvisible = false)
+    if plot_img
+        MK.image!(ax2, img)
+    end
+    MK.Label(fig[0, 2], "VisiumHD", fontsize=18, halign=:center, valign=:bottom)
+    if !only_expr
+        anno_df = deepcopy(hd_obj.spmetaData)
+        all_poly = deepcopy(hd_obj.polygonData)
+        all_poly = [m .- [x_lims_vs[1]-1 y_lims[1]-1] for m in all_poly]
+        rename!(anno_df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, :x, :y])
+        norm_count=hd_obj.normCount
+        gene_expr = subset_count(norm_count; genes = [gene])
+        gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
+        anno_df.gene = gene_expr
+        select_fov = DataFrames.filter([:x, :y, :gene] => (x, y, gene) -> x_lims_vs[1] < x < x_lims_vs[2] && y_lims[1] < y < y_lims[2] && gene <= 0.0, anno_df)
+        select_fov[!, x_col] = select_fov[!, x_col] .- x_lims_vs[1]
+        select_fov[!, y_col] = select_fov[!, y_col] .- y_lims[1]
+        if cell_shape == "bin"
+            polygon_num = select_fov.ID
+            bg_poly = all_poly[polygon_num]
+            MK.poly!(ax2, [MK.Point2.(eachrow(p)) for p in bg_poly]; strokecolor=stroke_color, 
+                    color=bg_color, strokewidth=stroke_width,label="")
+        else
+            MK.scatter!(ax2, select_fov[!, x_col], select_fov[!, y_col]; color = bg_color, strokewidth = 0, markersize = marker_size)
+        end
+    end
+    plt_color=[(i, alpha) for i in plt_color]
+    poly.gene .= plt_color
+    if sum(gene_expr) > 0.0
+        poly.plt_color = plt_color
+        if order
+            poly = sort(poly,:gene);
+        end
+    else
+        plt_color = repeat([plt_color[1]], length(gene_expr))
+        poly.plt_color = plt_color
+    end
+    if cell_shape == "bin"
+        MK.poly!(ax2, [MK.Point2.(eachrow(p)) for p in poly]; strokecolor=stroke_color, 
+                color=plt_color, strokewidth=stroke_width,label="")
+    else
+        poly[!, x_col] = poly[!, x_col] .- x_lims_vs[1]
+        poly[!, y_col] = poly[!, y_col] .- y_lims[1]
+        MK.scatter!(ax2, poly[!, x_col], poly[!, y_col]; color = poly.plt_color, strokewidth = 0, markersize = marker_size)
+    end
+    if do_legend
+        c_map2 = [(i, alpha) for i in c_map]
+        MK.Colorbar(fig[1,3], colormap = c_map2,  width=15, limits = (0, maximum(gene_expr)))
+        MK.Label(fig[0, 3], gene, fontsize=16)
+    end
+    MK.colsize!(fig.layout, 2, MK.Aspect(1, aspect_ratio))
+    MK.rowgap!(fig.layout, 0)
+    MK.colgap!(fig.layout, 0)
+    y_lims = [max(y_lims[1], y_lims2[1]), min(y_lims[2], y_lims2[2])]
+    y_lims[1] = y_lims[1] > 0 ? 0 : y_lims[1]
+    MK.ylims!(ax1, y_lims...)
+    MK.ylims!(ax2, y_lims...)
+    MK.current_figure()
 end
