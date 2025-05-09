@@ -63,7 +63,7 @@ function dim_plot(sc_obj::get_object_group("All"); anno::Union{Symbol, String}="
         end
         MK.xlims!(MK.current_axis(), x_lims)
         MK.ylims!(MK.current_axis(), y_lims)
-        MK.current_figure()
+        return fig
 end
 
 function highlight_cells(sc_obj::get_object_group("All"), cl::String; dim_type="umap", anno::Union{String,Symbol}="cluster",
@@ -90,7 +90,7 @@ function highlight_cells(sc_obj::get_object_group("All"), cl::String; dim_type="
     MK.scatter!(dim_data[!,x_col], dim_data[!,y_col]; color=dim_data.newcolor, strokewidth=stroke_width, markersize=marker_size,strokecolor=stroke_color)
     MK.xlims!(MK.current_axis(), x_lims)
     MK.ylims!(MK.current_axis(), y_lims)
-    MK.current_figure()
+    return fig
 end
 
 function feature_plot(sc_obj::get_object_group("All"), genes; dim_type::String = "umap", count_type = "norm",x_lims=nothing, y_lims=nothing, marker_size=4, order=true,
@@ -208,7 +208,7 @@ function feature_plot(sc_obj::get_object_group("All"), genes; dim_type::String =
                 end
             end
         end
-        MK.current_figure()
+        return fig
 end
 
 function dot_plot(sc_obj::get_object_group("All"), genes::Union{Vector, String},

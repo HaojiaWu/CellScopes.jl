@@ -91,7 +91,7 @@ function sp_feature_plot(sp::get_object_group("Spatial2"), gene_list::Union{Stri
     y_col::Union{String, Symbol}="y", cell_col = "cell", x_lims=nothing, y_lims=nothing, marker_size=2, order::Bool=true, scale::Bool = false,titlesize::Int64=24, 
     height::Real = 500, width::Real = 500, combine = true, img_res::String = "low",  adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3, use_imputed=false, imp_type::Union{String, Nothing} = nothing,
     color_keys=["gray94","orange","red3"], gene_colors = nothing, alpha = [1.0,1.0], clip = 0, legend_fontsize = 10, do_legend=false, legend_size = 10, bg_color = "white",
-    custom_img=false, adjust_coord_to_img="auto", return_plot = true)
+    custom_img=false, adjust_coord_to_img="auto")
     if isa(gene_list, String)
         gene_list = [gene_list]
     end
@@ -271,11 +271,8 @@ function sp_feature_plot(sp::get_object_group("Spatial2"), gene_list::Union{Stri
             MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.plt_color, strokewidth = 0, markersize = marker_size)
             MK.Colorbar(fig[n_row,n_col2], label = "", colormap = c_map, width=10, limits = (0, maximum(gene_expr)))
         end
-        if return_plot
-            return fig
-        else
-            return MK.current_figure()
-        end
+        return fig
+
     elseif layer === "transcripts"
             if isa(sp, Union{VisiumObject, SlideseqObject})
                 error("Visium or SlideSeq object doesn't support transcript plot.")
@@ -352,11 +349,8 @@ function sp_feature_plot(sp::get_object_group("Spatial2"), gene_list::Union{Stri
                 if do_legend
                     MK.Legend(fig[1, 2], ax2, framecolor=:white, labelsize=legend_fontsize)
                 end
-                if return_plot
-                    return fig
-                else
-                    return MK.current_figure()
-                end
+                
+                return fig
             else
                 fig = MK.Figure(size = (width * n_cols, height * n_rows))
                 for (i, gene) in enumerate(gene_list)
@@ -415,11 +409,7 @@ function sp_feature_plot(sp::get_object_group("Spatial2"), gene_list::Union{Stri
                         end
                     end
                 end
-                if return_plot
-                    return fig
-                else
-                    return MK.current_figure()
-                end
+                return fig
             end
     else
         error("Layer must be \"cells\" or \"transcripts\"")
@@ -482,7 +472,7 @@ function plot_gene_polygons(sp::get_object_group("Imaging"), gene_list::Union{St
         MK.ylims!(MK.current_axis(), y_lims)
         MK.Colorbar(fig[n_row,n_col2], label = "", colormap = c_map, width=10, limits = (0, maximum(gene_expr)))
     end
-        MK.current_figure()
+        return fig
 end
 
 function plot_cell_polygons(sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject,MerfishObject, STARmapObject, seqFishObject, StereoSeqObject}, anno;
@@ -548,7 +538,7 @@ function plot_cell_polygons(sp::Union{ImagingSpatialObject, CartanaObject,Xenium
         MK.poly!(ax1, [MK.Point2.(eachrow(p)) for p in polygons]; strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width)
         MK.xlims!(ax1, x_lims)
         MK.ylims!(ax1, y_lims)
-    return MK.current_figure()
+    return fig
 end
 
 function plot_transcript_polygons(sp::get_object_group("Imaging"); 
@@ -621,7 +611,7 @@ function plot_transcript_polygons(sp::get_object_group("Imaging");
             strokewidth=0, markersize=marker_size)
     MK.xlims!(MK.current_axis(), x_lims)
     MK.ylims!(MK.current_axis(), y_lims)
-    return MK.current_figure()
+    return fig
 end
 
 function sp_dim_plot(sp::get_object_group("Spatial2"), anno::Union{Symbol, String}; 
@@ -629,7 +619,7 @@ function sp_dim_plot(sp::get_object_group("Spatial2"), anno::Union{Symbol, Strin
     x_lims=nothing, y_lims=nothing,width=900, height=1000,stroke_width=0.5,stroke_color=:transparent,  bg_color=:white,
         marker_size=2, label_size=50, label_color="black", label_offset=(0,0), do_label=false, do_legend=true, alpha::Real = 1,
         legend_size = 10, legend_fontsize = 16, legend_ncol = 1,img_res::String = "low", custom_img=false, adjust_coord_to_img="auto",
-        adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3, return_plot = false
+        adjust_contrast::Real = 1.0, adjust_brightness::Real = 0.3
     )
     coord_limits = spatial_range(sp)
     if isa(sp, VisiumObject)
@@ -781,11 +771,7 @@ function sp_dim_plot(sp::get_object_group("Spatial2"), anno::Union{Symbol, Strin
             MK.text!(i, position = (mean(x_ax) - label_offset[1], mean(y_ax) - label_offset[2]),align = (:center, :center),font = "Noto Sans Regular",fontsize = label_size,color = label_color)
         end
     end
-    if return_plot
-        return fig
-    else
-        return MK.current_figure()
-    end
+    return fig
 end
 
 function sp_highlight_cells(sp::get_object_group("Imaging"), cell_hightlight::String, anno::Union{String,Symbol};
@@ -809,7 +795,7 @@ function sp_highlight_cells(sp::get_object_group("Imaging"), cell_hightlight::St
     MK.scatter!(coord_cells.x, coord_cells.y; color=coord_cells.newcolor, strokewidth=stroke_width, markersize=marker_size,strokecolor=stroke_color)
     MK.xlims!(MK.current_axis(), x_lims)
     MK.ylims!(MK.current_axis(), y_lims)
-    MK.current_figure()
+    return fig
 end
 
 function sp_gene_rank(sp::get_object_group("Imaging"), celltype::String, cluster::String; num_gene::Int64=20)
@@ -984,7 +970,7 @@ function sp_feature_plot_group(sp_list::Union{ Vector{ImagingSpatialObject}, Vec
             end
         end
     end
-    MK.current_figure()
+    return fig
 end
 
 function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y::Int64; 
@@ -1121,7 +1107,7 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
         MK.xlims!(MK.current_axis(), x_lims)
         MK.ylims!(MK.current_axis(), y_lims)
     end
-    MK.current_figure()
+    return fig
 end
 
 function plot_point(sp::get_object_group("Imaging"), pt::Vector{Float64}; 
@@ -1140,7 +1126,7 @@ function plot_point(sp::get_object_group("Imaging"), pt::Vector{Float64};
     MK.text!(label,position = pt2,align = (:center, :bottom),fontsize = text_size,color = text_color)
     MK.xlims!(MK.current_axis(), x_lims)
     MK.ylims!(MK.current_axis(), y_lims)
-    MK.current_figure()
+    return fig
 end
 
 function plot_depth(sp::get_object_group("Spatial"); celltype::Union{String, Symbol} = :celltype,
@@ -1193,7 +1179,7 @@ function plot_depth(sp::get_object_group("Spatial"); celltype::Union{String, Sym
                 MK.translate!(f, 0, 0, -0.05j)
             end
         end
-        MK.current_figure()
+        return fig
 end
 
 function plot_depth_animation(sp::get_object_group("Spatial"), celltypes::Vector{String}, markers::Vector{String}; 
@@ -1293,7 +1279,7 @@ function plot_gene_depth(sp::get_object_group("Spatial"), gene::String;
     x_hist = StatsBase.fit(Histogram, tuple(df_plt.depth, df_plt.gene_expr), nbins=n_bins) 
     MK.contour!(x_hist,levels = 3,fillrange = true, colormap=c_map)
     MK.ylims!(MK.current_axis(), (0.25, 0.75))
-    MK.current_figure()
+    return fig
 end
 
 function PlotInteractive(sp::get_object_group("Spatial"); layer::String = "cells", marker_color::Union{Symbol, String}="black", marker_size=3, plot_mode="markers")
@@ -1347,7 +1333,7 @@ function plot_transcript_dapi(sp::get_object_group("Imaging"), fov::Int64, n_fie
     end
     MK.xlims!(MK.current_axis(), (minimum(plt_x), maximum(plt_x)))
     MK.ylims!(MK.current_axis(), (minimum(plt_y), maximum(plt_y)))
-    MK.current_figure()
+    return fig
 end
 
 function compare_gene_imputation(sp1::Union{ImagingSpatialObject, CartanaObject,XeniumObject, MerfishObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject},sp2::Union{CartanaObject,XeniumObject,MerfishObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}, gene_list::Union{Vector, String},
@@ -1521,7 +1507,7 @@ function overlay_visium_cartana(vs::Union{VisiumObject, SlideseqObject, VisiumHD
     MK.scatter!(ax2, unit_range_scale(visium_df[!, vs_x]), unit_range_scale(visium_df[!, vs_y]); color=(vs_color,0.8),strokewidth=0, markersize=vs_markersize)
     MK.scatter!(ax3, unit_range_scale(cartana_df[!, sp_x]), unit_range_scale(cartana_df[!, sp_y]); color=(sp_color,0.5),strokewidth=0, markersize=sp_markersize)
     MK.scatter!(ax3, unit_range_scale(visium_df[!, vs_x]), unit_range_scale(visium_df[!, vs_y]); color=(vs_color,0.8),strokewidth=0, markersize=vs_markersize)
-    MK.current_figure()
+    return fig
 end
 
 function overlay_visium_cartana_gene(vs::Union{VisiumObject, SlideseqObject, VisiumHDObject}, sp::Union{ImagingSpatialObject, CartanaObject,XeniumObject, MerfishObject, STARmapObject, seqFishObject, StereoSeqObject, CosMxObject}, gene; vs_x="new_x", vs_y="new_y", sp_x="new_x", sp_y="new_y",
@@ -1588,7 +1574,7 @@ function overlay_visium_cartana_gene(vs::Union{VisiumObject, SlideseqObject, Vis
     MK.scatter!(ax2, df1.x, df1.y; color = df1.color1, strokewidth=0, markersize=vs_markersize)
     MK.scatter!(ax3, df2.x, df2.y; color=df2.color4, strokewidth=0, markersize=sp_markersize)
     MK.scatter!(ax3, df1.x, df1.y; color=df1.color2, strokewidth=0, markersize=vs_markersize)
-    MK.current_figure()
+    return fig
 end
 
 function plot_gene_group_spatial(sp_list::Union{Vector{ImagingSpatialObject}, Vector{VisiumHDObject}, Vector{CartanaObject},Vector{XeniumObject}, Vector{MerfishObject}, Vector{SlideseqObject}, Vector{seqFishObject}, Vector{STARmapObject}, Vector{StereoSeqObject}, Vector{CosMxObject}}, n_bin, gene_list; group_names::Union{Vector, String, Nothing}=nothing,

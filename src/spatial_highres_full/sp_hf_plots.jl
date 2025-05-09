@@ -3,7 +3,7 @@ function sp_dim_plot(sp::VisiumHDObject, anno; x_col::String = "x", y_col::Strin
     anno_color::Union{Nothing, Dict} = nothing, adjust_contrast =1.0, adjust_brightness=0.0,marker_size=2,
     pt_bg_color = "gray90", x_lims=nothing, y_lims=nothing,width = 500, height = 500, alpha=1,
     stroke_width=0, stroke_color="black", cell_order::Union{Vector{String}, Nothing}=nothing,
-    legend_fontsize = 30, do_legend=false, legend_size = 30 , bg_color = "white", return_plot=false
+    legend_fontsize = 30, do_legend=false, legend_size = 30 , bg_color = "white"
     )
     if isa(sp.alterImgData, Nothing)
         anno_df = deepcopy(sp.spmetaData)
@@ -127,18 +127,14 @@ function sp_dim_plot(sp::VisiumHDObject, anno; x_col::String = "x", y_col::Strin
         end
     MK.xlims!(MK.current_axis(), x_lims .- x_lims[1] .+ 1)
     MK.ylims!(MK.current_axis(), y_lims .- y_lims[1] .+ 1)
-    if return_plot
-        return fig
-    else
-        return MK.current_figure()
-    end
+    return fig
 end
 
 function sp_feature_plot(sp::VisiumHDObject, gene_list::Union{String, Vector{String}, Tuple{String}};
     color_keys::Union{Vector{String}, Tuple{String}}=["gray94","lemonchiffon","orange","red3"],
     x_lims=nothing, y_lims=nothing,width=900,height=1000,stroke_width=0,stroke_color="black", img_res = "low",
     titlesize::Int64=24, scale::Bool = false, bg_color = "white", x_col::String = "x", y_col::String = "y",
-    adjust_contrast =1.0, adjust_brightness=0.0, alpha::Real=1, clip = 0.0, return_plot=false
+    adjust_contrast =1.0, adjust_brightness=0.0, alpha::Real=1, clip = 0.0
     )
     if isa(gene_list, String)
         gene_list = [gene_list]
@@ -245,9 +241,5 @@ function sp_feature_plot(sp::VisiumHDObject, gene_list::Union{String, Vector{Str
         MK.ylims!(MK.current_axis(), y_lims .- y_lims[1] .+ 1)
         MK.Colorbar(fig[n_row,n_col2], label = "", colormap = c_map2, width=10, limits = (0, maximum(gene_expr)))
     end
-    if return_plot
-        return fig
-    else
-        return MK.current_figure()
-    end
+    return fig
 end
