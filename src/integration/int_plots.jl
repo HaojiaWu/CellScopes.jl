@@ -143,7 +143,7 @@ function sp_dim_plot(sp::PairedObject;
         sp.pairedData.vsObj = set_default_layer(sp.pairedData.vsObj; layer_slot = hd_layer)
         hd_obj = sp.pairedData.vsObj
         img_vs, poly, cell_color, plt_color = process_hd_dimplot_data(hd_obj; anno=vs_anno, anno_color=vs_anno_color, x_col = x_col, y_col = y_col, pt_bg_color=pt_bg_color, 
-            cell_highlight=vs_cell_highlight, x_lims = x_lims, y_lims = y_lims,alpha = alpha, adjust_contrast = adjust_contrast, adjust_brightness = adjust_brightness)
+            cell_highlight=vs_cell_highlight, x_lims = x_lims, y_lims = y_lims,alpha = alpha, adjust_contrast = adjust_contrast, adjust_brightness = adjust_brightness, cell_shape = "bin")
         plt_color=[(i, alpha) for i in plt_color]
         fig = MK.Figure(size=(width, height))
         ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
@@ -391,7 +391,7 @@ function paired_dim_plot(sp::PairedObject;
         sp.pairedData.vsObj = set_default_layer(sp.pairedData.vsObj; layer_slot = hd_layer)
         hd_obj = sp.pairedData.vsObj
         img, poly, cell_color, plt_color = process_hd_dimplot_data(hd_obj; anno=vs_anno, anno_color=vs_anno_color, x_col = x_col, y_col = y_col, pt_bg_color=pt_bg_color, 
-            cell_highlight=vs_cell_highlight, x_lims = x_lims, y_lims = y_lims,alpha = alpha, adjust_contrast = adjust_contrast, adjust_brightness = adjust_brightness)
+            cell_highlight=vs_cell_highlight, x_lims = x_lims, y_lims = y_lims,alpha = alpha, adjust_contrast = adjust_contrast, adjust_brightness = adjust_brightness, cell_shape="bin")
         if img_use == "xn_img"
             img = deepcopy(sp.pairedData.xnObj.imageData)
             if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
@@ -614,7 +614,7 @@ function gemini_dim_plot(sp::PairedObject;
         sp.pairedData.vsObj = set_default_layer(sp.pairedData.vsObj; layer_slot = hd_layer)
         hd_obj = sp.pairedData.vsObj
         img_vs, poly, cell_color, plt_color = process_hd_dimplot_data(hd_obj; anno=vs_anno, anno_color=vs_anno_color, x_col = x_col, y_col = y_col, pt_bg_color=pt_bg_color, 
-            cell_highlight=vs_cell_highlight, x_lims = x_lims_vs, y_lims = y_lims,alpha = alpha, adjust_contrast = adjust_contrast, adjust_brightness = adjust_brightness)
+            cell_highlight=vs_cell_highlight, x_lims = x_lims_vs, y_lims = y_lims,alpha = alpha, adjust_contrast = adjust_contrast, adjust_brightness = adjust_brightness, cell_shape = cell_shape)
         plt_color=[(i, alpha) for i in plt_color]
         fig = MK.Figure(size=(width, height))
         ax1 = MK.Axis(fig[1,1]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 

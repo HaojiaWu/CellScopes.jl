@@ -215,6 +215,7 @@ function process_hd_dimplot_data(hd_obj;
     y_lims = nothing,
     pt_bg_color = "transparent",
     alpha::Real = 0.5,
+    cell_shape = "point",
     adjust_contrast= 1.0,
     adjust_brightness = 0.0
 )
@@ -278,7 +279,11 @@ function process_hd_dimplot_data(hd_obj;
     poly = poly[polygon_num]
     poly = [m .- [x_lims[1]-1 y_lims[1]-1] for m in poly]
     plt_color = select_fov.new_color
-    return img, poly, cell_color, plt_color
+    if cell_shape != "point"
+        return img, poly, cell_color, plt_color
+    else
+        return img, select_fov, cell_color, plt_color
+    end
 end
 
 function process_hd_featureplot_data(hd_obj, gene;
@@ -348,7 +353,7 @@ function process_hd_featureplot_data(hd_obj, gene;
     end
     colors = get(c_map, gene_expr, :extrema)
     plt_color="#" .* hex.(colors)
-    if cell_shape == "bin"
+    if cell_shape != "point"
         return img, poly2, gene_expr, plt_color, c_map
     else
         return img, select_fov, gene_expr, plt_color, c_map
