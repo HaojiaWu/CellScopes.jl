@@ -860,4 +860,7 @@ function gemini_feature_plot(sp::PairedObject, gene::String;
     MK.ylims!(ax1, y_lims...)
     MK.ylims!(ax2, y_lims...)
     MK.current_figure()
+    close(fig)
+    fig = nothing
+    GC.gc()
 end

@@ -290,6 +290,7 @@ function process_hd_featureplot_data(hd_obj, gene;
     x_lims = nothing, 
     y_lims = nothing,
     cell_shape = "bin",
+    scale = false,
     adjust_contrast= 1.0,
     adjust_brightness = 0.0
 )
@@ -364,6 +365,7 @@ function process_paired_featureplot_data(sp::PairedObject, gene::String;
     adjust_contrast= 1.0,
     adjust_brightness = 0.0,
     img_use = "xn_img",
+    scale = false,
     cell_shape = "point"
 )
 
