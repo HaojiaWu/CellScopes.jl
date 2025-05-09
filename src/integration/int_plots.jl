@@ -248,7 +248,7 @@ function sp_dim_plot(sp::PairedObject;
         MK.poly!(ax3, [MK.Point2.(eachrow(p)) for p in poly]; strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width)
         MK.xlims!(MK.current_axis(), x_lims .- x_lims[1] .+ 1)
         MK.ylims!(MK.current_axis(), y_lims .- y_lims[1] .+ 1)
-        return MK.current_figure()
+        return fig
     else
         error("data_use can only be cellseg or individual.")
     end
@@ -447,7 +447,7 @@ function paired_dim_plot(sp::PairedObject;
         MK.rowgap!(fig.layout, 3)
         MK.xlims!(MK.current_axis(), x_lims .- x_lims[1] .+ 1)
         MK.ylims!(MK.current_axis(), y_lims .- y_lims[1] .+ 1)
-        return MK.current_figure()
+        return fig
     else
         error("""The parameter mode can only be "cell" or "bin"!""")
     end
@@ -544,7 +544,7 @@ function paired_feature_plot(sp::PairedObject, gene::String;
     MK.rowgap!(fig.layout, 3)
     MK.xlims!(MK.current_axis(), x_lims .- x_lims[1] .+ 1)
     MK.ylims!(MK.current_axis(), y_lims .- y_lims[1] .+ 1)
-    return MK.current_figure()            
+    return fig            
 end
 
 function gemini_dim_plot(sp::PairedObject; 
@@ -711,12 +711,12 @@ function gemini_dim_plot(sp::PairedObject;
         y_lims[1] = y_lims[1] > 0 ? 0 : y_lims[1]
         MK.ylims!(ax1, y_lims...)
         MK.ylims!(ax3, y_lims...)
-        return MK.current_figure()
+        return fig
 end
 
 function gemini_feature_plot(sp::PairedObject, gene::String;
     color_keys_xn::Union{Vector{String}, Tuple{String}}=["gray85","cyan","blue","blue3"],
-    color_keys_vs::Union{Vector{String}, Tuple{String}}=["gray85","green3","green","darkgreen"],
+    color_keys_vs::Union{Vector{String}, Tuple{String}}=["gray85","green3","darkgreen","#013300"],
     x_col = "x",  
     y_col = "y", 
     hd_layer = "8_um",
@@ -859,6 +859,5 @@ function gemini_feature_plot(sp::PairedObject, gene::String;
     y_lims[1] = y_lims[1] > 0 ? 0 : y_lims[1]
     MK.ylims!(ax1, y_lims...)
     MK.ylims!(ax2, y_lims...)
-    MK.current_figure()
-    GC.gc()
+    return fig
 end
