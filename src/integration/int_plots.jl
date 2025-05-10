@@ -835,7 +835,7 @@ function gemini_feature_plot(sp::PairedObject, gene::String;
         select_fov = DataFrames.filter([:x, :y, :gene] => (x, y, gene) -> x_lims_vs[1] < x < x_lims_vs[2] && y_lims[1] < y < y_lims[2] && gene <= clip, anno_df)
         select_fov[!, x_col] = select_fov[!, x_col] .- x_lims_vs[1]
         select_fov[!, y_col] = select_fov[!, y_col] .- y_lims[1]
-        if cell_shape == "bin"
+        if cell_shape != "point"
             polygon_num = select_fov.ID
             bg_poly = all_poly[polygon_num]
             MK.poly!(ax2, [MK.Point2.(eachrow(p)) for p in bg_poly]; strokecolor=stroke_color, 
@@ -855,7 +855,7 @@ function gemini_feature_plot(sp::PairedObject, gene::String;
         plt_color = repeat([plt_color[1]], length(gene_expr))
         poly.plt_color = plt_color
     end
-    if cell_shape == "bin"
+    if cell_shape != "point"
         MK.poly!(ax2, [MK.Point2.(eachrow(p)) for p in poly]; strokecolor=stroke_color, 
                 color=plt_color, strokewidth=stroke_width,label="")
     else
