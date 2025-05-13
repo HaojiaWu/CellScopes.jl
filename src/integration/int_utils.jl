@@ -255,7 +255,20 @@ function adjust_lims(x)
     return (xmin, xmax)
 end
 
-function flip_bg_color(img::Matrix{RGB{Float64}}; eps=0.5)
-    white = RGB(1.0, 1.0, 1.0)
-    return map(px -> (red(px)^2 + green(px)^2 + blue(px)^2 < eps^2) ? white : px, img)
+function flip_bg_color!(img::Union{Matrix{RGB{N0f8}},Matrix{RGB{Float64}}}; eps=0.5)
+    white = RGB{N0f8}(1.0, 1.0, 1.0)
+    eps2 = eps^2
+    h, w = size(img)
+
+    for j in 1:w
+        for i in 1:h
+            px = img[i, j]
+            r, g, b = red(px), green(px), blue(px)
+            if r*r + g*g + b*b < eps2
+                img[i, j] = white
+            end
+        end
+    end
+
+    return img
 end

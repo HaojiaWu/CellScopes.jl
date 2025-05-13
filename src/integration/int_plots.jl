@@ -605,7 +605,7 @@ function gemini_dim_plot(sp::PairedObject;
             adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness, cell_shape = "point"
         )
 
-        img2 = flip_bg_color(img2)
+        flip_bg_color!(img2)
         if hd_layer == "2_um"
             error("""Your bin size in hd_layer was set to "2_um". Please set it back to "8_um" or "16_um".""")
         end
@@ -779,7 +779,7 @@ function gemini_feature_plot(sp::PairedObject, gene::String;
     img_xn, df_plt, gene_expr_xn, plt_color_xn, c_map_xn = process_paired_featureplot_data(sp, gene; color_keys = color_keys_xn, x_col = x_col,  
         y_col = y_col, clip = clip,  x_lims = x_lims_xn,  y_lims = y_lims, cell_shape = "point",
         adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness, img_use = "xn_img")
-    img_xn = flip_bg_color(img_xn)
+    flip_bg_color!(img_xn)
     plt_color_xn=[(i, alpha) for i in plt_color_xn]
     df_plt.gene .= gene_expr_xn
     if sum(gene_expr) > 0.0
