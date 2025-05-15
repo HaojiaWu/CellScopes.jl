@@ -713,7 +713,7 @@ function rotate_paired_object(sp::PairedObject, degree;
     println("\033[1;34mSmoothing the xenium image...\033[0m") 
     new_img_xn = smoothe_img(new_img_xn)
     println("Xenium image was smoothed!")
-    flip_bg_color2!(new_img_xn)
+    flip_bg_color!(new_img_xn)
     vs_rot_x .-= x_offset
     vs_rot_y .-= y_offset
     vs_rot_df.x .-= x_offset
@@ -729,7 +729,7 @@ function rotate_paired_object(sp::PairedObject, degree;
     println("\033[1;34mSmoothing the visium image...\033[0m") 
     new_img_vs = smoothe_img(new_img_vs)
     println("Visium image was smoothed!")
-    flip_bg_color2!(new_img_vs)
+    flip_bg_color!(new_img_vs)
     println("\033[1;34mFinal images and coordinates trimming...\033[0m") 
     min_h = minimum(xn_rot_df.y) - maximum(xn_rot_df.y) * 0.05
     min_w = minimum(xn_rot_df.x) - maximum(xn_rot_df.x) * 0.05
