@@ -570,6 +570,7 @@ function gemini_dim_plot(sp::PairedObject;
     plot_img = true,
     x_col = "x", 
     y_col = "y", 
+    margin = 0.01,
     hd_layer = "8_um",
     only_selected = true,
     marker_size = 2, 
@@ -593,12 +594,12 @@ function gemini_dim_plot(sp::PairedObject;
         y_coord_xn = deepcopy(sp.spmetaData.cell.y)
         x_coord_vs = deepcopy(sp.pairedData.vsObj.spmetaData.pxl_row_in_fullres)
         y_coord_vs = deepcopy(sp.pairedData.vsObj.spmetaData.pxl_col_in_fullres)
-        x_lims_xn=(minimum(x_coord_xn)-0.05*maximum(x_coord_xn), maximum(x_coord_xn) * break_ratio)
+        x_lims_xn=(minimum(x_coord_xn)-margin*maximum(x_coord_xn), maximum(x_coord_xn) * break_ratio)
         x_lims_xn=adjust_lims(x_lims_xn)
         x_lims_vs=(maximum(x_coord_vs) * break_ratio, size(sp.pairedData.vsObj.imageData.fullresImage)[1])
         x_lims_vs=adjust_lims(x_lims_vs)
-        y_lims=(minimum(y_coord_xn)-0.05*maximum(y_coord_xn),1.05*maximum(y_coord_xn))
-        y_lims2=(minimum(y_coord_vs)-0.05*maximum(y_coord_vs),1.05*maximum(y_coord_vs))
+        y_lims=(minimum(y_coord_xn)-margin*maximum(y_coord_xn),(1.0+margin)*maximum(y_coord_xn))
+        y_lims2=(minimum(y_coord_vs)-margin*maximum(y_coord_vs),(1.0+margin)*maximum(y_coord_vs))
  
         img2, anno_df = process_xn_dimplot_data(sp; anno=xn_anno, anno_color=xn_anno_color, x_col = x_col,  y_col = y_col, 
             cell_highlight=xn_cell_highlight, x_lims = x_lims_xn, y_lims = y_lims, pt_bg_color = pt_bg_color, alpha=alpha,
@@ -748,6 +749,7 @@ function gemini_feature_plot(sp::PairedObject, gene::String;
     alpha::Real = 0.5, 
     stroke_width=0.5,
     cell_shape = "point",
+    margin = 0.01,
     stroke_color=:transparent,
     break_ratio=0.5,
     aspect_ratio=0.7,
@@ -762,12 +764,12 @@ function gemini_feature_plot(sp::PairedObject, gene::String;
     y_coord_xn = deepcopy(sp.spmetaData.cell.y)
     x_coord_vs = deepcopy(sp.pairedData.vsObj.spmetaData.pxl_row_in_fullres)
     y_coord_vs = deepcopy(sp.pairedData.vsObj.spmetaData.pxl_col_in_fullres)
-    x_lims_xn=(minimum(x_coord_xn)-0.05*maximum(x_coord_xn), maximum(x_coord_xn) * break_ratio)
+    x_lims_xn=(minimum(x_coord_xn)-margin*maximum(x_coord_xn), maximum(x_coord_xn) * break_ratio)
     x_lims_xn=adjust_lims(x_lims_xn)
     x_lims_vs=(maximum(x_coord_vs) * break_ratio, size(sp.pairedData.vsObj.imageData.fullresImage)[1])
     x_lims_vs=adjust_lims(x_lims_vs)
-    y_lims=(minimum(y_coord_xn)-0.05*maximum(y_coord_xn),1.05*maximum(y_coord_xn))
-    y_lims2=(minimum(y_coord_vs)-0.05*maximum(y_coord_vs),1.05*maximum(y_coord_vs))
+    y_lims=(minimum(y_coord_xn)-margin*maximum(y_coord_xn),(1.0+margin)*maximum(y_coord_xn))
+    y_lims2=(minimum(y_coord_vs)-margin*maximum(y_coord_vs),(1.0+margin)*maximum(y_coord_vs))
     
     # visiumHD gene expr processing
     hd_obj = sp.pairedData.vsObj

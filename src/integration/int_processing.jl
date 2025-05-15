@@ -649,3 +649,116 @@ function rotate_object(sp::Union{XeniumObject, VisiumHDObject}, degree;
     rot_df.y .-= min_w
     return new_img2, rot_df
 end
+
+function rotate_paired_object(sp::PairedObject, degree; 
+    center=nothing, clockwise = true, x_col = :x, y_col = :y)
+    @info "Graph rotation in progress. This process updates all data within the paired objects, including images, coordinates, counts, and cell boundaries. Please allow some time for completion."
+    xn_img = deepcopy(sp.pairedData.xnObj.imageData)
+    xn_df = deepcopy(sp.pairedData.xnObj.spmetaData.cell)
+    vs_img = deepcopy(sp.pairedData.vsObj.imageData.fullresImage)
+    vs_df = deepcopy(sp.pairedData.vsObj.spmetaData)
+    rename!(vs_df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, :x, :y])
+    vs_df = vs_df[!, [:cell, :x, :y]]
+    if center === nothing
+        center = [mean(xn_df[!, x_col]), mean(xn_df[!, y_col])]
+    end
+    h1, w1 = size(xn_img)
+    xs = repeat(1:h1, outer = w1)
+    ys = repeat(1:w1, inner = h1)
+    colors_xn = vec(xn_img)
+    xn_coord = DataFrame(x = xs, y=ys, color=colors_xn)
+    println("\033[1;34mRotating the xenium image...\033[0m") 
+    xn_rot_coord = rotate_coord(xn_coord, degree, center; clockwise = clockwise)
+    println("Xenium image was rotated!")
+    xn_rot_x = xn_rot_coord[:, 1]
+    xn_rot_y = xn_rot_coord[:, 2]
+    println("\033[1;34mRotating the xenium cell coordinates...\033[0m") 
+    xn_rot_df = rotate_coord(xn_df, degree, center; clockwise = clockwise)
+    xn_rot_df.cell = xn_df.cell
+    println("Xenium coordinates were rotated!")
+    x_offset1 = minimum(xn_rot_x)
+    y_offset1 = minimum(xn_rot_y)
+
+    h1, w1 = size(vs_img)
+    xs = repeat(1:h1, outer = w1)
+    ys = repeat(1:w1, inner = h1)
+    colors_vs = vec(vs_img)
+    vs_coord = DataFrame(x = xs, y=ys, color=colors_vs)
+    println("\033[1;34mRotating the visium image...\033[0m") 
+    vs_rot_coord = rotate_coord(vs_coord, degree, center; clockwise = clockwise)
+    println("Visium image was rotated!")
+    vs_rot_x = vs_rot_coord[:, 1]
+    vs_rot_y = vs_rot_coord[:, 2]
+    println("\033[1;34mRotating the visium cell coordinates...\033[0m") 
+    vs_rot_df = rotate_coord(vs_df, degree, center; clockwise = clockwise)
+    vs_rot_df.cell = vs_df.cell
+    println("Visium coordinates were rotated!")
+    x_offset2 = minimum(vs_rot_x)
+    y_offset2 = minimum(vs_rot_y)
+    x_offset = x_offset1 <= x_offset2 ? x_offset1 : x_offset2
+    y_offset = y_offset1 <= y_offset2 ? y_offset1 : y_offset2
+
+    xn_rot_x .-= x_offset
+    xn_rot_y .-= y_offset
+    xn_rot_df.x .-= x_offset
+    xn_rot_df.y .-= y_offset
+    new_x = Int64.(round.(xn_rot_x)) .+ 1
+    new_y = Int64.(round.(xn_rot_y)) .+ 1
+    max_x = maximum(new_x)
+    max_y = maximum(new_y)
+    new_img_xn = fill(RGB{N0f8}(1.0, 1.0, 1.0), max_x, max_y)
+    for i in 1:length(new_x)
+        new_img_xn[new_x[i], new_y[i]] = colors_xn[i]
+    end
+    println("\033[1;34mSmoothing the xenium image...\033[0m") 
+    new_img_xn = smoothe_img(new_img_xn)
+    println("Xenium image was smoothed!")
+    flip_bg_color2!(new_img_xn)
+    vs_rot_x .-= x_offset
+    vs_rot_y .-= y_offset
+    vs_rot_df.x .-= x_offset
+    vs_rot_df.y .-= y_offset
+    new_x = Int64.(round.(vs_rot_x)) .+ 1
+    new_y = Int64.(round.(vs_rot_y)) .+ 1
+    max_x = maximum(new_x)
+    max_y = maximum(new_y)
+    new_img_vs = fill(RGB{N0f8}(1.0, 1.0, 1.0), max_x, max_y)
+    for i in 1:length(new_x)
+        new_img_vs[new_x[i], new_y[i]] = colors_vs[i]
+    end
+    println("\033[1;34mSmoothing the visium image...\033[0m") 
+    new_img_vs = smoothe_img(new_img_vs)
+    println("Visium image was smoothed!")
+    flip_bg_color2!(new_img_vs)
+    println("\033[1;34mFinal images and coordinates trimming...\033[0m") 
+    min_h = minimum(xn_rot_df.y) - maximum(xn_rot_df.y) * 0.05
+    min_w = minimum(xn_rot_df.x) - maximum(xn_rot_df.x) * 0.05
+    println(names(xn_rot_df))
+    min_h = Int(round(min_h))
+    min_w = Int(round(min_w))
+    ref_img = deepcopy(new_img_xn)
+    new_img_xn = new_img_xn[min_w:(size(ref_img)[1]-min_w), min_h:(size(ref_img)[2]-min_h)];
+    new_img_vs = new_img_vs[min_w:(size(ref_img)[1]-min_w), min_h:(size(ref_img)[2]-min_h)];
+    xn_rot_df = filter([:x, :y] => (x,y) -> min_w < x < (size(ref_img)[1]-min_w) && min_h < y < (size(ref_img)[2]-min_h), xn_rot_df)
+    vs_rot_df = filter([:x, :y] => (x,y) -> min_w < x < (size(ref_img)[1]-min_w) && min_h < y < (size(ref_img)[2]-min_h), vs_rot_df);
+    xn_rot_df.x .-= min_w
+    xn_rot_df.y .-= min_h
+    vs_rot_df.x .-= min_w
+    vs_rot_df.y .-= min_h
+    sp.pairedData.xnObj.imageData = new_img_xn
+    cell_set = Set(xn_rot_df.cell)
+    xn_df = filter(:cell => ∈(cell_set), xn_df)
+    xn_df.x = xn_rot_df.x
+    xn_df.y = xn_rot_df.y
+    sp.pairedData.xnObj.spmetaData.cell = xn_df
+    sp.spmetaData.cell = xn_df
+    sp.pairedData.vsObj.imageData.fullresImage = new_img_vs
+    cell_set = Set(vs_rot_df.cell)
+    vs_df = filter(:cell => ∈(cell_set), vs_df)
+    vs_df.x = vs_rot_df.x
+    vs_df.y = vs_rot_df.y
+    rename!(vs_df, [:cell, :x, :y] .=> [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] )
+    sp.pairedData.vsObj.spmetaData = vs_df
+    @info "All done!"
+    return sp
+end
