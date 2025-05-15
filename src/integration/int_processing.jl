@@ -658,7 +658,7 @@ function rotate_paired_object(sp::PairedObject, degree;
     vs_img = deepcopy(sp.pairedData.vsObj.imageData.fullresImage)
     vs_df = deepcopy(sp.pairedData.vsObj.spmetaData)
     rename!(vs_df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, :x, :y])
-    vs_df = vs_df[!, [:cell, :x, :y]]
+    #vs_df = vs_df[!, [:cell, :x, :y]]
     if center === nothing
         center = [mean(xn_df[!, x_col]), mean(xn_df[!, y_col])]
     end

@@ -644,17 +644,17 @@ function read_visiumHD(hd_dir::String;
     default_bin = "8_um"
 )
     layers = Layers()
-    println("1. loading 2um binned data...")
+    println("\033[1;34m1. loading 2um binned data...\033[0m")
     bin_dir = hd_dir * "/binned_outputs/square_002um"
     layer1 = read_layers(bin_dir; min_gene = min_genes[1], min_cell =  min_cells[1], prefix = prefix, postfix = postfix, bin_size = 2)
     layers.layers["2_um"] = layer1
     println("1. 2um binned data loaded!")
-    println("2. loading 8um binned data...")
+    println("\033[1;34m2. loading 8um binned data...\033[0m")
     bin_dir = hd_dir * "/binned_outputs/square_008um"
     layer2 = read_layers(bin_dir; min_gene = min_genes[2], min_cell =  min_cells[2], prefix = prefix, postfix = postfix, bin_size = 8)
     layers.layers["8_um"] = layer2
     println("2. 8um binned data loaded!")
-    println("3. loading 16um binned data...")
+    println("\033[1;34m3. loading 16um binned data...\033[0m")
     bin_dir = hd_dir * "/binned_outputs/square_016um"
     layer3 = read_layers(bin_dir; min_gene = min_genes[3], min_cell =  min_cells[3], prefix = prefix, postfix = postfix, bin_size = 16)
     layers.layers["16_um"] = layer3
