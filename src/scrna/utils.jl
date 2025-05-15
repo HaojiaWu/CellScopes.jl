@@ -388,8 +388,3 @@ function is_match(all_genes::Vector{String}, patterns::Vector{Regex})
     end
     return false
 end
-
-function clear()
-    empty!(Out)
-    GC.gc()
-end
