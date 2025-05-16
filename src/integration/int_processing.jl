@@ -712,6 +712,14 @@ function rotate_paired_object(sp::PairedObject, degree;
     vs_df.y = vs_rot_df.y
     rename!(vs_df, [:cell, :x, :y] .=> [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] )
     sp.pairedData.vsObj.spmetaData = vs_df
+    if !isdefined(sp, :normCount)
+        println("Normalizing data...")
+        sp = normalize_paired_object(sp)
+    end
+    cell_filtered = filter(:cell => ∈(Set(sp.normCount.cell_name)), sp.spmetaData.cell)
+    sp.spmetaData.cell = cell_filtered
+    sp.pairedData.xnObj.spmetaData.cell = cell_filtered
+    sp.pairedData.vsObj.normCount = subset_count(sp.pairedData.vsObj.normCount; cells=sp.pairedData.vsObj.spmetaData.barcode)
     @info "All done!"
     return sp
 end
