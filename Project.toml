@@ -1,7 +1,7 @@
 name = "CellScopes"
 uuid = "708d50d9-0a30-4b01-8594-5d83c0e43023"
 authors = ["HaojiaWu <haojiawu@wustl.edu>"]
-version = "0.1.0"
+version = "2.0.0"
 
 [deps]
 Arrow = "69666777-d1a9-59fb-9406-91d4454c9d45"

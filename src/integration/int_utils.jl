@@ -279,7 +279,7 @@ function img_to_df(img)
     xs = vec(getindex.(inds, 1))
     ys = vec(getindex.(inds, 2))
     colors = vec(img)
-    return DataFrame(x = xs, y = y_lims), colors
+    return DataFrame(x = xs, y = ys), colors
 end
 
 function df_to_img(x::Vector{<:Real}, y::Vector{<:Real}, colors::Vector{RGB{N0f8}})
