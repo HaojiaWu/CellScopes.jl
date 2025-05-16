@@ -165,7 +165,7 @@ function read_xenium(xenium_dir::String; prefix = nothing, min_gene::Int64 = 0, 
     cell_ids = unique(seg.cell_id)
     poly = Vector{Matrix{Float64}}(undef, length(cell_ids))
     n = length(cell_ids)
-    println("Formatting cell polygons...")
+    println("\033[1;34mFormatting cell polygons...\033[0m")
     p = Progress(n, dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, color=:blue)
     for idx in 1:length(cell_ids)
         cell_data = grouped[idx]
@@ -191,7 +191,7 @@ function read_xenium(xenium_dir::String; prefix = nothing, min_gene::Int64 = 0, 
     end
     raw_count = RawCountObject(counts, cells, genes)
     genes2 = setdiff(genes, gene_rm)
-    println("Filtering cells and genes...")
+    println("\033[1;34mFiltering cells and genes...\033[0m")
     raw_count = subset_count(raw_count; genes=genes2)
     println("Cells and genes filtered!")
     count_molecules.cell = string.(count_molecules.cell)

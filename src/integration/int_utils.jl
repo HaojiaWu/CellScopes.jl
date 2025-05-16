@@ -272,3 +272,24 @@ function flip_bg_color!(img::Union{Matrix{RGB{N0f8}},Matrix{RGB{Float64}}}; eps=
 
     return img
 end
+
+function img_to_df(img)
+    h, w = size(img)
+    inds = CartesianIndices(img)
+    xs = vec(getindex.(inds, 1))
+    ys = vec(getindex.(inds, 2))
+    colors = vec(img)
+    return DataFrame(x = xs, y = y_lims), colors
+end
+
+function df_to_img(x::Vector{<:Real}, y::Vector{<:Real}, colors::Vector{RGB{N0f8}})
+    new_x = Int64.(round.(x)) .+ 1
+    new_y = Int64.(round.(y)) .+ 1
+    max_x = maximum(new_x)
+    max_y = maximum(new_y)
+    img = fill(RGB{N0f8}(1.0, 1.0, 1.0), max_x, max_y)
+    for i in 1:length(new_x)
+        img[new_x[i], new_y[i]] = colors[i]
+    end
+    return img
+end

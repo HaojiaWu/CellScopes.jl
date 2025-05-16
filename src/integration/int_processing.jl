@@ -550,44 +550,32 @@ function process_xn_dimplot_data(sp;
     end
 end
 
-function get_rotation_matrix(degrees::Float64, center::Union{Tuple, Vector}; 
-    clockwise = true)
+function get_affine_matrix(degrees::Union{Float64, Int64}, center::Union{Tuple{Float64, Float64}, Vector{Float64, Float64}}; clockwise = true)
     θ = deg2rad(degrees)
     c, s = cos(θ), sin(θ)
-    x0 = center[1]
-    y0 = center[2]
-    T1 = [1 0 -x0;
-        0 1 -y0;
-        0 0  1]
     if clockwise
-        R = [c  s 0;
-            -s  c 0;
-            0  0 1]
-    else
-        R = [c -s 0;
-            s  c 0;
-            0  0 1]
+        s = -s
     end
-    T2 = [1 0 x0;
-        0 1 y0;
-        0 0 1]
-
-    return T2 * R * T1
+    x0, y0 = center
+    return c, -s, x0 * (1 - c) + y0 * s,
+           s,  c, y0 * (1 - c) - x0 * s
 end
 
 
-function rotate_coord(df::DataFrame, degrees::Union{Float64, Int64}, center::Union{Tuple, Vector}; 
-    x_col::Union{Symbol, String}=:x, y_col::Union{Symbol, String}=:y, clockwise = true)
-    if isa(x_col, String)
-        x_col = Symbol(x_col)
-    end
-    if isa(y_col, String)
-        y_col = Symbol(y_col)
-    end
-    M = get_rotation_matrix(degrees, center; clockwise=clockwise)
-    coords = [df[!, x_col] df[!, y_col] ones(size(df, 1))]'
-    rotated = M * coords
-    return DataFrame(x = vec(rotated[1, :]), y = vec(rotated[2, :]))
+function rotate_coord(df::DataFrame, degrees::Union{Float64, Int64}, center::Union{Tuple{Float64, Float64}, Vector{Float64, Float64}};
+    x_col::Union{Symbol, String} = :x,
+    y_col::Union{Symbol, String} = :y,
+    clockwise = true)
+    x_col = Symbol(x_col)
+    y_col = Symbol(y_col)
+    x = df[!, x_col]
+    y = df[!, y_col]
+    a11, a12, a13, a21, a22, a23 = get_affine_matrix(degrees, center; clockwise=clockwise)
+    x_rot = Vector{Float64}(undef, length(x))
+    y_rot = Vector{Float64}(undef, length(y))
+    @. x_rot = a11 * x + a12 * y + a13
+    @. y_rot = a21 * x + a22 * y + a23
+    return DataFrame(x = x_rot, y = y_rot)
 end
 
 
@@ -609,17 +597,13 @@ function rotate_object(sp::Union{XeniumObject, VisiumHDObject}, degree;
     if center === nothing
         center = [mean(df_plt[!, x_col]), mean(df_plt[!, y_col])]
     end
-    h1, w1 = size(img)
-    xs = repeat(1:h1, outer = w1)
-    ys = repeat(1:w1, inner = h1)
-    colors = vec(img)
-    df33 = DataFrame(x = xs, y=ys, color=colors)
-    @info "Rotating image..."
-    rot_coords = rotate_coord(df33, degree, center; clockwise = clockwise)
+    df_img, colors = img_to_df(img)
+    println("\033[1;34mRotating image...\033[0m") 
+    rot_coords = rotate_coord(df_img, degree, center; clockwise = clockwise)
     println("Image was rotated!")
     rot_x = rot_coords[:, 1]
     rot_y = rot_coords[:, 2]
-    @info "Rotating cell coordinates..."
+    println("\033[1;34mRotating cell coordinates...\033[0m") 
     rot_df = rotate_coord(df_plt, degree, center; clockwise = clockwise)
     println("Coordinates were rotated!")
     x_offset = minimum(rot_x)
@@ -628,21 +612,14 @@ function rotate_object(sp::Union{XeniumObject, VisiumHDObject}, degree;
     rot_y .-= y_offset
     rot_df.x .-= x_offset
     rot_df.y .-= y_offset
-    new_x = Int64.(round.(rot_x)) .+ 1
-    new_y = Int64.(round.(rot_y)) .+ 1
-    max_x = maximum(new_x)
-    max_y = maximum(new_y)
-    new_img = fill(RGB{N0f8}(1.0, 1.0, 1.0), max_x, max_y)
-    for i in 1:length(new_x)
-        new_img[new_x[i], new_y[i]] = colors[i]
-    end
-    @info "Smoothing image..."
+    new_img = df_to_img(rot_x, rot_y, colors)
+    println("\033[1;34mSmoothing image...\033[0m") 
     new_img = smoothe_img(new_img)
     println("Image was smoothed!")
     min_h = Int64(round(minimum(rot_df.y) / 2))
     min_w = Int64(round(minimum(rot_df.x) / 2))
     new_img2 = new_img[(min_h+1):(end - min_h), (min_w+1):(end - min_w)]
-    @info "Removing the outlier pixels..."
+    println("\033[1;34mRemoving the outlier pixels...\033[0m") 
     flip_bg_color!(new_img2)
     println("All done!")
     rot_df.x .-= min_h
@@ -662,11 +639,8 @@ function rotate_paired_object(sp::PairedObject, degree;
     if center === nothing
         center = [mean(xn_df[!, x_col]), mean(xn_df[!, y_col])]
     end
-    h1, w1 = size(xn_img)
-    xs = repeat(1:h1, outer = w1)
-    ys = repeat(1:w1, inner = h1)
-    colors_xn = vec(xn_img)
-    xn_coord = DataFrame(x = xs, y=ys, color=colors_xn)
+
+    xn_coord, colors_xn = img_to_df(xn_img)
     println("\033[1;34mRotating the xenium image...\033[0m") 
     xn_rot_coord = rotate_coord(xn_coord, degree, center; clockwise = clockwise)
     println("Xenium image was rotated!")
@@ -678,12 +652,7 @@ function rotate_paired_object(sp::PairedObject, degree;
     println("Xenium coordinates were rotated!")
     x_offset1 = minimum(xn_rot_x)
     y_offset1 = minimum(xn_rot_y)
-
-    h1, w1 = size(vs_img)
-    xs = repeat(1:h1, outer = w1)
-    ys = repeat(1:w1, inner = h1)
-    colors_vs = vec(vs_img)
-    vs_coord = DataFrame(x = xs, y=ys, color=colors_vs)
+    vs_coord, colors_vs = img_to_df(vs_img)
     println("\033[1;34mRotating the visium image...\033[0m") 
     vs_rot_coord = rotate_coord(vs_coord, degree, center; clockwise = clockwise)
     println("Visium image was rotated!")
@@ -697,19 +666,11 @@ function rotate_paired_object(sp::PairedObject, degree;
     y_offset2 = minimum(vs_rot_y)
     x_offset = x_offset1 <= x_offset2 ? x_offset1 : x_offset2
     y_offset = y_offset1 <= y_offset2 ? y_offset1 : y_offset2
-
     xn_rot_x .-= x_offset
     xn_rot_y .-= y_offset
     xn_rot_df.x .-= x_offset
     xn_rot_df.y .-= y_offset
-    new_x = Int64.(round.(xn_rot_x)) .+ 1
-    new_y = Int64.(round.(xn_rot_y)) .+ 1
-    max_x = maximum(new_x)
-    max_y = maximum(new_y)
-    new_img_xn = fill(RGB{N0f8}(1.0, 1.0, 1.0), max_x, max_y)
-    for i in 1:length(new_x)
-        new_img_xn[new_x[i], new_y[i]] = colors_xn[i]
-    end
+    new_img_xn = df_to_img(xn_rot_x, xn_rot_y, colors_xn)
     println("\033[1;34mSmoothing the xenium image...\033[0m") 
     new_img_xn = smoothe_img(new_img_xn)
     println("Xenium image was smoothed!")
@@ -718,14 +679,7 @@ function rotate_paired_object(sp::PairedObject, degree;
     vs_rot_y .-= y_offset
     vs_rot_df.x .-= x_offset
     vs_rot_df.y .-= y_offset
-    new_x = Int64.(round.(vs_rot_x)) .+ 1
-    new_y = Int64.(round.(vs_rot_y)) .+ 1
-    max_x = maximum(new_x)
-    max_y = maximum(new_y)
-    new_img_vs = fill(RGB{N0f8}(1.0, 1.0, 1.0), max_x, max_y)
-    for i in 1:length(new_x)
-        new_img_vs[new_x[i], new_y[i]] = colors_vs[i]
-    end
+    new_img_vs = df_to_img(vs_rot_x, vs_rot_y, colors_vs)
     println("\033[1;34mSmoothing the visium image...\033[0m") 
     new_img_vs = smoothe_img(new_img_vs)
     println("Visium image was smoothed!")
@@ -733,7 +687,6 @@ function rotate_paired_object(sp::PairedObject, degree;
     println("\033[1;34mFinal images and coordinates trimming...\033[0m") 
     min_h = minimum(xn_rot_df.y) - maximum(xn_rot_df.y) * 0.05
     min_w = minimum(xn_rot_df.x) - maximum(xn_rot_df.x) * 0.05
-    println(names(xn_rot_df))
     min_h = Int(round(min_h))
     min_w = Int(round(min_w))
     ref_img = deepcopy(new_img_xn)
