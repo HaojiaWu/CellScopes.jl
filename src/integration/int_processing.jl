@@ -550,7 +550,7 @@ function process_xn_dimplot_data(sp;
     end
 end
 
-function get_affine_matrix(degrees::Union{Float64, Int64}, center::Union{Tuple{Float64, Float64}, Vector{Float64, Float64}}; clockwise = true)
+function get_affine_matrix(degrees::Union{Float64, Int64}, center::Union{Tuple{Float64, Float64}, Vector{Float64}}; clockwise = true)
     θ = deg2rad(degrees)
     c, s = cos(θ), sin(θ)
     if clockwise
@@ -562,7 +562,7 @@ function get_affine_matrix(degrees::Union{Float64, Int64}, center::Union{Tuple{F
 end
 
 
-function rotate_coord(df::DataFrame, degrees::Union{Float64, Int64}, center::Union{Tuple{Float64, Float64}, Vector{Float64, Float64}};
+function rotate_coord(df::DataFrame, degrees::Union{Float64, Int64}, center::Union{Tuple{Float64, Float64}, Vector{Float64}};
     x_col::Union{Symbol, String} = :x,
     y_col::Union{Symbol, String} = :y,
     clockwise = true)
