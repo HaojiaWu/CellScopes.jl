@@ -561,7 +561,6 @@ function get_affine_matrix(degrees::Union{Float64, Int64}, center::Union{Tuple{F
            s,  c, y0 * (1 - c) - x0 * s
 end
 
-
 function rotate_coord(df::DataFrame, degrees::Union{Float64, Int64}, center::Union{Tuple{Float64, Float64}, Vector{Float64}};
     x_col::Union{Symbol, String} = :x,
     y_col::Union{Symbol, String} = :y,
