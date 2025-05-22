@@ -36,7 +36,8 @@ function dim_plot(sc_obj::get_object_group("All"); anno::Union{Symbol, String}="
             cell_anno=cell_order
         end
         for i in cell_anno
-            anno_df2=filter(anno => ==(i), dim_data)
+            anno_df2 = deepcopy(dim_data)
+            filter!(anno => ==(i), anno_df2)
             x_ax = anno_df2[!, x_col]
             y_ax = anno_df2[!, y_col]
             colors = unique(anno_df2.new_color)
@@ -55,7 +56,8 @@ function dim_plot(sc_obj::get_object_group("All"); anno::Union{Symbol, String}="
         end
         if do_label
             for i in cell_anno
-                anno_df2=filter(anno => ==(i), dim_data)
+                anno_df2 = deepcopy(dim_data)
+                filter!(anno => ==(i), anno_df2)
                 x_ax = anno_df2[!, x_col]
                 y_ax = anno_df2[!, y_col]
                 MK.text!(i, position = (mean(x_ax) - label_offset[1], mean(y_ax) - label_offset[2]),align = (:center, :center),font = "Noto Sans Regular",fontsize = label_size,color = label_color)
@@ -185,7 +187,7 @@ function feature_plot(sc_obj::get_object_group("All"), genes; dim_type::String =
                         @inbounds plt_color = repeat([color_keys[1]], length(gene_expr))
                         df_plt.plt_color = plt_color
                     end
-                    df_plt = filter(split_by => ==(group), df_plt)
+                    filter!(split_by => ==(group), df_plt)
                     if i == 1
                         y_label = gene
                     else

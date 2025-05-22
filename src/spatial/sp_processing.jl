@@ -303,7 +303,7 @@ function read_cosmx_transcript(cosmx_dir::String; fov::Union{Nothing, Int64}=not
     all_transcript[!, :target] = String.(all_transcript[!, :target])
     all_genes = unique(all_transcript[!, :target])
     filtered_strings = filter(s -> !(startswith(s, "FalseCode") || startswith(s, "NegPrb")), all_genes)
-    all_transcript = filter(:target => ∈(Set(filtered_strings)), all_transcript)
+    filter!(:target => ∈(Set(filtered_strings)), all_transcript)
     return all_transcript
 end
 

@@ -140,7 +140,7 @@ function find_variable_genes(ct_mtx::RawCountObject; nFeatures::Int64 = 2000, sp
     vst_data = [mean_val var_val zeros(length(mean_val)) zeros(length(mean_val))]
     vst_data = DataFrame(vst_data, :auto)
     rename!(vst_data, ["mean", "variance", "variance_expected","variance_standardized"])
-    vst_data = filter(:variance => >(0.0), vst_data)
+    filter!(:variance => >(0.0), vst_data)
     fit_data = loess(log10.(vst_data.mean), log10.(vst_data.variance), span=span)
     vst_data.variance_expected = 10 .^ Loess.predict(fit_data, log10.(vst_data.mean))
     mean1 = sparsevec(vst_data.mean)
@@ -249,7 +249,8 @@ function run_clustering_atlas(sc_obj::get_object_group("All"); n_neighbors=30, m
             if size(sc_obj.metaData)[1] == size(sc_obj.spmetaData.polygon)[1]
                 sc_obj.spmetaData.polygon.cluster = df.cluster
             else
-                meta_filtered = filter(:Cell_id => ∈(Set(sc_obj.spmetaData.polygon.mapped_cell)), sc_obj.metaData)
+                meta_filtered = deepcopy(sc_obj.metaData)
+                filter!(:Cell_id => ∈(Set(sc_obj.spmetaData.polygon.mapped_cell)), meta_filtered)
                 from = meta_filtered.Cell_id
                 to = meta_filtered.cluster
                 sc_obj.spmetaData.polygon = map_values(sc_obj.spmetaData.polygon, :mapped_cell, :cluster,from, to)
@@ -294,7 +295,8 @@ function run_clustering_small(sc_obj::get_object_group("All"); n_neighbors=30, m
             if size(sc_obj.metaData)[1] == size(sc_obj.spmetaData.polygon)[1]
                 sc_obj.spmetaData.polygon.cluster = df.cluster
             else
-                meta_filtered = filter(:Cell_id => ∈(Set(sc_obj.spmetaData.polygon.mapped_cell)), sc_obj.metaData)
+                meta_filtered = deepcopy(sc_obj.metaData)
+                filter!(:Cell_id => ∈(Set(sc_obj.spmetaData.polygon.mapped_cell)), meta_filtered)
                 from = meta_filtered.Cell_id
                 to = meta_filtered.cluster
                 sc_obj.spmetaData.polygon = map_values(sc_obj.spmetaData.polygon, :mapped_cell, :cluster,from, to)

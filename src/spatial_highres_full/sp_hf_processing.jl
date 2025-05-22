@@ -37,9 +37,9 @@ function parse_molecule(hd_dir)
     umi_type = Int64.(umi_type)
     transcript = DataFrame(:gene => feature_all, :count => data, :barcode2 => barcode_all, :umi_type => umi_type)
     pos = read_parquet(hd_dir * "/binned_outputs/square_002um/spatial/tissue_positions.parquet")
-    pos = filter(:in_tissue => !=(0), pos)
+    filter!(:in_tissue => !=(0), pos)
     pos[:, :barcode2] = [replace(s, r"-\d+" => "") for s in pos.barcode]
-    transcript = filter(:barcode2 => ∈(Set(pos.barcode2)), transcript)
+    filter!(:barcode2 => ∈(Set(pos.barcode2)), transcript)
     transcript = leftjoin(transcript, pos, on = :barcode2)
     transcript = transcript[!, [:barcode, :gene, :pxl_row_in_fullres, :pxl_col_in_fullres, :count, :umi_type]]
     return transcript

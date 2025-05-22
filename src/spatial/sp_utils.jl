@@ -310,7 +310,7 @@ function compute_kidney_coordinates(sp::get_object_group("Spatial"), center)
     sp.spmetaData.cell=df
     molecules=sp.spmetaData.molecule
     cells2=df.cell
-    molecules=filter(:cell=> ∈(Set(cells2)), molecules)
+    filter!(:cell=> ∈(Set(cells2)), molecules)
     from=df.cell
     to=df.depth
     molecules_df=map_values(molecules, :cell, :depth,from, to)
@@ -467,7 +467,7 @@ function bin_gene_spatial(sp::get_object_group("Imaging"), n_bin::Int64;
     assay_use = "measured", imp_type = "SpaGE", genes = nothing)
     cells=deepcopy(sp.spmetaData.cell)
     if celltype !== nothing
-        cells = filter(:celltype => ==(celltype), cells)
+        filter!(:celltype => ==(celltype), cells)
     end
     all_segs = split_spatial(n_bin)
     n_seg = 1.0/n_bin
@@ -760,8 +760,8 @@ function from_seurat(seurat_file; data_type::String = "scRNA",
                 meta.Cell_id = cells
                 if version == "v5"
                     positions = positions[:, [:x, :y, :barcode, :cluster]]
-                    positions = filter(:x => p -> 0 < p < (size(img)[2] / scale_low), positions)
-                    positions = filter(:y => p -> 0 < p < (size(img)[1] / scale_low), positions)
+                    filter!(:x => p -> 0 < p < (size(img)[2] / scale_low), positions)
+                    filter!(:y => p -> 0 < p < (size(img)[1] / scale_low), positions)
                     rename!(positions, :y => :imagecol, :x => :imagerow )
                     cells_kept = deepcopy(positions.barcode)
                 end

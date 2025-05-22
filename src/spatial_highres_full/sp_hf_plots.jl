@@ -86,8 +86,9 @@ function sp_dim_plot(sp::VisiumHDObject, anno; x_col::String = "x", y_col::Strin
     end
     img = img[x_lims[1]:x_lims[2], y_lims[1]:y_lims[2]]
     img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
-    select_fov = filter([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], anno_df)
-    select_fov = filter(anno => x -> x ∈ (Set(cell_highlight)), select_fov)
+    select_fov = deepcopy(anno_df)
+    filter!([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], select_fov)
+    filter!(anno => x -> x ∈ (Set(cell_highlight)), select_fov)
     if cell_shape == "polygon"
         polygon_num = select_fov.ID
         poly = poly[polygon_num]

@@ -37,7 +37,7 @@ function find_top_features(ct_mtx::NormCountObject; min_cutoff="q5")
     )
     sort!(hvf_info, :count, rev=true)
     perc = parse(Int64, filter(x->'0'<=x<='9', min_cutoff))/100
-    hvf_info = filter(:percentile => >=(perc), hvf_info)
+    filter!(:percentile => >=(perc), hvf_info)
     return hvf_info
 end
 

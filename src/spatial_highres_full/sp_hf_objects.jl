@@ -121,7 +121,7 @@ mutable struct VisiumHDObject <: AbstractSpaFullObj
         count_obj = RawCountObject(count_mat, cells, genes)
         hd_obj.layerData.layers[default_bin].rawCount = count_obj
         if sp_meta !== nothing
-            sp_meta = filter(:barcode => ∈(Set(meta_data.Cell_id)), sp_meta)
+            filter!(:barcode => ∈(Set(meta_data.Cell_id)), sp_meta)
             hd_obj.layerData.layers[default_bin].spmetaData = sp_meta
         end
         image_obj = VisiumImgObject(nothing, nothing, nothing, nothing, nothing, nothing)

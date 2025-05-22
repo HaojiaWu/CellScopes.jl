@@ -87,11 +87,11 @@ function subset_count(ct_obj::T;
 end
 
 function extract_cluster_count(sc_obj::get_object_group("All"), cl; count_type = "norm", anno = Union{String, Symbol}="cluster")
-    df = sc_obj.clustData.clustering
+    cl_data = deepcopy(sc_obj.clustData.clustering)
     if isa(anno, String)
         anno = Symbol(anno)
     end
-    cl_data = filter(anno => ==(cl), df)
+    filter!(anno => ==(cl), cl_data)
     cl_cell = cl_data.cell_id
     if count_type === "raw"
         ct_obj = sc_obj.rawCount
@@ -166,7 +166,7 @@ function update_object(sp_obj::get_object_group("All"))
     sp_obj = update_count(sp_obj, :scaleCount)
     cell_set = Set(cells)
     gene_set = Set(genes)
-    sp_obj.metaData = filter(:Cell_id => ∈(cell_set), sp_obj.metaData)
+    filter!(:Cell_id => ∈(cell_set), sp_obj.metaData)
     if isdefined(sp_obj, :dimReduction)
         println("Updating dimension reduction...")
         if isdefined(sp_obj.dimReduction, :pca)
@@ -185,16 +185,16 @@ function update_object(sp_obj::get_object_group("All"))
             end
         end
         if isdefined(sp_obj,:clusterData)
-            sp_obj.clustData.clustering = filter(:cell_id => ∈(cell_set), sp_obj.clustData.clustering)
+            filter!(:cell_id => ∈(cell_set), sp_obj.clustData.clustering)
             sp_obj.clustData.adj_mat = sp_obj.clustData.adj_mat[check_cell, check_cell]
         end
     end
     if isa(sp_obj, get_object_group("Imaging"))
         println("Updating spatial data...")
-        sp_obj.spmetaData.cell = filter(:cell => ∈(cell_set), sp_obj.spmetaData.cell)
-        sp_obj.spmetaData.molecule = filter(:cell => ∈(cell_set), sp_obj.spmetaData.molecule)
+        filter!(:cell => ∈(cell_set), sp_obj.spmetaData.cell)
+        filter!(:cell => ∈(cell_set), sp_obj.spmetaData.molecule)
         sp_obj.spmetaData.molecule.gene = string.(sp_obj.spmetaData.molecule.gene)
-        sp_obj.spmetaData.molecule = filter(:gene => ∈(gene_set), sp_obj.spmetaData.molecule)
+        filter!(:gene => ∈(gene_set), sp_obj.spmetaData.molecule)
         println("Updating polygons data...")
         prefix = Base.split(sp_obj.spmetaData.cell.cell[1],"_")
         if length(prefix) > 1
@@ -204,7 +204,7 @@ function update_object(sp_obj::get_object_group("All"))
         end
         if isdefined(sp_obj.spmetaData, :polygon)
             if sp_obj.spmetaData.polygon !== nothing
-                sp_obj.spmetaData.polygon = filter(:mapped_cell => ∈(cell_set), sp_obj.spmetaData.polygon)
+                filter!(:mapped_cell => ∈(cell_set), sp_obj.spmetaData.polygon)
             end
         end
         if length(prefix) > 1
@@ -245,7 +245,7 @@ function update_object(sp_obj::get_object_group("All"))
     if isa(sp_obj, VisiumObject)
         println("Updating spatial data...")
         sp_obj.spmetaData.barcode = string.(sp_obj.spmetaData.barcode)
-        sp_obj.spmetaData = filter(:barcode => ∈(cell_set), sp_obj.spmetaData)
+        filter!(:barcode => ∈(cell_set), sp_obj.spmetaData)
     end
     return sp_obj
 end
