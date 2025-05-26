@@ -770,9 +770,14 @@ function gemini_feature_plot(sp::PairedObject, gene::String;
     x_lims_xn=adjust_lims(x_lims_xn)
     x_lims_vs=(maximum(x_coord_xn) * break_ratio, size(sp.pairedData.vsObj.imageData.fullresImage)[1])
     x_lims_vs=adjust_lims(x_lims_vs)
-    y_lims=(minimum(y_coord_xn)-margin*maximum(y_coord_xn),(1.0+margin)*maximum(y_coord_xn))
-    y_lims2=(minimum(y_coord_vs)-margin*maximum(y_coord_vs),(1.0+margin)*maximum(y_coord_vs))
-    
+    y_lims=[minimum(y_coord_xn)-margin*maximum(y_coord_xn),(1.0+margin)*maximum(y_coord_xn)]
+    y_lims2=[minimum(y_coord_vs)-margin*maximum(y_coord_vs),(1.0+margin)*maximum(y_coord_vs)]
+    if y_lims[1] < 0
+        y_lims[1] = 0
+    end
+    if y_lims2[1] < 0
+        y_lims2[1] = 0
+    end
     # visiumHD gene expr processing
     hd_obj = sp.pairedData.vsObj
     img, poly, gene_expr, plt_color, c_map = process_hd_featureplot_data(hd_obj, gene; color_keys = color_keys_vs, x_col = x_col,  
