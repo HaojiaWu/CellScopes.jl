@@ -772,11 +772,11 @@ function gemini_feature_plot(sp::PairedObject, gene::String;
     x_lims_vs=adjust_lims(x_lims_vs)
     y_lims=[minimum(y_coord_xn)-margin*maximum(y_coord_xn),(1.0+margin)*maximum(y_coord_xn)]
     y_lims2=[minimum(y_coord_vs)-margin*maximum(y_coord_vs),(1.0+margin)*maximum(y_coord_vs)]
-    if y_lims[1] < 0
-        y_lims[1] = 0
+    if y_lims[1] < 1
+        y_lims[1] = 1
     end
-    if y_lims2[1] < 0
-        y_lims2[1] = 0
+    if y_lims2[1] < 1
+        y_lims2[1] = 1
     end
     # visiumHD gene expr processing
     hd_obj = sp.pairedData.vsObj
