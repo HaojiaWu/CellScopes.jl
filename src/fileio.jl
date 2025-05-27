@@ -752,3 +752,66 @@ function read_paired_data(xn_dir, vs_dir, xn_img_path, vs_img_path;
     @info("All done!")
     return paired_obj
 end
+
+function read_joint_data(xn_dir, vs_dir, img_path;
+    t_mat::Union{Matrix{Float64}, Nothing} = nothing,
+    kwargs...
+    )
+    @info("Step I. Reading visiumHD data...")
+    hd_obj = read_visiumHD(vs_dir)
+    @info("Step II. Reading Xenium data...")
+    xn_obj = read_xenium(xn_dir)
+    @info("Step III. Aligning both data...")
+    vs_cell = deepcopy(hd_obj.spmetaData)
+    x_lims = [minimum(vs_cell.pxl_row_in_fullres), maximum(vs_cell.pxl_row_in_fullres)]
+    y_lims = [minimum(vs_cell.pxl_col_in_fullres), maximum(vs_cell.pxl_col_in_fullres)]
+    cell_coord = deepcopy(xn_obj.spmetaData.cell)
+    mol_coord = deepcopy(xn_obj.spmetaData.molecule)
+    cell_coord.x ./= 0.2125
+    cell_coord.y./= 0.2125
+    mol_coord.x ./= 0.2125
+    mol_coord.y ./= 0.2125
+    img = FileIO.load(img_path)
+    img = convert(Matrix{RGB{N0f8}}, img)
+    println("\033[1;34mGenerating cell count...\033[0m")
+    cell_counts, molecule_data = generate_hd_segcount(xn_dir, vs_dir; t_mat = t_mat, img_lims=size(img))
+    println("\033[1;34mTransforming coordinates...\033[0m")
+    inv_mat = inv(t_mat)
+    cell_coord = transform_coord(cell_coord, inv_mat; x_old = :x, y_old = :y, x_new=:y, y_new = :x)
+    mol_coord = transform_coord(mol_coord, inv_mat; x_old = :x, y_old = :y, x_new=:y, y_new = :x)
+    poly = reformat_polygons(xn_dir, t_mat)
+    polygon_df = DataFrame(polygon_number = 1:length(poly), mapped_cell = cell_coord.cell, cluster=cell_coord.cluster)
+    cell_coord[!, :x] .-= x_lims[1]
+    cell_coord[!, :y] .-= y_lims[1]
+    mol_coord[!, :x] .-= x_lims[1]
+    mol_coord[!, :y] .-= y_lims[1]
+    poly = [m .- [x_lims[1] y_lims[1]] for m in poly]
+    xn_obj.polygonData = deepcopy(poly)
+    xn_obj.spmetaData.polygon = deepcopy(polygon_df)
+    xn_obj.spmetaData.cell = deepcopy(cell_coord)
+    xn_obj.spmetaData.molecule = deepcopy(mol_coord)
+    println("\033[1;34mTrimming images...\033[0m")
+    img_df, colors = img_to_df(img)
+    img_df.colors = colors
+    img_df = img_df[(img_df[!, :x] .> x_lims[1]) .& (img_df[!, :x] .< x_lims[2]) .&
+                    (img_df[!, :y] .> y_lims[1]) .& (img_df[!, :y] .< y_lims[2]), :]
+    img_new = df_to_img(img_df.x, img_df.y, img_df.colors)
+    img_new = smoothe_img(img_new)
+    xn_obj.imageData = img_new
+    hd_obj.imageData.fullresImage = img_new
+    paired_sp_obj = PairedSpObject(hd_obj, xn_obj, nothing, t_mat)
+    paired_obj = PairedObject(paired_sp_obj, cell_counts; kwargs...)
+    cell_kept = cell_counts.cell_name
+    cell_data = deepcopy(xn_obj.spmetaData.cell)
+    filter!(:cell => ∈(Set(cell_kept)), cell_data)
+    poly_data = deepcopy(xn_obj.spmetaData.polygon)
+    filter!(:mapped_cell => ∈(cell_kept), poly_data)
+    poly = xn_obj.polygonData[poly_data.polygon_number]
+    poly_data = DataFrame(polygon_number = 1:length(poly), mapped_cell = cell_data.cell, cluster=cell_data.cluster)
+    paired_obj.polygonData = poly
+    meta = SpaMetaObj(cell_data, molecule_data, poly_data)
+    paired_obj.spmetaData = meta
+    paired_obj.pairedData.xnObj = subset_object(paired_obj.pairedData.xnObj; cells=cell_kept)
+    @info("All done!")
+    return paired_obj
+end

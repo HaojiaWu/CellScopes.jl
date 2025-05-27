@@ -140,6 +140,12 @@ function sp_feature_plot(sp::VisiumHDObject, gene_list::Union{String, Vector{Str
     if isa(gene_list, String)
         gene_list = [gene_list]
     end
+
+    for gene in gene_list
+        if gene ∉ sp.rawCount.gene_name
+            error("Gene not found: $gene. This gene may not be detected in this dataset.")
+        end
+    end 
     n_rows = Int(ceil(length(gene_list) / 3))
     if length(gene_list) < 4
         n_cols = length(gene_list)

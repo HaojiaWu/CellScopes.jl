@@ -388,3 +388,30 @@ function is_match(all_genes::Vector{String}, patterns::Vector{Regex})
     end
     return false
 end
+
+function fraction_expr_per_cell(expr::SparseMatrixCSC{<:Real}, gene_names::Vector{String})
+    col_sums = vec(sum(expr, dims=1))
+    col_sums[col_sums .== 0] .= 1e-12
+
+    result = copy(expr)
+    for col in 1:expr.n
+        range = expr.colptr[col]:(expr.colptr[col+1]-1)
+        result.nzval[range] ./= col_sums[col]
+    end
+    row_means = vec(sum(result, dims=2)) ./ size(result, 2)
+    ordered_indices = sortperm(row_means; rev=true)
+    ordered_genes = DataFrame(gene_name = gene_names[ordered_indices],
+                              original_index = ordered_indices)
+    return result, ordered_genes
+end
+
+function top_gene_fraction_df(fraction_matrix::SparseMatrixCSC{<:Real}, 
+                              ordered_genes::DataFrame; 
+                              top_n::Int = 15)
+    top_indices = ordered_genes.original_index[1:top_n]
+    top_gene_names = ordered_genes.gene_name[1:top_n]
+    sub_mat = fraction_matrix[top_indices, :]
+    dense_mat = Matrix(sub_mat)'
+    df = DataFrame(dense_mat, Symbol.(top_gene_names))
+    return df
+end

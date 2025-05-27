@@ -481,6 +481,10 @@ function paired_feature_plot(sp::PairedObject, gene::String;
     height = 500, 
     width = 500        
 )
+
+    if gene ∉ sp.rawCount.gene_name
+        error("Gene not found: $gene. This gene may not be detected in this dataset.")
+    end
     if mode == "bin"
         hd_obj = sp.pairedData.vsObj
         img, poly, gene_expr, plt_color, c_map = process_hd_featureplot_data(hd_obj, gene; color_keys = color_keys, x_col = x_col,  
@@ -759,6 +763,9 @@ function gemini_feature_plot(sp::PairedObject, gene::String;
     height = 1000, 
     width = 600        
 )
+    if gene ∉ sp.rawCount.gene_name
+        error("Gene not found: $gene. This gene may not be detected in this dataset.")
+    end
     if break_ratio < 0.05 || break_ratio > 0.95
         error("break_ratio should not be < 0.05 or > 0.95")
     end

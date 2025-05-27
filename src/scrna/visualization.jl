@@ -336,3 +336,38 @@ function violin_plot(sc_obj::get_object_group("All"), genes;
     end
     return plot(p..., layout=l)
 end
+
+function top_expr_gene(df::DataFrame; 
+                                 title::String = "Top Expressed Genes", 
+                                 width::Int = 1800, 
+                                 height::Int = 400)
+    fig = MK.Figure(size = (width, height))
+    gene_names = names(df)
+    values = Float64[]
+    group_ids = Int[]
+    for (i, name) in enumerate(gene_names)
+        append!(values, df[!, name])
+        append!(group_ids, fill(i, nrow(df)))
+    end
+    colormap = Makie.to_colormap(:tab10)
+    ax = MK.Axis(fig[1, 1]; ylabel = "Fraction Expression", xticklabelrotation = π/2,xticklabelsize = 10)
+
+    MK.boxplot!(ax, group_ids, values;
+        color=map(x -> mod1(x, 20), group_ids), colormap,
+        colorrange = (1, length(colormap)),
+    show_outliers = false)
+    ax.xticks = (1:length(gene_names), string.(gene_names))
+    col_means = [mean(df[!, col]) for col in names(df)]
+    ax_lim1 = maximum(col_means) * 2
+    ax_lim2 = minimum(col_means) / 2
+    MK.ylims!(ax, ax_lim2, ax_lim1)
+    fig[0, 1] = MK.Label(fig, title, fontsize = 20)
+    return fig
+end
+
+function top_expr_gene(sp)
+    counts, gene_rank = fraction_expr_per_cell(sp.rawCount.count_mtx, sp.rawCount.gene_name)
+    top_gene = top_gene_fraction_df(counts, gene_rank)
+    fig = top_expr_gene(top_gene; width=600, height = 450)
+    return fig
+end
