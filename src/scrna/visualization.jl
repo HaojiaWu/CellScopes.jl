@@ -349,7 +349,7 @@ function top_expr_gene(df::DataFrame;
         append!(values, df[!, name])
         append!(group_ids, fill(i, nrow(df)))
     end
-    colormap = MK.to_colormap(:tab10)
+    colormap = MK.to_colormap(:tab20)
     ax = MK.Axis(fig[1, 1]; ylabel = "Fraction Expression", xticklabelrotation = π/2,xticklabelsize = 10)
 
     MK.boxplot!(ax, group_ids, values;

@@ -407,7 +407,7 @@ end
 
 function top_gene_fraction_df(fraction_matrix::SparseMatrixCSC{<:Real}, 
                               ordered_genes::DataFrame; 
-                              top_n::Int = 15)
+                              top_n::Int = 18)
     top_indices = ordered_genes.original_index[1:top_n]
     top_gene_names = ordered_genes.gene_name[1:top_n]
     sub_mat = fraction_matrix[top_indices, :]
