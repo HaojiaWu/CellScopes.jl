@@ -768,7 +768,7 @@ function gemini_feature_plot(sp::PairedObject, gene::String;
     y_coord_vs = deepcopy(sp.pairedData.vsObj.spmetaData.pxl_col_in_fullres)
     img_vs_size = size(sp.pairedData.vsObj.imageData.fullresImage)
     img_xn_size = size(sp.pairedData.xnObj.imageData)
-    img_limit = [maximum(img_vs_size[1], img_xn_size[1]), minimium(img_vs_size[2], img_xn_size[2])]
+    img_limit = [maximum([img_vs_size[1], img_xn_size[1]]), minimium([img_vs_size[2], img_xn_size[2]])]
     x_lims_xn = [minimum(x_coord_xn)-margin*maximum(x_coord_xn), maximum(x_coord_xn) * break_ratio]
     if x_lims_xn[1] < 1
         x_lims_xn[1] = 1
