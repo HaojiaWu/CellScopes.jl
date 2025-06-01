@@ -362,7 +362,7 @@ function process_hd_featureplot_data(hd_obj, gene;
     end
 end
 
-function process_paired_featureplot_data(sp::PairedObject, gene::String;
+function process_paired_featureplot_data(sp::Union{PairedObject,XeniumObject}, gene::String;
     color_keys::Union{Vector{String}, Tuple{String}}=["gray94","lemonchiffon","orange","red3"],
     x_col = "x",  
     y_col = "y", 

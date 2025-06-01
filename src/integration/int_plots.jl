@@ -599,12 +599,26 @@ function gemini_dim_plot(sp::PairedObject;
         y_coord_xn = deepcopy(sp.spmetaData.cell.y)
         x_coord_vs = deepcopy(sp.pairedData.vsObj.spmetaData.pxl_row_in_fullres)
         y_coord_vs = deepcopy(sp.pairedData.vsObj.spmetaData.pxl_col_in_fullres)
-        x_lims_xn=(minimum(x_coord_xn)-margin*maximum(x_coord_xn), maximum(x_coord_xn) * break_ratio)
+        img_vs_size = size(sp.pairedData.vsObj.imageData.fullresImage)
+        img_xn_size = size(sp.pairedData.xnObj.imageData)
+        img_limit = [maximum([img_vs_size[1], img_xn_size[1]]), minimum([img_vs_size[2], img_xn_size[2]])]
+        x_lims_xn = [minimum(x_coord_xn)-margin*maximum(x_coord_xn), maximum(x_coord_xn) * break_ratio]
+        if x_lims_xn[1] < 1
+            x_lims_xn[1] = 1
+        end
         x_lims_xn=adjust_lims(x_lims_xn)
-        x_lims_vs=(maximum(x_coord_xn) * break_ratio, size(sp.pairedData.vsObj.imageData.fullresImage)[1])
+        x_lims_vs=[maximum(x_coord_xn) * break_ratio, img_limit[1]-1]
         x_lims_vs=adjust_lims(x_lims_vs)
-        y_lims=(minimum(y_coord_xn)-margin*maximum(y_coord_xn),(1.0+margin)*maximum(y_coord_xn))
-        y_lims2=(minimum(y_coord_vs)-margin*maximum(y_coord_vs),(1.0+margin)*maximum(y_coord_vs))
+        y_lims=[minimum(y_coord_xn)-margin*maximum(y_coord_xn),(1.0+margin)*maximum(y_coord_xn)]
+        if y_lims[1] < 1
+            y_lims[1] = 1
+        end
+        y_lims[2] = y_lims[2] > img_limit[2] ? (img_limit[2] -1) : y_lims[2]
+        y_lims2=[minimum(y_coord_vs)-margin*maximum(y_coord_vs),(1.0+margin)*maximum(y_coord_vs)]
+        if y_lims2[1] < 1
+            y_lims2[1] = 1
+        end
+        y_lims2[2] = y_lims2[2] > img_limit[2] ? (img_limit[2] -1) : y_lims2[2]
  
         img2, anno_df = process_xn_dimplot_data(sp; anno=xn_anno, anno_color=xn_anno_color, x_col = x_col,  y_col = y_col, 
             cell_highlight=xn_cell_highlight, x_lims = x_lims_xn, y_lims = y_lims, pt_bg_color = pt_bg_color, alpha=alpha,
@@ -769,30 +783,14 @@ function gemini_feature_plot(sp::PairedObject, gene::String;
     if break_ratio < 0.05 || break_ratio > 0.95
         error("break_ratio should not be < 0.05 or > 0.95")
     end
-    x_coord_xn = deepcopy(sp.spmetaData.cell.x)
-    y_coord_xn = deepcopy(sp.spmetaData.cell.y)
-    x_coord_vs = deepcopy(sp.pairedData.vsObj.spmetaData.pxl_row_in_fullres)
-    y_coord_vs = deepcopy(sp.pairedData.vsObj.spmetaData.pxl_col_in_fullres)
-    img_vs_size = size(sp.pairedData.vsObj.imageData.fullresImage)
     img_xn_size = size(sp.pairedData.xnObj.imageData)
-    img_limit = [maximum([img_vs_size[1], img_xn_size[1]]), minimum([img_vs_size[2], img_xn_size[2]])]
-    x_lims_xn = [minimum(x_coord_xn)-margin*maximum(x_coord_xn), maximum(x_coord_xn) * break_ratio]
-    if x_lims_xn[1] < 1
-        x_lims_xn[1] = 1
-    end
-    x_lims_xn=adjust_lims(x_lims_xn)
-    x_lims_vs=[maximum(x_coord_xn) * break_ratio, img_limit[1]-1]
-    x_lims_vs=adjust_lims(x_lims_vs)
-    y_lims=[minimum(y_coord_xn)-margin*maximum(y_coord_xn),(1.0+margin)*maximum(y_coord_xn)]
-    if y_lims[1] < 1
-        y_lims[1] = 1
-    end
-    y_lims[2] = y_lims[2] > img_limit[2] ? (img_limit[2] -1) : y_lims[2]
-    y_lims2=[minimum(y_coord_vs)-margin*maximum(y_coord_vs),(1.0+margin)*maximum(y_coord_vs)]
-    if y_lims2[1] < 1
-        y_lims2[1] = 1
-    end
-    y_lims2[2] = y_lims2[2] > img_limit[2] ? (img_limit[2] -1) : y_lims2[2]
+    img_vs_size = size(sp.pairedData.vsObj.imageData.fullresImage)
+    img_limit = [minimum([img_vs_size[1], img_xn_size[1]]), minimum([img_vs_size[2], img_xn_size[2]])]
+    x_lims_xn = [1, img_limit[1] * break_ratio]
+    x_lims_xn = adjust_lims(x_lims_xn)
+    x_lims_vs = [img_limit[1] * break_ratio, img_limit[1]-1]
+    x_lims_vs = adjust_lims(x_lims_vs)
+    y_lims = [1, img_limit[2]-1]
     # visiumHD gene expr processing
     hd_obj = sp.pairedData.vsObj
     img, poly, gene_expr, plt_color, c_map = process_hd_featureplot_data(hd_obj, gene; color_keys = color_keys_vs, x_col = x_col,  
@@ -800,7 +798,8 @@ function gemini_feature_plot(sp::PairedObject, gene::String;
             adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness)
 
     # xenium gene expr processing
-    img_xn, df_plt, gene_expr_xn, plt_color_xn, c_map_xn = process_paired_featureplot_data(sp, gene; color_keys = color_keys_xn, x_col = x_col,  
+    xn_obj = sp.pairedData.xnObj
+    img_xn, df_plt, gene_expr_xn, plt_color_xn, c_map_xn = process_paired_featureplot_data(xn_obj, gene; color_keys = color_keys_xn, x_col = x_col,  
         y_col = y_col, clip = clip,  x_lims = x_lims_xn,  y_lims = y_lims, cell_shape = "point",
         adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness, img_use = "xn_img")
     flip_bg_color!(img_xn)
