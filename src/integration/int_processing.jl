@@ -391,12 +391,16 @@ function process_paired_featureplot_data(sp::Union{PairedObject,XeniumObject}, g
     end
     poly = deepcopy(sp.polygonData)
     c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3]),parse(Colorant, color_keys[4])])
-    if img_use == "xn_img"
-        img = deepcopy(sp.pairedData.xnObj.imageData)
-    elseif img_use == "vs_img"
-        img = deepcopy(sp.pairedData.vsObj.imageData.fullresImage)
+    if isa(sp, XeniumObject)
+        img = sp.imageData
     else
-        error("img_use can only be vs_img or xn_img!")
+        if img_use == "xn_img"
+            img = deepcopy(sp.pairedData.xnObj.imageData)
+        elseif img_use == "vs_img"
+            img = deepcopy(sp.pairedData.vsObj.imageData.fullresImage)
+        else
+            error("img_use can only be vs_img or xn_img!")
+        end
     end
     if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
         img = img[round(Int,x_lims[1]):round(Int, x_lims[2]), round(Int, y_lims[1]):round(Int, y_lims[2])]
