@@ -751,7 +751,7 @@ function gemini_dim_plot(sp::PairedObject;
     return fig
 end
 
-function gemini_feature_plot(sp::PairedObject, gene::String;
+function gemini_feature_plot(sp, gene::String;
     color_keys_xn::Union{Vector{String}, Tuple{String}}=["gray85","cyan","blue","blue3"],
     color_keys_vs::Union{Vector{String}, Tuple{String}}=["gray85","green3","darkgreen","#013300"],
     x_col = "x",  
@@ -835,10 +835,11 @@ function gemini_feature_plot(sp::PairedObject, gene::String;
     MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.plt_color, strokewidth = 0, markersize = marker_size)
     if do_legend
         c_map2 = [(i, alpha) for i in c_map_xn]
-        MK.Colorbar(fig[1,0], colormap = c_map2,  width=15, limits = (0, maximum(gene_expr_xn)), tickalign = 0, flipaxis = false)
+        MK.Colorbar(fig[1,0], colormap = c_map2,  width=10, limits = (0, maximum(gene_expr_xn)), tickalign = 0, flipaxis = false)
         MK.Label(fig[0, 0], gene, fontsize=16)
     end
     MK.colsize!(fig.layout, 1, MK.Aspect(1, aspect_ratio))
+    MK.colsize!(fig.layout, 1, MK.Relative(break_ratio))
     ax2 = MK.Axis(fig[1,2]; backgroundcolor = canvas_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
         xautolimitmargin = (0, 0.05), 
         xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false, xgridvisible = false,ygridvisible = false)
@@ -889,14 +890,15 @@ function gemini_feature_plot(sp::PairedObject, gene::String;
     end
     if do_legend
         c_map2 = [(i, alpha) for i in c_map]
-        MK.Colorbar(fig[1,3], colormap = c_map2,  width=15, limits = (0, maximum(gene_expr)))
+        MK.Colorbar(fig[1,3], colormap = c_map2,  width=10, limits = (0, maximum(gene_expr)))
         MK.Label(fig[0, 3], gene, fontsize=16)
     end
     MK.colsize!(fig.layout, 2, MK.Aspect(1, aspect_ratio))
+    MK.colsize!(fig.layout, 2, MK.Relative(1 - break_ratio))
+    MK.colsize!(fig.layout, 0, MK.Relative(0.02))
+    MK.colsize!(fig.layout, 3, MK.Relative(0.02)) 
     MK.rowgap!(fig.layout, 0)
     MK.colgap!(fig.layout, 0)
-    y_lims = [max(y_lims[1], y_lims2[1]), min(y_lims[2], y_lims2[2])]
-    y_lims[1] = y_lims[1] > 0 ? 0 : y_lims[1]
     MK.ylims!(ax1, y_lims...)
     MK.ylims!(ax2, y_lims...)
     return fig
