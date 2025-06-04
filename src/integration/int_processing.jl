@@ -346,7 +346,7 @@ function process_hd_featureplot_data(hd_obj, gene;
     gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
     anno_df.gene = gene_expr
     select_fov = anno_df
-    filter!([:x, :y, :gene] => (x, y, gene) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2] && gene > clip, anno_df)
+    filter!([:x, :y, :gene] => (x, y, gene) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2] && gene > clip, select_fov)
     polygon_num = select_fov.ID
     poly2 = poly[polygon_num]
     gene_expr = select_fov.gene
