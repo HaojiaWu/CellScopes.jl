@@ -212,6 +212,13 @@ function read_xenium(xenium_dir::String; prefix = nothing, min_gene::Int64 = 0, 
     spObj.spmetaData.molecule = map_values(spObj.spmetaData.molecule, :cell, :cluster, clustering.cell, clustering.Cluster)
     spObj.spmetaData.molecule.cluster = string.(spObj.spmetaData.molecule.cluster)
     polygon_df = DataFrame(polygon_number = 1:length(poly), mapped_cell = count_cells.cell, cluster=count_cells.cluster)
+
+    if min_gene > 0 || min_cell > 0
+        cell_check = check_vec(all_cells, polygon_df[!, :mapped_cell])
+        polygon_df = polygon_df[cell_check, :]
+        poly = poly[cell_check]
+    end
+    
     spObj.spmetaData.polygon = polygon_df
     spObj.polygonData = poly
     reduct_obj = ReductionObject(nothing, nothing, umap_obj)
