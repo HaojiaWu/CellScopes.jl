@@ -853,9 +853,9 @@ function gemini_feature_plot(sp, gene::String;
         all_poly = [m .- [x_lims_vs[1]-1 y_lims[1]-1] for m in all_poly]
         rename!(anno_df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, :x, :y])
         norm_count=hd_obj.normCount
-        gene_expr = subset_count(norm_count; genes = [gene])
-        gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
-        anno_df.gene = gene_expr
+        gene_expr2 = subset_count(norm_count; genes = [gene])
+        gene_expr2 = (vec ∘ collect)(gene_expr2.count_mtx)
+        anno_df.gene = gene_expr2
         select_fov = anno_df
         filter!([:x, :y, :gene] => (x, y, gene) -> x_lims_vs[1] < x < x_lims_vs[2] && y_lims[1] < y < y_lims[2] && gene <= clip, select_fov)
         select_fov[!, x_col] = select_fov[!, x_col] .- x_lims_vs[1]
@@ -870,7 +870,7 @@ function gemini_feature_plot(sp, gene::String;
         end
     end
     plt_color=[(i, alpha) for i in plt_color]
-    poly.gene .= plt_color
+    poly.gene = gene_expr
     if sum(gene_expr) > 0.0
         poly.plt_color = plt_color
         if order
