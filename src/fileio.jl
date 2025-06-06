@@ -137,9 +137,7 @@ function read_xenium(xenium_dir::String; prefix = nothing, min_gene::Int64 = 0, 
     cell_file = xenium_dir * "/cell_feature_matrix/barcodes.tsv.gz"
     count_file = xenium_dir * "/cell_feature_matrix/matrix.mtx.gz"
     cell_meta = xenium_dir * "/cells.csv.gz"
-    #transcript_meta = xenium_dir * "/transcripts.csv.gz"
     transcript_meta = xenium_dir * "/transcripts.parquet"
-    #seg_file = xenium_dir * "/cell_boundaries.csv.gz"
     seg_file = xenium_dir * "/cell_boundaries.parquet"
     cluster_file = xenium_dir * "/analysis/clustering/gene_expression_graphclust/clusters.csv"
     umap_file = xenium_dir * "analysis/umap/gene_expression_2_components/projection.csv"
@@ -148,11 +146,9 @@ function read_xenium(xenium_dir::String; prefix = nothing, min_gene::Int64 = 0, 
     cells = DataFrame(CSVFiles.load(CSVFiles.File(format"TSV", cell_file); header_exists=false))
     clustering =  DataFrame(CSV.File(cluster_file))
     cell_ids_filter = clustering.Barcode
-    #seg = DataFrame(CSVFiles.load(CSVFiles.File(format"CSV", seg_file); header_exists=true))
     seg = read_parquet(seg_file)
     cell_ids = unique(seg.cell_id)
     cell_kept = check_vec(cell_ids_filter, cell_ids)
-    #count_molecules =  DataFrame(CSV.File(transcript_meta))
     count_molecules = read_parquet(transcript_meta)
     count_cells =  DataFrame(CSV.File(cell_meta))
     counts = MatrixMarket.mmread(gunzip(count_file))
@@ -199,6 +195,7 @@ function read_xenium(xenium_dir::String; prefix = nothing, min_gene::Int64 = 0, 
     count_cells.cell = string.(count_cells.cell)
     filter!(:cell => ∈(Set(string.(clustering.Barcode))), count_cells)
     count_cells.cluster = clustering.Cluster
+    sp_data = deepcopy(count_cells)
     spObj = XeniumObject(count_molecules, count_cells, raw_count;
             prefix = prefix, min_gene = min_gene, min_cell = min_gene)
     clustering.cell = string.(clustering.Barcode)
@@ -211,14 +208,13 @@ function read_xenium(xenium_dir::String; prefix = nothing, min_gene::Int64 = 0, 
     spObj.metaData.cluster = string.(clustering.Cluster)
     spObj.spmetaData.molecule = map_values(spObj.spmetaData.molecule, :cell, :cluster, clustering.cell, clustering.Cluster)
     spObj.spmetaData.molecule.cluster = string.(spObj.spmetaData.molecule.cluster)
-    polygon_df = DataFrame(polygon_number = 1:length(poly), mapped_cell = count_cells.cell, cluster=count_cells.cluster)
-
+    polygon_df = DataFrame(polygon_number = 1:length(poly), mapped_cell = sp_data.cell, cluster=sp_data.cluster)
     if min_gene > 0 || min_cell > 0
         cell_check = check_vec(all_cells, polygon_df[!, :mapped_cell])
         polygon_df = polygon_df[cell_check, :]
         poly = poly[cell_check]
     end
-    
+    polygon_df.polygon_number = 1:length(poly)
     spObj.spmetaData.polygon = polygon_df
     spObj.polygonData = poly
     reduct_obj = ReductionObject(nothing, nothing, umap_obj)
