@@ -286,7 +286,7 @@ mutable struct VisiumObject <: AbstractSequencingObj
         count_obj = RawCountObject(count_mat, cells, genes)
         visium_obj = new(count_obj)
         if sp_meta !== nothing
-            filter!(:cell => ∈(Set(meta_data.Cell_id)), sp_meta)
+            sp_meta=filter(:cell => ∈(Set(meta_data.Cell_id)), sp_meta)
             visium_obj.spmetaData = sp_meta
         end
         visium_obj.metaData = meta_data
@@ -408,7 +408,7 @@ mutable struct SlideseqObject <: AbstractSequencingObj
         count_obj = RawCountObject(count_mat, cells, genes)
         slideseq_obj = new(count_obj)
         if sp_meta !== nothing
-            filter!(:cell => ∈(Set(meta_data.Cell_id)), sp_meta)
+            sp_meta=filter(:cell => ∈(Set(meta_data.Cell_id)), sp_meta)
             slideseq_obj.spmetaData = sp_meta
         end
         slideseq_obj.metaData = meta_data

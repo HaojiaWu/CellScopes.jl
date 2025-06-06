@@ -655,8 +655,8 @@ function gemini_dim_plot(sp::PairedObject;
         end
         if !only_selected
             bg_cells = deepcopy(sp.spmetaData.cell)
-            filter!(:cell => !(∈(Set(anno_df.cell))), bg_cells)
-            filter!([:x, :y] => (x, y) -> x_lims_xn[1] < x < x_lims_xn[2] && y_lims[1] < y < y_lims[2], bg_cells)
+            bg_cells = filter(:cell => !(∈(Set(anno_df.cell))), bg_cells)
+            bg_cells = filter([:x, :y] => (x, y) -> x_lims_xn[1] < x < x_lims_xn[2] && y_lims[1] < y < y_lims[2], bg_cells)
             bg_cells[!, x_col] = bg_cells[!, x_col] .- x_lims_xn[1]
             bg_cells[!, y_col] = bg_cells[!, y_col] .- y_lims[1]
             MK.scatter!(ax1, bg_cells[!, x_col], bg_cells[!, y_col]; color = bg_color, strokewidth = 0, markersize = marker_size)
@@ -724,8 +724,8 @@ function gemini_dim_plot(sp::PairedObject;
         all_poly = [m .- [x_lims_vs[1]-1 y_lims[1]-1] for m in all_poly]
         rename!(anno_df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, :x, :y])
         select_fov = deepcopy(anno_df)
-        filter!(vs_anno => !(∈(Set(vs_cell_highlight))), select_fov)
-        filter!([:x, :y] => (x, y) -> x_lims_vs[1] < x < x_lims_vs[2] && y_lims[1] < y < y_lims[2], select_fov)
+        select_fov = filter(vs_anno => !(∈(Set(vs_cell_highlight))), select_fov)
+        select_fov = filter([:x, :y] => (x, y) -> x_lims_vs[1] < x < x_lims_vs[2] && y_lims[1] < y < y_lims[2], select_fov)
         select_fov[!, x_col] = select_fov[!, x_col] .- x_lims_vs[1]
         select_fov[!, y_col] = select_fov[!, y_col] .- y_lims[1]
         if cell_shape != "point"
@@ -826,8 +826,8 @@ function gemini_feature_plot(sp, gene::String;
     MK.Label(fig[0, 1], "Xenium", fontsize=18, halign=:center, valign=:bottom)
     if !only_expr
         bg_cells = deepcopy(sp.spmetaData.cell)
-        filter!(:cell => !(∈(Set(df_plt.cell))), bg_cells)
-        filter!([:x, :y] => (x, y) -> x_lims_xn[1] < x < x_lims_xn[2] && y_lims[1] < y < y_lims[2], bg_cells)
+        bg_cells = filter(:cell => !(∈(Set(df_plt.cell))), bg_cells)
+        bg_cells= filter([:x, :y] => (x, y) -> x_lims_xn[1] < x < x_lims_xn[2] && y_lims[1] < y < y_lims[2], bg_cells)
         bg_cells[!, x_col] = bg_cells[!, x_col] .- x_lims_xn[1]
         bg_cells[!, y_col] = bg_cells[!, y_col] .- y_lims[1]
         MK.scatter!(ax1, bg_cells[!, x_col], bg_cells[!, y_col]; color = bg_color, strokewidth = 0, markersize = marker_size)
@@ -857,7 +857,7 @@ function gemini_feature_plot(sp, gene::String;
         gene_expr2 = (vec ∘ collect)(gene_expr2.count_mtx)
         anno_df.gene = gene_expr2
         select_fov = anno_df
-        filter!([:x, :y, :gene] => (x, y, gene) -> x_lims_vs[1] < x < x_lims_vs[2] && y_lims[1] < y < y_lims[2] && gene <= clip, select_fov)
+        select_fov = filter([:x, :y, :gene] => (x, y, gene) -> x_lims_vs[1] < x < x_lims_vs[2] && y_lims[1] < y < y_lims[2] && gene <= clip, select_fov)
         select_fov[!, x_col] = select_fov[!, x_col] .- x_lims_vs[1]
         select_fov[!, y_col] = select_fov[!, y_col] .- y_lims[1]
         if cell_shape != "point"

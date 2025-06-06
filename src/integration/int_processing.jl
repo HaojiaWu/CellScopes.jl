@@ -71,14 +71,14 @@ end
 function generate_hd_segcount(xn_dir, vs_dir; t_mat = nothing, img_lims=nothing)
     cell_seg = read_parquet(xn_dir * "cell_boundaries.parquet")
     umap = CSV.read(xn_dir * "analysis/umap/gene_expression_2_components/projection.csv", DataFrame)
-    filter!(:cell_id=> ∈(Set(umap.Barcode)), cell_seg)
+    cell_seg = filter(:cell_id=> ∈(Set(umap.Barcode)), cell_seg)
     cell_seg.x = cell_seg.vertex_x ./ 0.2125
     cell_seg.y = cell_seg.vertex_y ./ 0.2125
     gdf1 = DataFrames.combine(groupby(cell_seg, :cell_id)) do df
         DataFrame(geometry = points_to_polygon(df))
     end
     vs_spot = read_parquet(vs_dir * "binned_outputs/square_002um/spatial/tissue_positions.parquet")
-    filter!(:in_tissue => !=(0), vs_spot)
+    vs_spot = filter(:in_tissue => !=(0), vs_spot)
     if isa(img_lims, Nothing)
         img_lims = [maximum(vs_spot.pxl_row_in_fullres), maximum(vs_spot.pxl_col_in_fullres)]
     end
@@ -99,7 +99,7 @@ function generate_hd_segcount(xn_dir, vs_dir; t_mat = nothing, img_lims=nothing)
             by_pred(:geometry, GO.within, :geometry)
         )
     molecule = parse_molecule(vs_dir)
-    filter!(:barcode => ∈(Set(joined_df.barcode)),  molecule)
+    molecule = filter(:barcode => ∈(Set(joined_df.barcode)),  molecule)
     molecule = DataFrames.leftjoin(molecule, joined_df, on = :barcode)
     vs_mtx, gene_names, cell_names = pivot_count(molecule)
     cell_count = RawCountObject(vs_mtx, cell_names, gene_names)
@@ -109,7 +109,7 @@ end
 function reformat_polygons(xn_dir, t_mat)
     cell_seg = read_parquet(xn_dir * "cell_boundaries.parquet")
     umap = CSV.read(xn_dir * "analysis/umap/gene_expression_2_components/projection.csv", DataFrame)
-    filter!(:cell_id=> ∈(Set(umap.Barcode)), cell_seg)
+    cell_seg = filter(:cell_id=> ∈(Set(umap.Barcode)), cell_seg)
     cell_seg.vertex_x = cell_seg.vertex_x ./ 0.2125
     cell_seg.vertex_y = cell_seg.vertex_y ./ 0.2125
     inv_vs_mat = inv(t_mat)
@@ -274,8 +274,8 @@ function process_hd_dimplot_data(hd_obj;
     img = img[x_lims[1]:x_lims[2], y_lims[1]:y_lims[2]]
     img = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
     select_fov = anno_df
-    filter!([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], select_fov)
-    filter!(anno => ∈(Set(cell_highlight)), select_fov)
+    select_fov = filter([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], select_fov)
+    select_fov = filter(anno => ∈(Set(cell_highlight)), select_fov)
     polygon_num = select_fov.ID
     poly = poly[polygon_num]
     poly = [m .- [x_lims[1]-1 y_lims[1]-1] for m in poly]
@@ -346,7 +346,7 @@ function process_hd_featureplot_data(hd_obj, gene;
     gene_expr = (vec ∘ collect)(gene_expr.count_mtx)
     anno_df.gene = gene_expr
     select_fov = anno_df
-    filter!([:x, :y, :gene] => (x, y, gene) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2] && gene > clip, select_fov)
+    select_fov = filter([:x, :y, :gene] => (x, y, gene) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2] && gene > clip, select_fov)
     polygon_num = select_fov.ID
     poly2 = poly[polygon_num]
     gene_expr = select_fov.gene
@@ -413,10 +413,10 @@ function process_paired_featureplot_data(sp::Union{PairedObject,XeniumObject}, g
     anno_df = reorder(anno_df, :cell, norm_count.cell_name)
     anno_df.gene = gene_expr
     select_fov = anno_df
-    filter!([:x, :y, :gene] => (x, y, gene) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2] && gene > clip, select_fov)
+    select_fov = filter([:x, :y, :gene] => (x, y, gene) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2] && gene > clip, select_fov)
     poly_df = deepcopy(sp.spmetaData.polygon)
     cell_use = String.(select_fov.cell)
-    filter!(:mapped_cell => ∈(Set(cell_use)), poly_df)
+    poly_df = filter(:mapped_cell => ∈(Set(cell_use)), poly_df)
     polygon_num = poly_df.polygon_number
     poly2 = poly[polygon_num]
     gene_expr = select_fov.gene
@@ -480,8 +480,8 @@ function process_xn_dimplot_data(sp;
         end
     
         anno_df=DataFrames.transform(anno_df, anno => ByRow(x -> anno_color[x]) => :new_color)
-        filter!(anno => ∈(Set(cell_highlight)), anno_df)
-        filter!([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], anno_df)
+        anno_df = filter(anno => ∈(Set(cell_highlight)), anno_df)
+        anno_df = filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], anno_df)
         anno_df[!, x_col] = anno_df[!, x_col] .- x_lims[1]
         anno_df[!, y_col] = anno_df[!, y_col] .- y_lims[1]
         anno_df.new_color = [(i, alpha) for i in anno_df.new_color]
@@ -536,10 +536,10 @@ function process_xn_dimplot_data(sp;
         anno_df.new_color = [(i, alpha) for i in anno_df.new_color]
         plt_color = anno_df.new_color
         select_fov = deepcopy(sp.spmetaData.cell)
-        filter!([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], select_fov)
+        select_fov = filter([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], select_fov)
         subset_poly = deepcopy(sp.spmetaData.polygon)
-        filter!(:mapped_cell => ∈(Set(select_fov.cell)), sp.spmetaData.polygon)
-        filter!(anno => ∈(Set(cell_highlight)), subset_poly)
+        sp.spmetaData.polygon = filter(:mapped_cell => ∈(Set(select_fov.cell)), sp.spmetaData.polygon)
+        subset_poly = filter(anno => ∈(Set(cell_highlight)), subset_poly)
         polygon_num = subset_poly.polygon_number
         polygons = polygons[polygon_num]
         plt_color1 = plt_color[polygon_num]
@@ -700,22 +700,22 @@ function rotate_paired_object(sp::PairedObject, degree;
     ref_img = deepcopy(new_img_xn)
     new_img_xn = new_img_xn[min_w:(size(ref_img)[1]-min_w), min_h:(size(ref_img)[2]-min_h)];
     new_img_vs = new_img_vs[min_w:(size(ref_img)[1]-min_w), min_h:(size(ref_img)[2]-min_h)];
-    filter!([:x, :y] => (x,y) -> min_w < x < (size(ref_img)[1]-min_w) && min_h < y < (size(ref_img)[2]-min_h), xn_rot_df)
-    filter!([:x, :y] => (x,y) -> min_w < x < (size(ref_img)[1]-min_w) && min_h < y < (size(ref_img)[2]-min_h), vs_rot_df)
+    xn_rot_df = filter([:x, :y] => (x,y) -> min_w < x < (size(ref_img)[1]-min_w) && min_h < y < (size(ref_img)[2]-min_h), xn_rot_df)
+    vs_rot_df = filter([:x, :y] => (x,y) -> min_w < x < (size(ref_img)[1]-min_w) && min_h < y < (size(ref_img)[2]-min_h), vs_rot_df)
     xn_rot_df.x .-= min_w
     xn_rot_df.y .-= min_h
     vs_rot_df.x .-= min_w
     vs_rot_df.y .-= min_h
     sp.pairedData.xnObj.imageData = new_img_xn
     cell_set = Set(xn_rot_df.cell)
-    filter!(:cell => ∈(cell_set), xn_df)
+    xn_df = filter(:cell => ∈(cell_set), xn_df)
     xn_df.x = xn_rot_df.x
     xn_df.y = xn_rot_df.y
     sp.pairedData.xnObj.spmetaData.cell = xn_df
     sp.spmetaData.cell = xn_df
     sp.pairedData.vsObj.imageData.fullresImage = new_img_vs
     cell_set = Set(vs_rot_df.cell)
-    filter!(:cell => ∈(cell_set), vs_df)
+    vs_df = filter(:cell => ∈(cell_set), vs_df)
     vs_df.x = vs_rot_df.x
     vs_df.y = vs_rot_df.y
     rename!(vs_df, [:cell, :x, :y] .=> [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] )
@@ -725,7 +725,7 @@ function rotate_paired_object(sp::PairedObject, degree;
         sp = normalize_paired_object(sp)
     end
     cell_filtered = deepcopy(sp.spmetaData.cell)
-    filter!(:cell => ∈(Set(sp.normCount.cell_name)), cell_filtered)
+    cell_filtered = filter(:cell => ∈(Set(sp.normCount.cell_name)), cell_filtered)
     sp.spmetaData.cell = cell_filtered
     sp.pairedData.xnObj.spmetaData.cell = cell_filtered
     sp.pairedData.vsObj.normCount = subset_count(sp.pairedData.vsObj.normCount; cells=sp.pairedData.vsObj.spmetaData.barcode)

@@ -82,7 +82,7 @@ function gene_activity_plot(atac_obj::scATACObject, genes; dim_type::String = "u
                         @inbounds plt_color = repeat([color_keys[1]], length(gene_expr))
                         df_plt.plt_color = plt_color
                     end
-                    filter!(split_by => ==(group), df_plt)
+                    df_plt = filter(split_by => ==(group), df_plt)
                     if i == 1
                         y_label = gene
                     else
@@ -128,7 +128,7 @@ function coverage_plot(atac_obj::scATACObject, gene::String;
         :position => [gene_select.start; gene_select.stop] .- start,
         :cell => [gene_select.cell; gene_select.cell]
     )
-    filter!(:position => x -> 0 < x <= (stop - start), cut_df)
+    cut_df = filter(:position => x -> 0 < x <= (stop - start), cut_df)
     cell_vector = collect(1:length(meta.Cell_id))
     df2 = DataFrame(:cell => meta.Cell_id, :cell_id => cell_vector)
     df3 = filter(:cell => ∈(Set(cut_df.cell)), df2)

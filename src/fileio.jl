@@ -153,10 +153,10 @@ function read_xenium(xenium_dir::String; prefix = nothing, min_gene::Int64 = 0, 
     count_cells =  DataFrame(CSV.File(cell_meta))
     counts = MatrixMarket.mmread(gunzip(count_file))
     counts = counts[:, cell_kept]
-    filter!(:cell_id => ∈(Set(clustering.Barcode)), seg)
-    filter!(:Column1 => ∈(Set(clustering.Barcode)), cells)
-    filter!(:cell_id => ∈(Set(clustering.Barcode)), count_molecules)
-    filter!(:cell_id => ∈(Set(clustering.Barcode)), count_cells)
+    seg = filter(:cell_id => ∈(Set(clustering.Barcode)), seg)
+    cells = filter(:Column1 => ∈(Set(clustering.Barcode)), cells)
+    count_molecules = filter(:cell_id => ∈(Set(clustering.Barcode)), count_molecules)
+    count_cells = filter(:cell_id => ∈(Set(clustering.Barcode)), count_cells)
     xenium_umap.Barcode = string.(xenium_umap.Barcode)
     xenium_umap = Matrix(xenium_umap[!, 2:end])
     umap_obj = UMAPObject(xenium_umap, "UMAP", 2, nothing, nothing, nothing, nothing, nothing)
@@ -178,9 +178,9 @@ function read_xenium(xenium_dir::String; prefix = nothing, min_gene::Int64 = 0, 
     raw_count = subset_count(raw_count; genes=genes2)
     println("Cells and genes filtered!")
     count_molecules.cell = string.(count_molecules.cell)
-    filter!(:gene => ∈(Set(genes2)), count_molecules)
+    count_molecules = filter(:gene => ∈(Set(genes2)), count_molecules)
     count_cells.cell = string.(count_cells.cell)
-    filter!(:cell => ∈(Set(string.(clustering.Barcode))), count_cells)
+    count_cells = filter(:cell => ∈(Set(string.(clustering.Barcode))), count_cells)
     count_cells.cluster = clustering.Cluster
     spObj = XeniumObject(count_molecules, count_cells, raw_count;
             prefix = prefix, min_gene = min_gene, min_cell = min_gene)
@@ -190,13 +190,13 @@ function read_xenium(xenium_dir::String; prefix = nothing, min_gene::Int64 = 0, 
         seg.cell_id = prefix .*  "_" .* string.(seg.cell_id)
     end
     all_cells = spObj.rawCount.cell_name
-    filter!(:cell=> ∈(Set(all_cells)), clustering)
+    clustering = filter(:cell=> ∈(Set(all_cells)), clustering)
     spObj.spmetaData.cell.cluster = string.(clustering.Cluster)
     spObj.metaData.cluster = string.(clustering.Cluster)
     spObj.spmetaData.molecule = map_values(spObj.spmetaData.molecule, :cell, :cluster, clustering.cell, clustering.Cluster)
     spObj.spmetaData.molecule.cluster = string.(spObj.spmetaData.molecule.cluster)
 
-    filter!(:cell_id=> ∈(Set(all_cells)), seg)
+    seg = filter(:cell_id=> ∈(Set(all_cells)), seg)
     grouped = groupby(seg, :cell_id)
     cell_ids = unique(seg.cell_id)
     poly = Vector{Matrix{Float64}}(undef, length(cell_ids))
@@ -258,7 +258,7 @@ function read_atac(atac_path; min_peak::Int64=0, min_cell::Int64=0)
     fragment_file = atac_path * "/fragments.tsv.gz"
     fragments = CSV.read(fragment_file, DataFrame; delim = "\t", comment = "#", header =false)
     println("3/3 Fragments were loaded!")
-    filter!(:Column4 => ∈(Set(cells)), fragments)
+    fragments = filter(:Column4 => ∈(Set(cells)), fragments)
     atac_obj.peakAnno = peak_anno
     frag_data = FragmentObject(fragments, nothing)
     atac_obj.fragmentData = frag_data
@@ -317,7 +317,7 @@ function read_merfish(merfish_dir::String; prefix = "merfish", min_gene::Int64 =
     cells = unique(seg.cell)
     count_cells = CSV.read(cell_meta, DataFrame; types=Dict(1=>String))
     rename!(count_cells, :Column1 => :cell, :center_x => :x, :center_y => :y)
-    filter!(:cell => ∈(Set(cells)),  count_cells)
+    count_cells = filter(:cell => ∈(Set(cells)),  count_cells)
     counts = CSV.read(count_file, DataFrame;  types=Dict(1=>String))
     counts = counts[indexin(cells, counts.cell),:]
     count_cells = count_cells[indexin(cells, count_cells.cell),:]
@@ -329,7 +329,7 @@ function read_merfish(merfish_dir::String; prefix = "merfish", min_gene::Int64 =
     counts = convert(SparseMatrixCSC{Int64, Int64},Matrix(counts))
     counts = counts'
     raw_count = RawCountObject(counts, cells, genes2)
-    filter!(:gene => ∈(Set(genes2)), count_molecules)
+    count_molecules = filter(:gene => ∈(Set(genes2)), count_molecules)
     spObj = MerfishObject(count_molecules, count_cells, raw_count, poly;
             prefix = prefix, min_gene = min_gene, min_cell = min_gene)          
     return spObj
@@ -572,7 +572,7 @@ function read_layers(hd_dir;
     counts = read_10x(tenx_dir; version ="v3", min_gene=min_gene, min_cell=min_cell)
     all_cells = counts.cell_name
     pos = read_hd_pos(pos_file)
-    filter!(:barcode => ∈(Set(all_cells)), pos)
+    pos = filter(:barcode => ∈(Set(all_cells)), pos)
     pos =  pos[(pos[!, :pxl_row_in_fullres] .> 0) .& (pos[!, :pxl_col_in_fullres] .> 0), :]
     if isa(prefix, String)
         pos.barcode = prefix .*  "_" .* string.(pos.barcode)
@@ -586,7 +586,7 @@ function read_layers(hd_dir;
     counts = subset_count(counts; cells = all_cells)
     layer = Layer(counts)
     all_cells = layer.rawCount.cell_name
-    filter!(:barcode => ∈(Set(all_cells)), pos)
+    pos = filter(:barcode => ∈(Set(all_cells)), pos)
     pos = reorder(pos, "barcode", all_cells)
     layer.spmetaData = pos
     json = JSON.parsefile(json_file)
@@ -623,10 +623,10 @@ function read_layers(hd_dir;
             clustering.cell = string.(clustering.cell) .* "_" .* postfix
             hd_umap.Barcode = string.(hd_umap.Barcode) .* "_" .* postfix
         end
-        filter!(:cell=> ∈(Set(all_cells)), clustering)
+        clustering = filter(:cell=> ∈(Set(all_cells)), clustering)
         layer.spmetaData.cluster = string.(clustering.cluster)
         layer.metaData.cluster = string.(clustering.cluster)
-        filter!(:Barcode => ∈(Set(all_cells)), hd_umap)
+        hd_umap = filter(:Barcode => ∈(Set(all_cells)), hd_umap)
         hd_umap = Matrix(hd_umap[!, 2:end])
         umap_obj = UMAPObject(hd_umap, "UMAP", 2, nothing, nothing, nothing, nothing, nothing)
         reduct_obj = ReductionObject(nothing, nothing, umap_obj)
@@ -740,9 +740,9 @@ function read_paired_data(xn_dir, vs_dir, xn_img_path, vs_img_path;
     paired_obj = PairedObject(paired_sp_obj, cell_counts; kwargs...)
     cell_kept = cell_counts.cell_name
     cell_data = deepcopy(xn_obj.spmetaData.cell)
-    filter!(:cell => ∈(Set(cell_kept)), cell_data)
+    cell_data = filter(:cell => ∈(Set(cell_kept)), cell_data)
     poly_data = deepcopy(xn_obj.spmetaData.polygon)
-    filter!(:mapped_cell => ∈(cell_kept), poly_data)
+    poly_data = filter(:mapped_cell => ∈(cell_kept), poly_data)
     poly = xn_obj.polygonData[poly_data.polygon_number]
     poly_data = DataFrame(polygon_number = 1:length(poly), mapped_cell = cell_data.cell, cluster=cell_data.cluster)
     paired_obj.polygonData = poly
@@ -802,9 +802,9 @@ function read_joint_data(xn_dir, vs_dir, img_path;
     paired_obj = PairedObject(paired_sp_obj, cell_counts; kwargs...)
     cell_kept = cell_counts.cell_name
     cell_data = deepcopy(xn_obj.spmetaData.cell)
-    filter!(:cell => ∈(Set(cell_kept)), cell_data)
+    cell_data = filter(:cell => ∈(Set(cell_kept)), cell_data)
     poly_data = deepcopy(xn_obj.spmetaData.polygon)
-    filter!(:mapped_cell => ∈(cell_kept), poly_data)
+    poly_data = filter(:mapped_cell => ∈(cell_kept), poly_data)
     poly = xn_obj.polygonData[poly_data.polygon_number]
     poly_data = DataFrame(polygon_number = 1:length(poly), mapped_cell = cell_data.cell, cluster=cell_data.cluster)
     paired_obj.polygonData = poly

@@ -253,7 +253,7 @@ function sp_feature_plot(sp::get_object_group("Spatial2"), gene_list::Union{Stri
                 MK.image!(ax1, img2)
             end
             if !isa(x_lims, Nothing) && !isa(y_lims, Nothing)
-                filter!([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], df_plt)
+                df_plt=filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], df_plt)
                 df_plt[!, x_col] = df_plt[!, x_col] .- x_lims[1]
                 df_plt[!, y_col] = df_plt[!, y_col] .- y_lims[1]
             else
@@ -332,7 +332,7 @@ function sp_feature_plot(sp::get_object_group("Spatial2"), gene_list::Union{Stri
                     img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
                     MK.image!(ax1, img2)
                 end
-                filter!([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], df_plt)
+                df_plt=filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], df_plt)
                 df_plt[!, x_col] = df_plt[!, x_col] .- x_lims[1]
                 df_plt[!, y_col] = df_plt[!, y_col] .- y_lims[1]
                 for (gene, ann_color) in zip(all_genes, all_colors)
@@ -393,13 +393,13 @@ function sp_feature_plot(sp::get_object_group("Spatial2"), gene_list::Union{Stri
                         img2 = augment(img, ColorJitter(adjust_contrast, adjust_brightness))
                         MK.image!(ax1, img2)
                     end
-                    filter!([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], df_plt)
+                    df_plt=filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], df_plt)
                     df_plt[!, x_col] = df_plt[!, x_col] .- x_lims[1]
                     df_plt[!, y_col] = df_plt[!, y_col] .- y_lims[1]
                     df_plt1 = deepcopy(df_plt)
-                    filter!(:new_gene => ==("others"), df_plt1)
+                    df_plt1=filter(:new_gene => ==("others"), df_plt1)
                     df_plt2 = deepcopy(df_plt)
-                    filter!(:new_gene => ==(gene), df_plt2)
+                    df_plt2=filter(:new_gene => ==(gene), df_plt2)
                     if custom_img
                         MK.scatter!(ax1, df_plt2[!, x_col], df_plt2[!, y_col]; color = df_plt2.forcolor, strokewidth = 0, markersize = marker_size)
                     else
@@ -441,10 +441,10 @@ function plot_gene_polygons(sp::get_object_group("Imaging"), gene_list::Union{St
         y_lims=(minimum(sp.spmetaData.cell.y)-0.05*maximum(sp.spmetaData.cell.y),1.05*maximum(sp.spmetaData.cell.y))
     end
     select_fov = deepcopy(sp.spmetaData.cell)
-    filter!([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], select_fov)
+    select_fov=filter([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], select_fov)
     cell_set = Set(select_fov.cell)
     subset_poly = deepcopy(sp.spmetaData.polygon)
-    filter!(:mapped_cell => ∈(cell_set), subset_poly)
+    subset_poly=filter(:mapped_cell => ∈(cell_set), subset_poly)
     polygon_num = subset_poly.polygon_number
     polygons = polygons[polygon_num]
     c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3]),parse(Colorant, color_keys[4])])
@@ -522,9 +522,9 @@ function plot_cell_polygons(sp::Union{ImagingSpatialObject, CartanaObject,Xenium
     anno_df = DataFrames.transform(anno_df, anno => ByRow(x -> anno_color[x]) => :new_color)
     plt_color = anno_df.new_color
     select_fov = deepcopy(sp.spmetaData.cell)
-    filter!([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], select_fov)
+    select_fov=filter([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], select_fov)
     subset_poly = deepcopy(sp.spmetaData.polygon)
-    filter!(:mapped_cell => ∈(Set(select_fov.cell)), subset_poly)
+    subset_poly=filter(:mapped_cell => ∈(Set(select_fov.cell)), subset_poly)
     polygon_num = subset_poly.polygon_number
     polygons = polygons[polygon_num]
     plt_color = plt_color[polygon_num]
@@ -587,14 +587,14 @@ function plot_transcript_polygons(sp::get_object_group("Imaging");
         anno = Symbol(anno)
     end
     select_fov = deepcopy(sp.spmetaData.cell)
-    filter!([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], select_fov)
+    select_fov=filter([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], select_fov)
     cell_set = Set(select_fov.cell)
     anno_df = deepcopy(sp.spmetaData.polygon)
-    filter!(:mapped_cell => ∈(cell_set), anno_df)
+    anno_df=filter(:mapped_cell => ∈(cell_set), anno_df)
     polygon_num = anno_df.polygon_number
     polygons = sp.polygonData
     polygons = polygons[polygon_num]
-    filter!(:cell => ∈(cell_set), df_spatial)
+    df_spatial = filter(:cell => ∈(cell_set), df_spatial)
     if isa(ann_colors, Nothing)
         cell_anno=unique(anno_df[!,anno])
         c_map=Colors.distinguishable_colors(length(cell_anno), parse(Colors.Colorant, pt_bg_color), lchoices=range(20, stop=70, length=15))
@@ -604,10 +604,10 @@ function plot_transcript_polygons(sp::get_object_group("Imaging");
     anno_df[!, anno] = string.(anno_df[!, anno])
     anno_df=DataFrames.transform(anno_df, anno => ByRow(x -> ann_colors[x]) => :new_color)
     df_spatial1 = deepcopy(df_spatial)
-    filter!(:gene => ∈(Set(other_genes)), df_spatial1)
+    df_spatial1=filter(:gene => ∈(Set(other_genes)), df_spatial1)
     colors1 = df_spatial1[!,:new_color]
     df_spatial2 = deepcopy(df_spatial)
-    filter!(:gene => ∈(Set(gene_list)), df_spatial2)
+    df_spatial2=filter(:gene => ∈(Set(gene_list)), df_spatial2)
     colors2 = df_spatial2[!,:new_color]
     fig = MK.Figure(size=(width, height))
     fig[1, 1] = MK.Axis(fig; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, 
@@ -731,12 +731,12 @@ function sp_dim_plot(sp::get_object_group("Spatial2"), anno::Union{Symbol, Strin
             MK.image!(ax1, img2)
         end
     end
-    filter!([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], anno_df)
+    anno_df=filter([x_col, y_col] => (x,y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], anno_df)
     anno_df[!, x_col] = anno_df[!, x_col] .- x_lims[1]
     anno_df[!, y_col] = anno_df[!, y_col] .- y_lims[1]
     if !isa(cell_highlight, Nothing)
         anno_df2 = deepcopy(anno_df)
-        filter!(anno => ==(cell_highlight), anno_df2)
+        anno_df2=filter(anno => ==(cell_highlight), anno_df2)
         x_ax = anno_df2[!, x_col]
         y_ax = anno_df2[!, y_col]
         colors = unique(anno_df2.new_color)
@@ -825,7 +825,7 @@ function sp_gene_rank(sp::get_object_group("Imaging"), celltype::String, cluster
     end
     gene_mean=DataFrame(gene=sp.rawCount.gene_name,all_mean=vec(mean(sp.rawCount.count_mtx, dims=2)))
     clustern=innerjoin(all_df, gene_mean, on = :gene)
-    filter!(:celltype => ==(celltype), clustern)
+    clustern=filter(:celltype => ==(celltype), clustern)
     clustern.rank=clustern.avg_exp .^ 2 ./ clustern.all_mean
     clustern=sort(clustern, :rank, rev=true)
     clustern=clustern[1:num_gene,:]
@@ -1063,7 +1063,7 @@ function plot_fov(sp::get_object_group("Spatial"), n_fields_x::Int64, n_fields_y
         x_lims=[1,max_w]
         y_lims=[1,max_h]
         img = img[x_lims[1]:x_lims[2], y_lims[1]:y_lims[2]]
-        filter!([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], df)
+        df = filter([:x, :y] => (x, y) -> x_lims[1] < x < x_lims[2] && y_lims[1] < y < y_lims[2], df)
         MK.image!(img)
     end
     if custom_img
@@ -1171,7 +1171,7 @@ function plot_depth(sp::get_object_group("Spatial"); celltype::Union{String, Sym
         if markers !== nothing
         molecules=sp.spmetaData.molecule
         cell2=sp.spmetaData.cell.cell
-        filter!(:cell=> ∈(Set(cell2)), molecules)
+        molecules = filter(:cell=> ∈(Set(cell2)), molecules)
         from=cell2
         to=cells.depth
         molecules2=map_values(molecules, :cell, :depth, from, to)
@@ -1197,9 +1197,9 @@ function plot_depth_animation(sp::get_object_group("Spatial"), celltypes::Vector
     group_label="celltype",gene_label="gene", bg_color="gray94",fontsize=16, scale=0.8, width=1800,height=600, file_name="animation.gif", framerate=30,
     titles = ["Cells colored by kidney depth","Cell distribution from cortex to papilla","Transcript distribution from cortex to papilla"])
     cells = sp.spmetaData.cell
-    filter!(group_label => ∈(Set(celltypes)), cells)
+    cells = filter(group_label => ∈(Set(celltypes)), cells)
     molecules = sp.spmetaData.molecule
-    filter!(gene_label => ∈(Set(markers)), molecules)
+    molecules = filter(gene_label => ∈(Set(markers)), molecules)
     fig = MK.Figure(size = (width, height))
     ax1 = MK.Axis(fig[1, 1]; xticklabelsize = (fontsize-4), yticklabelsize=fontsize, xticksvisible=false, xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,xgridvisible = false,ygridvisible = false,title = titles[1],titlesize = fontsize)
     ax2 = MK.Axis(fig[1, 3]; xticklabelsize = (fontsize-4) ,yticklabelsize=fontsize, xticksvisible=true, xticklabelsvisible=true, yticksvisible=true, yticklabelsvisible=true,xgridvisible = false,ygridvisible = false, title = titles[2],titlesize = fontsize,yticks = ((1:length(celltypes)) ./ scale,  celltypes))
@@ -1286,7 +1286,7 @@ function plot_gene_depth(sp::get_object_group("Spatial"), gene::String;
                 yticksvisible=false, yticklabelsvisible=false,
                 xgridvisible = false,ygridvisible = false, 
                 ylabel = "Expression", xlabel = "Kidney depth")
-    filter!(:gene_expr => >(expr_cutoff), df_plt)
+    df_plt = filter(:gene_expr => >(expr_cutoff), df_plt)
     x_hist = StatsBase.fit(Histogram, tuple(df_plt.depth, df_plt.gene_expr), nbins=n_bins) 
     MK.contour!(x_hist,levels = 3,fillrange = true, colormap=c_map)
     MK.ylims!(MK.current_axis(), (0.25, 0.75))
@@ -1316,12 +1316,12 @@ function plot_transcript_dapi(sp::get_object_group("Imaging"), fov::Int64, n_fie
     polygons = sp.polygonData
     df_spatial = sp.spmetaData.molecule
     img = sp.imageData
-    filter!([:x, :y]=> (x,y) -> xmin < x < xmax && ymin < y < ymax, df_spatial);
-    filter!(:is_noise => ==(0), df_spatial)
+    df_spatial = filter([:x, :y]=> (x,y) -> xmin < x < xmax && ymin < y < ymax, df_spatial)
+    df_spatial = filter(:is_noise => ==(0), df_spatial)
     poly = sp.imageData.polygon
     cells = df_spatial.cell
     poly.mapped_cell = Int.(poly.mapped_cell)
-    filter!(:mapped_cell => ∈(Set(cells)), poly)
+    poly = filter(:mapped_cell => ∈(Set(cells)), poly)
     polygons = polygons[poly.polygon_number]
     img2 = img[ymin:ymax,xmin:xmax]'
     plt_x = df_spatial.x .- xmin
@@ -1329,7 +1329,7 @@ function plot_transcript_dapi(sp::get_object_group("Imaging"), fov::Int64, n_fie
     fig = MK.Figure(size=(500,500))
     fig[1, 1] = MK.Axis(fig; xticklabelsize=12, yticklabelsize=12, 
         xticksvisible = false, xticklabelsvisible=false, backgroundcolor = :black,
-        yticksvisible = false, yticklabelsvisible=false, xgridvisible = false,ygridvisible = false );
+        yticksvisible = false, yticklabelsvisible=false, xgridvisible = false,ygridvisible = false )
     annotation = df_spatial[!,annotation]
     ann_vals = annotation[annotation .!= noise_ann] |> unique |> sort
     c_map = Colors.distinguishable_colors(length(ann_vals), 
@@ -1595,7 +1595,7 @@ function plot_gene_group_spatial(sp_list::Union{Vector{ImagingSpatialObject}, Ve
     all_genes = DataFrame()
     for i in 1:n_obj
         plt_df = bin_gene_spatial(sp_list[i], n_bin; assay_use=assay_use, imp_type = imp_type, genes = gene_list)
-        filter!(:gene => ∈(Set(gene_list)), plt_df)
+        plt_df = filter(:gene => ∈(Set(gene_list)), plt_df)
         if isa(group_names, Nothing)
             plt_df.group .= "group" * string(i)
         else
