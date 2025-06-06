@@ -157,19 +157,6 @@ function read_xenium(xenium_dir::String; prefix = nothing, min_gene::Int64 = 0, 
     filter!(:Column1 => ∈(Set(clustering.Barcode)), cells)
     filter!(:cell_id => ∈(Set(clustering.Barcode)), count_molecules)
     filter!(:cell_id => ∈(Set(clustering.Barcode)), count_cells)
-    grouped = groupby(seg, :cell_id)
-    cell_ids = unique(seg.cell_id)
-    poly = Vector{Matrix{Float64}}(undef, length(cell_ids))
-    n = length(cell_ids)
-    println("\033[1;34mFormatting cell polygons...\033[0m")
-    p = Progress(n, dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, color=:blue)
-    for idx in 1:length(cell_ids)
-        cell_data = grouped[idx]
-        cell_1 = Matrix(cell_data[!, 2:end])
-        poly[idx] = cell_1
-        next!(p)
-    end
-    println("Cell polygons formatted!")
     xenium_umap.Barcode = string.(xenium_umap.Barcode)
     xenium_umap = Matrix(xenium_umap[!, 2:end])
     umap_obj = UMAPObject(xenium_umap, "UMAP", 2, nothing, nothing, nothing, nothing, nothing)
@@ -195,12 +182,12 @@ function read_xenium(xenium_dir::String; prefix = nothing, min_gene::Int64 = 0, 
     count_cells.cell = string.(count_cells.cell)
     filter!(:cell => ∈(Set(string.(clustering.Barcode))), count_cells)
     count_cells.cluster = clustering.Cluster
-    sp_data = deepcopy(count_cells)
     spObj = XeniumObject(count_molecules, count_cells, raw_count;
             prefix = prefix, min_gene = min_gene, min_cell = min_gene)
     clustering.cell = string.(clustering.Barcode)
     if !isa(prefix, Nothing)
         clustering.cell = prefix .*  "_" .* string.(clustering.cell)
+        seg.cell_id = prefix .*  "_" .* string.(seg.cell_id)
     end
     all_cells = spObj.rawCount.cell_name
     filter!(:cell=> ∈(Set(all_cells)), clustering)
@@ -208,13 +195,22 @@ function read_xenium(xenium_dir::String; prefix = nothing, min_gene::Int64 = 0, 
     spObj.metaData.cluster = string.(clustering.Cluster)
     spObj.spmetaData.molecule = map_values(spObj.spmetaData.molecule, :cell, :cluster, clustering.cell, clustering.Cluster)
     spObj.spmetaData.molecule.cluster = string.(spObj.spmetaData.molecule.cluster)
-    polygon_df = DataFrame(polygon_number = 1:length(poly), mapped_cell = sp_data.cell, cluster=sp_data.cluster)
-    if min_gene > 0 || min_cell > 0
-        cell_check = check_vec(all_cells, polygon_df[!, :mapped_cell])
-        polygon_df = polygon_df[cell_check, :]
-        poly = poly[cell_check]
+
+    filter!(:cell_id=> ∈(Set(all_cells)), seg)
+    grouped = groupby(seg, :cell_id)
+    cell_ids = unique(seg.cell_id)
+    poly = Vector{Matrix{Float64}}(undef, length(cell_ids))
+    n = length(cell_ids)
+    println("\033[1;34mFormatting cell polygons...\033[0m")
+    p = Progress(n, dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, color=:blue)
+    for idx in 1:length(cell_ids)
+        cell_data = grouped[idx]
+        cell_1 = Matrix(cell_data[!, 2:end])
+        poly[idx] = cell_1
+        next!(p)
     end
-    polygon_df.polygon_number = 1:length(poly)
+    println("Cell polygons formatted!")
+    polygon_df = DataFrame(polygon_number = 1:length(poly), mapped_cell = all_cells, cluster=spObj.spmetaData.cell.cluster)
     spObj.spmetaData.polygon = polygon_df
     spObj.polygonData = poly
     reduct_obj = ReductionObject(nothing, nothing, umap_obj)
