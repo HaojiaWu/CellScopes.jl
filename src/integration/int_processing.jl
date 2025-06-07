@@ -727,7 +727,7 @@ function rotate_paired_object(sp::PairedObject, degree;
     cell_filtered = deepcopy(sp.spmetaData.cell)
     cell_filtered = filter(:cell => ∈(Set(sp.normCount.cell_name)), cell_filtered)
     sp.spmetaData.cell = cell_filtered
-    #sp.pairedData.xnObj.spmetaData.cell = cell_filtered
+    println("\033[1;34mUpdating counts...\033[0m") 
     sp.pairedData.xnObj = subset_object(sp.pairedData.xnObj; cells= String.(cell_filtered.cell))
     sp.pairedData.vsObj.normCount = subset_count(sp.pairedData.vsObj.normCount; cells=sp.pairedData.vsObj.spmetaData.barcode)
     @info "All done!"
