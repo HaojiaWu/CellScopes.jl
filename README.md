@@ -1,6 +1,7 @@
 # CellScopes.jl (version 2) <img src="https://github.com/HaojiaWu/CellScopes.jl/blob/main/data/logo.png" width="60" height="60"> <br>
 
  For version 1 (as published in [Wu et al., 2024](https://www.nature.com/articles/s41467-024-45752-8)), see the [archived tag](https://github.com/HaojiaWu/CellScopes.jl/tree/archived). <br>
+ 
 ![Version](https://img.shields.io/badge/version-2.0.0-blue)
 ![Modality](https://img.shields.io/badge/multimodal-supported-brightgreen) 
 
