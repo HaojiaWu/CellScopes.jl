@@ -777,8 +777,8 @@ function gemini_feature_plot(sp, gene::String;
     height = 1000, 
     width = 600        
 )
-    if gene ∉ sp.rawCount.gene_name
-        error("Gene not found: $gene. This gene may not be detected in this dataset.")
+    if gene ∉ get_shared_gene(sp)
+        error("The gene '$gene' is not found among the shared genes. It may not be commonly detected across the datasets in this object.")
     end
     if break_ratio < 0.05 || break_ratio > 0.95
         error("break_ratio should not be < 0.05 or > 0.95")

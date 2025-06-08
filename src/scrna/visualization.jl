@@ -367,7 +367,11 @@ function top_expr_gene(df::DataFrame;
 end
 
 function top_expr_gene(sp)
-    counts, gene_rank = fraction_expr_per_cell(sp.rawCount.count_mtx, sp.rawCount.gene_name)
+    if isa(sp, PairedObject)
+        counts, gene_rank = fraction_expr_per_cell(sp.rawCount.count_mtx, get_shared_gene(sp))
+    else
+        counts, gene_rank = fraction_expr_per_cell(sp.rawCount.count_mtx, sp.rawCount.gene_name)
+    end
     top_gene = top_gene_fraction_df(counts, gene_rank)
     fig = top_expr_gene(top_gene; width=600, height = 450)
     return fig

@@ -293,3 +293,12 @@ function df_to_img(x::Vector{<:Real}, y::Vector{<:Real}, colors::Vector{RGB{N0f8
     end
     return img
 end
+
+function get_shared_gene(sp::PairedObject)
+    if isa(sp, PairedObject)
+        shared_gene = intersect(sp.rawCount.gene_name, sp.pairedData.xnObj.rawCount.gene_name)
+    else
+        error("This function works for PairedObject only!")
+    end
+    return shared_gene
+end
