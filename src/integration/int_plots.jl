@@ -903,3 +903,179 @@ function gemini_feature_plot(sp, gene::String;
     MK.ylims!(ax2, y_lims...)
     return fig
 end
+
+function sp_feature_plot(sp::IntegratedObject, genes::Union{String, Vector{String}}; count_type = "norm",x_col="x", y_col="y", marker_size=4, order=true,
+    color_keys::Union{Vector{String}, Tuple{String,String,String}}=("black","yellow","red"), do_dimname::Bool=false,
+        titlesize::Int64 = 24, height::Real = 500, width::Real = 500)
+        dim_data = deepcopy(sp.spmetaData)
+        if isa(genes, String)
+          genes = [genes]
+        end
+        if count_type === "norm"
+            ct_obj = subset_count(sp.normCount; genes = genes)
+        elseif count_type === "raw"
+            ct_obj = subset_count(sp.rawCount; genes = genes)
+        elseif count_type === "scale"
+            ct_obj = subset_count(sp.scaleCount; genes = genes)
+        else
+            println("count_type can only be \"raw\", \"norm\" or \"scale\"!")
+        end
+        count_mat = ct_obj.count_mtx
+        count_mat = DataFrame(count_mat, :auto)
+        count_mat.gene = ct_obj.gene_name
+        count_mat = permutedims(count_mat, :gene)
+        count_mat.cells = sp.rawCount.cell_name
+        gene_data = [dim_data count_mat]
+        x_lims=(minimum(gene_data[!, x_col])-0.05*maximum(gene_data[!, x_col]),1.05*maximum(gene_data[!, x_col]))
+        y_lims=(minimum(gene_data[!, y_col])-0.05*maximum(gene_data[!, y_col]),1.05*maximum(gene_data[!, y_col]))
+        c_map = ColorSchemes.ColorScheme([parse(Colorant, color_keys[1]),parse(Colorant, color_keys[2]),parse(Colorant, color_keys[3])])
+            group_arr = string.(sp.spmetaData[!, :dataset])
+            group_names = unique(group_arr)
+            gene_data[!, :dataset] = group_arr
+            fig = MK.Figure(size = (width * length(group_names), height * length(genes)))
+            for (i, group) in enumerate(group_names)
+                for (j, gene) in enumerate(genes)
+                    df_plt = gene_data[!, [x_col, y_col, gene, "dataset"]]
+                    gene_expr = float.(df_plt[!, gene])
+                    if sum(gene_expr) !== 0.0
+                        @inbounds colors = get(c_map, gene_expr, :extrema)
+                        plt_color = "#" .* hex.(colors)
+                        df_plt.plt_color = plt_color
+                        if order
+                            df_plt = sort(df_plt, Symbol(gene))
+                        end
+                    else
+                        @inbounds plt_color = repeat([color_keys[1]], length(gene_expr))
+                        df_plt.plt_color = plt_color
+                    end
+                    df_plt=filter(:dataset => ==(group), df_plt)
+                    if i == 1
+                        y_label = gene
+                    else
+                        y_label = ""
+                    end
+                    if j == 1
+                        title_name = group
+                    else
+                        title_name = ""
+                    end
+                    ax1 = MK.Axis(fig[j,i]; xticklabelsize = 12, yticklabelsize = 12, xticksvisible = false, 
+                            xticklabelsvisible = false, yticksvisible = false, yticklabelsvisible = false,
+                            xgridvisible = false, ygridvisible = false,yreversed=false, title = title_name, 
+                            titlesize = 26, xlabel = "", ylabel = y_label, ylabelsize = titlesize)
+                    MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; 
+                            color = df_plt.plt_color, strokewidth = 0, markersize = marker_size)
+                    if i == length(group_names)
+                        MK.Colorbar(fig[j,length(group_names)+1], label = "", colormap = c_map, width=10, limits = (0, maximum(gene_expr)))
+                    end
+                end
+            end
+        return fig
+end
+
+function sp_dim_plot(sp::IntegratedObject, anno::Union{Symbol, String}; 
+    anno_color::Union{Nothing, Dict} = nothing, x_col::String = "x", y_col::String = "y", 
+    cell_order::Union{Vector{String}, Nothing}=nothing, cell_highlight::Union{String, Nothing}=nothing,
+    width=600, height=500, stroke_color=:transparent, bg_color=:white, 
+    marker_size=2, do_legend=true, alpha::Real = 1, nrow = 1,
+    legend_size = 10, legend_fontsize = 16, legend_ncol = 1
+    )
+    anno_df=deepcopy(sp.spmetaData)
+    anno_df[!, anno] = string.(anno_df[!, anno])
+    if isa(anno, String)
+        anno=Symbol(anno)
+    end
+    if isa(anno_color, Nothing)
+        cell_anno=unique(anno_df[!,anno])
+        c_map=Colors.distinguishable_colors(length(cell_anno), Colors.colorant"#007a10", lchoices=range(20, stop=70, length=15))
+        c_map = "#" .* hex.(c_map)
+        anno_color=Dict(cell_anno .=> c_map)
+    end
+    anno_df=DataFrames.transform(anno_df, anno => ByRow(x -> anno_color[x]) => :new_color)
+    anno_df.new_color = [(i, alpha) for i in anno_df.new_color]
+    group_arr = string.(anno_df[!, "dataset"])
+    group_names = unique(group_arr)
+    n = length(group_names)
+    ncol = ceil(Int, n / nrow)
+    nlast = n - (nrow - 1) * ncol 
+    lgd_col = (nlast == 0) ? ncol + 1 : nlast + 1
+    fig = MK.Figure(size = (width * ncol, height * nrow))
+    for idx in 1:n
+        group = group_names[idx]
+        j = ceil(Int, idx / ncol)
+        i = idx % ncol == 0 ? ncol : idx % ncol
+            anno_df1 = filter(:dataset => ==(group), anno_df)
+            ax1 = MK.Axis(fig[j,i]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+                xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
+                xgridvisible = false,ygridvisible = false)
+            ax2 = MK.Axis(fig[j,i]; backgroundcolor = bg_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+                xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
+                xgridvisible = false,ygridvisible = false)
+            if !isa(cell_highlight, Nothing)
+                anno_df2 = deepcopy(anno_df1)
+                anno_df3=filter(anno => ==(cell_highlight), anno_df2)
+                anno_df4=filter(anno => !=(cell_highlight), anno_df2)
+                colors = unique(anno_df3.new_color)
+                if idx != n
+                    MK.scatter!(ax1, anno_df4[!, x_col] , anno_df4[!, y_col]; strokecolor=stroke_color, 
+                        color="gray90", strokewidth=0, markersize=marker_size)
+                    MK.scatter!(ax1, anno_df3[!, x_col] , anno_df3[!, y_col]; strokecolor=stroke_color, 
+                        color=colors[1], strokewidth=0, markersize=marker_size)
+                else
+                    if do_legend
+                        MK.scatter!(ax2, anno_df3[!, x_col] , anno_df3[!, y_col]; strokecolor=stroke_color, visible=false,
+                            color=colors[1], strokewidth=0, markersize=2*legend_size, label=cell_highlight)
+                        MK.scatter!(ax1, anno_df4[!, x_col] , anno_df4[!, y_col]; strokecolor=stroke_color, 
+                            color="gray90", strokewidth=0, markersize=marker_size, label=cell_highlight)
+                        MK.scatter!(ax1, anno_df3[!, x_col] , anno_df3[!, y_col]; strokecolor=stroke_color, 
+                            color=colors[1], strokewidth=0, markersize=marker_size, label=cell_highlight)
+                    else
+                        MK.scatter!(ax1, anno_df4[!, x_col] , anno_df4[!, y_col]; strokecolor=stroke_color, 
+                            color="gray90", strokewidth=0, markersize=marker_size)
+                        MK.scatter!(ax1, anno_df3[!, x_col] , anno_df3[!, y_col]; strokecolor=stroke_color, 
+                            color=colors[1], strokewidth=0, markersize=marker_size)
+                    end
+                    if do_legend
+                        MK.Legend(fig[nrow, lgd_col], ax2, framecolor=:white, labelsize=legend_fontsize, nbanks=legend_ncol)
+                    end
+                end
+            else
+                if isa(cell_order, Nothing)
+                    cell_anno=unique(anno_df1[!,anno])
+                else
+                    cell_anno=cell_order
+                end
+                if idx != n
+                    for i in cell_anno
+                        anno_df2=filter(anno => ==(i), anno_df1)
+                        x_ax = anno_df2[!, x_col]
+                        y_ax = anno_df2[!, y_col]
+                        colors = unique(anno_df2.new_color)
+                        MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
+                                color=colors[1], strokewidth=0, markersize=marker_size)
+                    end
+                else
+                    for i in cell_anno
+                        anno_df2=filter(anno => ==(i), anno_df1)
+                        x_ax = anno_df2[!, x_col]
+                        y_ax = anno_df2[!, y_col]
+                        colors = unique(anno_df2.new_color)
+                        if do_legend
+                            MK.scatter!(ax2, x_ax , y_ax; strokecolor=stroke_color, visible=false,
+                                color=colors[1], strokewidth=0, markersize=2*legend_size, label=i)
+                            MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
+                                color=colors[1], strokewidth=0, markersize=marker_size, label=i)
+                        else
+                            MK.scatter!(ax1, x_ax , y_ax; strokecolor=stroke_color, 
+                                color=colors[1], strokewidth=0, markersize=marker_size)
+                        end
+                    end
+                    if do_legend
+                        MK.Legend(fig[nrow, lgd_col], ax2, framecolor=:white, labelsize=legend_fontsize, nbanks=legend_ncol)
+                    end
+                end
+            end
+        
+    end
+    return fig
+end

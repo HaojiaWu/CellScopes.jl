@@ -368,7 +368,8 @@ end
 
 function top_expr_gene(sp)
     if isa(sp, PairedObject)
-        counts, gene_rank = fraction_expr_per_cell(sp.rawCount.count_mtx, get_shared_gene(sp))
+        raw_ct = subset_count(sp.rawCount; genes=get_shared_gene(sp))
+        counts, gene_rank = fraction_expr_per_cell(raw_ct.count_mtx, raw_ct.gene_name)
     else
         counts, gene_rank = fraction_expr_per_cell(sp.rawCount.count_mtx, sp.rawCount.gene_name)
     end

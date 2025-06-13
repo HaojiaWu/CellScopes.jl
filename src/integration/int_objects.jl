@@ -34,7 +34,7 @@ mutable struct IntegratedObject <: AbstractCellScope
     normCount::Union{NormCountObject, Nothing}
     scaleCount::Union{ScaleCountObject, Nothing}
     metaData::Union{DataFrame, Nothing}
-    spmetaData::Union{SpaMetaObj, Nothing}
+    spmetaData::Union{DataFrame, Nothing}
     varGene::Union{VariableGeneObject, Nothing}
     dimReduction::Union{ReductionObject, Nothing}
     clustData::Union{ClusteringObject, Nothing}
@@ -94,6 +94,20 @@ function CreateIntegratedObject(obj_list;
     combined_meta.nFeatures = nFeatures
     combined_meta.nGenes = nGenes
     int_obj.metaData = combined_meta
+
+    # merge spmetadata
+    spmeta = [getfield(i, :spmetaData) for i in obj_list]
+    spmeta_cell = [getfield(i, :cell) for i in spmeta]
+    new_spmeta = Vector{DataFrame}()
+    for i in 1:length(spmeta_cell)
+        meta1 = spmeta_cell[i]
+        meta1.dataset .= sample_names[i]
+        meta1 = meta1[!, [:cell, :x, :y, :dataset]]
+        push!(new_spmeta, meta1)
+    end
+    combined_spmeta = vcat(new_spmeta...)
+    int_obj.spmetaData = combined_spmeta
+
     return int_obj
     println("IntegratedObject was successfully created!")
 end

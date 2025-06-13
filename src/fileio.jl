@@ -147,6 +147,7 @@ function read_xenium(xenium_dir::String; prefix = nothing, min_gene::Int64 = 0, 
     clustering =  DataFrame(CSV.File(cluster_file))
     cell_ids_filter = clustering.Barcode
     seg = read_parquet(seg_file)
+    seg.cell_id = String.(seg.cell_id)
     cell_ids = unique(seg.cell_id)
     cell_kept = check_vec(cell_ids_filter, cell_ids)
     count_molecules = read_parquet(transcript_meta)
