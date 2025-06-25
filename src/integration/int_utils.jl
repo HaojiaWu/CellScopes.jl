@@ -302,3 +302,24 @@ function get_shared_gene(sp::PairedObject)
     end
     return shared_gene
 end
+
+function crop_img_coord(img, coord; x_col="x", y_col = "y")
+    min_x = minimum(coord[!,x_col])
+    min_x = min_x < 1 ? 1 : min_x
+    min_x = Int(round(min_x))
+    min_y = minimum(coord[!, y_col])
+    min_y = min_y < 1 ? 1 : min_y
+    min_y = Int(round(min_y))
+    img_x_max = size(img)[1]
+    img_y_max = size(img)[2]
+    max_x = maximum(coord[!, x_col])
+    max_x = max_x > img_x_max ? img_x_max-1 : max_x
+    max_x = Int(round(max_x))
+    max_y = maximum(coord[!, y_col])
+    max_y = max_y > img_y_max ? img_y_max-1 : max_y
+    max_y = Int(round(max_y))
+    new_img = img[min_x:max_x, min_y:max_y]
+    coord[!, x_col] .-= min_x
+    coord[!, y_col] .-= min_y
+    return new_img, coord
+end
