@@ -774,6 +774,7 @@ function gemini_feature_plot(sp, gene::String;
     break_ratio=0.5,
     aspect_ratio=0.7,
     only_expr=false,
+    horizontal_cut = false,
     height = 1000, 
     width = 600        
 )
@@ -786,21 +787,30 @@ function gemini_feature_plot(sp, gene::String;
     img_xn_size = size(sp.pairedData.xnObj.imageData)
     img_vs_size = size(sp.pairedData.vsObj.imageData.fullresImage)
     img_limit = [minimum([img_vs_size[1], img_xn_size[1]]), minimum([img_vs_size[2], img_xn_size[2]])]
-    x_lims_xn = [1, img_limit[1] * break_ratio]
-    x_lims_xn = adjust_lims(x_lims_xn)
-    x_lims_vs = [img_limit[1] * break_ratio, img_limit[1]-1]
-    x_lims_vs = adjust_lims(x_lims_vs)
-    y_lims = [1, img_limit[2]-1]
+    if !horizontal_cut
+        x_lims_xn = [1, img_limit[1] * break_ratio]
+        x_lims_xn = adjust_lims(x_lims_xn)
+        x_lims_vs = [img_limit[1] * break_ratio, img_limit[1]-1]
+        x_lims_vs = adjust_lims(x_lims_vs)
+        y_lims_vs = y_lims_xn = [1, img_limit[2] - 1]
+    else
+        y_lims_vs = [1, img_limit[2] * break_ratio]
+        y_lims_vs = adjust_lims(y_lims_vs)
+        y_lims_xn = [img_limit[2] * break_ratio, img_limit[2]-1]
+        y_lims_xn = adjust_lims(y_lims_xn)
+        x_lims_vs = x_lims_xn = [1, img_limit[1] - 1]
+    end
+
     # visiumHD gene expr processing
     hd_obj = sp.pairedData.vsObj
     img, poly, gene_expr, plt_color, c_map = process_hd_featureplot_data(hd_obj, gene; color_keys = color_keys_vs, x_col = x_col,  
-            y_col = y_col, hd_layer = hd_layer, clip = clip,  x_lims = x_lims_vs,  y_lims = y_lims, cell_shape = cell_shape,
+            y_col = y_col, hd_layer = hd_layer, clip = clip,  x_lims = x_lims_vs,  y_lims = y_lims_vs, cell_shape = cell_shape,
             adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness)
 
     # xenium gene expr processing
     xn_obj = sp.pairedData.xnObj
     img_xn, df_plt, gene_expr_xn, plt_color_xn, c_map_xn = process_paired_featureplot_data(xn_obj, gene; color_keys = color_keys_xn, x_col = x_col,  
-        y_col = y_col, clip = clip,  x_lims = x_lims_xn,  y_lims = y_lims, cell_shape = "point",
+        y_col = y_col, clip = clip,  x_lims = x_lims_xn,  y_lims = y_lims_xn, cell_shape = "point",
         adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness, img_use = "xn_img")
     flip_bg_color!(img_xn)
     plt_color_xn=[(i, alpha) for i in plt_color_xn]
@@ -808,6 +818,7 @@ function gemini_feature_plot(sp, gene::String;
     if sum(gene_expr) > 0.0
         df_plt.plt_color = plt_color_xn
         if order
+            
             df_plt = sort(df_plt,:gene);
         end
     else
@@ -815,51 +826,63 @@ function gemini_feature_plot(sp, gene::String;
         df_plt.plt_color = plt_color_xn
     end
     df_plt[!, x_col] = df_plt[!, x_col] .- x_lims_xn[1]
-    df_plt[!, y_col] = df_plt[!, y_col] .- y_lims[1]
+    df_plt[!, y_col] = df_plt[!, y_col] .- y_lims_xn[1]
+
     fig = MK.Figure(size=(width, height))
-    ax1 = MK.Axis(fig[1,1]; backgroundcolor = canvas_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+    if !horizontal_cut
+        ax1_pos = fig[1, 1]; label1_pos = fig[0, 1]; cbar1_pos = fig[1, 0]; gene_label1_pos = fig[0, 0]
+        ax2_pos = fig[1, 2]; label2_pos = fig[0, 2]; cbar2_pos = fig[1, 3]; gene_label2_pos = fig[0, 3]
+        label_rot = 0; cbar_horizontal = true; label_halign = :center; label_valign = :bottom; cbar_width = 10
+        cbar_tickalign_xn = 0; cbar_flipaxis_xn = false; cbar_tickalign_vs = 1; cbar_flipaxis_vs = true
+    else
+        ax1_pos = fig[1, 1]; label1_pos = fig[1, 0]; cbar1_pos = fig[0, 1]; gene_label1_pos = fig[0, 0]
+        ax2_pos = fig[2, 1]; label2_pos = fig[2, 0]; cbar2_pos = fig[3, 1]; gene_label2_pos = fig[3, 0]
+        label_rot = π/2; cbar_horizontal = false; label_halign = :right; label_valign = :center; cbar_width = 0.9 * width
+        cbar_tickalign_xn = 0; cbar_flipaxis_xn = true; cbar_tickalign_vs = 0; cbar_flipaxis_vs = false
+    end
+    ax1 = MK.Axis(ax1_pos; backgroundcolor = canvas_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
         xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false, xautolimitmargin = (0.05, 0), 
         xgridvisible = false, ygridvisible = false)      
     if plot_img
         MK.image!(ax1, img_xn)
     end
-    MK.Label(fig[0, 1], "Xenium", fontsize=18, halign=:center, valign=:bottom)
+    MK.Label(label1_pos, "Xenium", fontsize=18, halign=label_halign, valign=label_valign, rotation=label_rot)
     if !only_expr
         bg_cells = deepcopy(sp.spmetaData.cell)
         bg_cells = filter(:cell => !(∈(Set(df_plt.cell))), bg_cells)
-        bg_cells= filter([:x, :y] => (x, y) -> x_lims_xn[1] < x < x_lims_xn[2] && y_lims[1] < y < y_lims[2], bg_cells)
+        bg_cells= filter([:x, :y] => (x, y) -> x_lims_xn[1] < x < x_lims_xn[2] && y_lims_xn[1] < y < y_lims_xn[2], bg_cells)
         bg_cells[!, x_col] = bg_cells[!, x_col] .- x_lims_xn[1]
-        bg_cells[!, y_col] = bg_cells[!, y_col] .- y_lims[1]
+        bg_cells[!, y_col] = bg_cells[!, y_col] .- y_lims_xn[1]
         MK.scatter!(ax1, bg_cells[!, x_col], bg_cells[!, y_col]; color = bg_color, strokewidth = 0, markersize = marker_size)
     end
     MK.scatter!(ax1, df_plt[!, x_col], df_plt[!, y_col]; color = df_plt.plt_color, strokewidth = 0, markersize = marker_size)
     if do_legend
         c_map2 = [(i, alpha) for i in c_map_xn]
-        MK.Colorbar(fig[1,0], colormap = c_map2,  width=10, limits = (0, maximum(gene_expr_xn)), tickalign = 0, flipaxis = false)
-        MK.Label(fig[0, 0], gene, fontsize=16)
+        MK.Colorbar(cbar1_pos, colormap = c_map2,  width=cbar_width, limits = (0, maximum(gene_expr_xn)), 
+            tickalign = cbar_tickalign_xn, flipaxis = cbar_flipaxis_xn, vertical= cbar_horizontal)
+        MK.Label(gene_label1_pos, gene, fontsize=16, halign=label_halign, valign=label_valign, rotation=label_rot)
     end
-    MK.colsize!(fig.layout, 1, MK.Aspect(1, aspect_ratio))
-    MK.colsize!(fig.layout, 1, MK.Relative(break_ratio))
-    ax2 = MK.Axis(fig[1,2]; backgroundcolor = canvas_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+
+    ax2 = MK.Axis(ax2_pos; backgroundcolor = canvas_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
         xautolimitmargin = (0, 0.05), 
         xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false, xgridvisible = false,ygridvisible = false)
     if plot_img
         MK.image!(ax2, img)
     end
-    MK.Label(fig[0, 2], "VisiumHD", fontsize=18, halign=:center, valign=:bottom)
+    MK.Label(label2_pos, "VisiumHD", fontsize=18, halign=label_halign, valign=label_valign, rotation=label_rot)
     if !only_expr
         anno_df = deepcopy(hd_obj.spmetaData)
         all_poly = deepcopy(hd_obj.polygonData)
-        all_poly = [m .- [x_lims_vs[1]-1 y_lims[1]-1] for m in all_poly]
+        all_poly = [m .- [x_lims_vs[1]-1 y_lims_vs[1]-1] for m in all_poly]
         rename!(anno_df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, :x, :y])
         norm_count=hd_obj.normCount
         gene_expr2 = subset_count(norm_count; genes = [gene])
         gene_expr2 = (vec ∘ collect)(gene_expr2.count_mtx)
         anno_df.gene = gene_expr2
         select_fov = anno_df
-        select_fov = filter([:x, :y, :gene] => (x, y, gene) -> x_lims_vs[1] < x < x_lims_vs[2] && y_lims[1] < y < y_lims[2] && gene <= clip, select_fov)
+        select_fov = filter([:x, :y, :gene] => (x, y, gene) -> x_lims_vs[1] < x < x_lims_vs[2] && y_lims_vs[1] < y < y_lims_vs[2] && gene <= clip, select_fov)
         select_fov[!, x_col] = select_fov[!, x_col] .- x_lims_vs[1]
-        select_fov[!, y_col] = select_fov[!, y_col] .- y_lims[1]
+        select_fov[!, y_col] = select_fov[!, y_col] .- y_lims_vs[1]
         if cell_shape != "point"
             polygon_num = select_fov.ID
             bg_poly = all_poly[polygon_num]
@@ -885,22 +908,33 @@ function gemini_feature_plot(sp, gene::String;
                 color=plt_color, strokewidth=stroke_width,label="")
     else
         poly[!, x_col] = poly[!, x_col] .- x_lims_vs[1]
-        poly[!, y_col] = poly[!, y_col] .- y_lims[1]
+        poly[!, y_col] = poly[!, y_col] .- y_lims_vs[1]
         MK.scatter!(ax2, poly[!, x_col], poly[!, y_col]; color = poly.plt_color, strokewidth = 0, markersize = marker_size)
     end
     if do_legend
         c_map2 = [(i, alpha) for i in c_map]
-        MK.Colorbar(fig[1,3], colormap = c_map2,  width=10, limits = (0, maximum(gene_expr)))
-        MK.Label(fig[0, 3], gene, fontsize=16)
+        MK.Colorbar(cbar2_pos, colormap = c_map2,  width=cbar_width, limits = (0, maximum(gene_expr)),
+            tickalign = cbar_tickalign_vs, flipaxis = cbar_flipaxis_vs, vertical= cbar_horizontal)
+        MK.Label(gene_label2_pos, gene, fontsize=16, halign=label_halign, valign=label_valign, rotation=label_rot)
     end
-    MK.colsize!(fig.layout, 2, MK.Aspect(1, aspect_ratio))
-    MK.colsize!(fig.layout, 2, MK.Relative(1 - break_ratio))
-    MK.colsize!(fig.layout, 0, MK.Relative(0.02))
-    MK.colsize!(fig.layout, 3, MK.Relative(0.02)) 
+    if !horizontal_cut
+        MK.colsize!(fig.layout, 1, MK.Aspect(1, aspect_ratio))
+        MK.colsize!(fig.layout, 1, MK.Relative(break_ratio))
+        MK.colsize!(fig.layout, 2, MK.Aspect(1, aspect_ratio))
+        MK.colsize!(fig.layout, 2, MK.Relative(1 - break_ratio))
+        MK.colsize!(fig.layout, 0, MK.Relative(0.02))
+        MK.colsize!(fig.layout, 3, MK.Relative(0.02))
+    else
+        MK.colsize!(fig.layout, 0, MK.Relative(0.05))
+        MK.colsize!(fig.layout, 1, MK.Relative(0.95))
+        MK.rowsize!(fig.layout, 0, MK.Relative(0.05))
+        MK.rowsize!(fig.layout, 1, MK.Relative(0.45))
+        MK.rowsize!(fig.layout, 3, MK.Relative(0.05))
+        MK.rowsize!(fig.layout, 2, MK.Relative(0.45))
+
+    end
     MK.rowgap!(fig.layout, 0)
     MK.colgap!(fig.layout, 0)
-    MK.ylims!(ax1, y_lims...)
-    MK.ylims!(ax2, y_lims...)
     return fig
 end
 

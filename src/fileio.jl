@@ -735,31 +735,17 @@ function read_paired_data(xn_dir, vs_dir, xn_img_path, vs_img_path;
     end
     new_img = smoothe_img(new_img)
     cell_coord_xn = deepcopy(cell_coord)
-    new_img2, xn_rot_df = crop_img_coord(new_img,cell_coord_xn)
-    xn_obj.spmetaData.cell = xn_rot_df
-    xn_obj.spmetaData.molecule = mol_coord
-    xn_obj.imageData = new_img2
     cell_coord_vs = deepcopy(hd_obj.spmetaData)
-    min_x = minimum(cell_coord[!,:x])
-    min_x = min_x < 1 ? 1 : min_x
-    min_x = Int(round(min_x))
-    min_y = minimum(cell_coord[!, :y])
-    min_y = min_y < 1 ? 1 : min_y
-    min_y = Int(round(min_y))
-    img_x_max = size(vs_img)[1]
-    img_y_max = size(vs_img)[2]
-    max_x = maximum(cell_coord[!, :x])
-    max_x = max_x > img_x_max ? img_x_max-1 : max_x
-    max_x = Int(round(max_x))
-    max_y = maximum(cell_coord[!, :y])
-    max_y = max_y > img_y_max ? img_y_max-1 : max_y
-    max_y = Int(round(max_y))
-    vs_img2 = vs_img[min_x:max_x, min_y:max_y]
-    cell_coord_vs[!, "pxl_row_in_fullres"] .-= min_x
-    cell_coord_vs[!, "pxl_col_in_fullres"] .-= min_y
-    hd_obj.spmetaData = cell_coord_vs
-    hd_obj.layerData.layers["8_um"].spmetaData = cell_coord_vs
-    hd_obj.imageData.fullresImage = vs_img2
+    coord_xn2,coord_vs2,img_xn2,img_vs2, x_lims, y_lims= crop_img_coord(cell_coord_xn, cell_coord_vs, new_img, vs_img)
+    mol_coord[!, "x"] .-= x_lims[1]
+    mol_coord[!, "y"] .-= y_lims[1]
+    xn_obj.polygonData = [m .- [x_lims[1] y_lims[1]] for m in xn_obj.polygonData]
+    xn_obj.spmetaData.cell = coord_xn2
+    xn_obj.spmetaData.molecule = mol_coord
+    xn_obj.imageData = img_xn2
+    hd_obj.spmetaData = coord_vs2
+    hd_obj.layerData.layers["8_um"].spmetaData = coord_vs2
+    hd_obj.imageData.fullresImage = img_vs2
     paired_sp_obj = PairedSpObject(hd_obj, xn_obj, vs_mat, xn_mat)
     paired_obj = PairedObject(paired_sp_obj, cell_counts; kwargs...)
     cell_kept = cell_counts.cell_name
@@ -775,7 +761,6 @@ function read_paired_data(xn_dir, vs_dir, xn_img_path, vs_img_path;
     @info("All done!")
     return paired_obj
 end
-
 
 function read_joint_data(xn_dir, vs_dir, img_path;
     t_mat::Union{Matrix{Float64}, Nothing} = nothing,

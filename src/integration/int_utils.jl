@@ -303,7 +303,7 @@ function get_shared_gene(sp::PairedObject)
     return shared_gene
 end
 
-function crop_img_coord(img, coord; x_col="x", y_col = "y")
+function find_coord_img_minmax(coord, img; x_col=:x, y_col=:y)
     min_x = minimum(coord[!,x_col])
     min_x = min_x < 1 ? 1 : min_x
     min_x = Int(round(min_x))
@@ -318,8 +318,30 @@ function crop_img_coord(img, coord; x_col="x", y_col = "y")
     max_y = maximum(coord[!, y_col])
     max_y = max_y > img_y_max ? img_y_max-1 : max_y
     max_y = Int(round(max_y))
-    new_img = img[min_x:max_x, min_y:max_y]
-    coord[!, x_col] .-= min_x
-    coord[!, y_col] .-= min_y
-    return new_img, coord
+    return min_x, max_x, min_y, max_y
+end
+
+function crop_img_coord(coord_xn, coord_vs, img_xn, img_vs; 
+        x_col_xn=:x, 
+        y_col_xn=:y, 
+        x_col_vs=:pxl_row_in_fullres, 
+        y_col_vs=:pxl_col_in_fullres
+    )
+    min_x_xn, max_x_xn, min_y_xn, max_y_xn = find_coord_img_minmax(coord_xn, img_xn; x_col = x_col_xn, y_col=y_col_xn)
+    min_x_vs, max_x_vs, min_y_vs, max_y_vs = find_coord_img_minmax(coord_vs, img_vs; x_col=x_col_vs, y_col=y_col_vs)
+    min_x = min_x_xn < min_x_vs ? min_x_vs : min_x_xn
+    max_x = max_x_xn < max_x_vs ? max_x_xn : max_x_vs
+    min_y = min_y_xn < min_y_vs ? min_y_vs : min_y_xn
+    max_y = max_y_xn < max_y_vs ? max_y_xn : max_y_vs
+    new_img_xn = img_xn[min_x:max_x, min_y:max_y]
+    coord_xn[!, x_col_xn] .-= min_x
+    coord_xn[!, y_col_xn] .-= min_y
+    new_coord_xn = deepcopy(coord_xn)
+    new_img_vs = img_vs[min_x:max_x, min_y:max_y]
+    coord_vs[!, x_col_vs] .-= min_x
+    coord_vs[!, y_col_vs] .-= min_y
+    new_coord_vs = deepcopy(coord_vs)
+    x_lims = [min_x, max_x]
+    y_lims = [min_y, max_y]
+    return new_coord_xn, new_coord_vs, new_img_xn, new_img_vs, x_lims, y_lims
 end
