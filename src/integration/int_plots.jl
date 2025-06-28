@@ -569,13 +569,11 @@ function gemini_dim_plot(sp::PairedObject;
     label_offset=(0,0), 
     do_label=false, 
     alpha::Real = 1, 
-    legend_ncol = 1,
     xn_legend_ncol = 1, 
     vs_legend_ncol = 1, 
     plot_img = true,
     x_col = "x", 
     y_col = "y", 
-    margin = 0.01,
     hd_layer = "8_um",
     only_selected = true,
     marker_size = 2, 
@@ -588,6 +586,7 @@ function gemini_dim_plot(sp::PairedObject;
     do_legend = false,
     height = 1000, 
     width = 600,
+    horizontal_cut = false,
     break_ratio = 0.5,
     aspect_ratio = 0.8,
     cell_shape = "point"
@@ -595,33 +594,26 @@ function gemini_dim_plot(sp::PairedObject;
         if break_ratio < 0.05 || break_ratio > 0.95
             error("break_ratio should not be < 0.05 or > 0.95")
         end
-        x_coord_xn = deepcopy(sp.spmetaData.cell.x)
-        y_coord_xn = deepcopy(sp.spmetaData.cell.y)
-        x_coord_vs = deepcopy(sp.pairedData.vsObj.spmetaData.pxl_row_in_fullres)
-        y_coord_vs = deepcopy(sp.pairedData.vsObj.spmetaData.pxl_col_in_fullres)
-        img_vs_size = size(sp.pairedData.vsObj.imageData.fullresImage)
-        img_xn_size = size(sp.pairedData.xnObj.imageData)
-        img_limit = [maximum([img_vs_size[1], img_xn_size[1]]), minimum([img_vs_size[2], img_xn_size[2]])]
-        x_lims_xn = [minimum(x_coord_xn)-margin*maximum(x_coord_xn), maximum(x_coord_xn) * break_ratio]
-        if x_lims_xn[1] < 1
-            x_lims_xn[1] = 1
-        end
-        x_lims_xn=adjust_lims(x_lims_xn)
-        x_lims_vs=[maximum(x_coord_xn) * break_ratio, img_limit[1]-1]
-        x_lims_vs=adjust_lims(x_lims_vs)
-        y_lims=[minimum(y_coord_xn)-margin*maximum(y_coord_xn),(1.0+margin)*maximum(y_coord_xn)]
-        if y_lims[1] < 1
-            y_lims[1] = 1
-        end
-        y_lims[2] = y_lims[2] > img_limit[2] ? (img_limit[2] -1) : y_lims[2]
-        y_lims2=[minimum(y_coord_vs)-margin*maximum(y_coord_vs),(1.0+margin)*maximum(y_coord_vs)]
-        if y_lims2[1] < 1
-            y_lims2[1] = 1
-        end
-        y_lims2[2] = y_lims2[2] > img_limit[2] ? (img_limit[2] -1) : y_lims2[2]
+
+    img_xn_size = size(sp.pairedData.xnObj.imageData)
+    img_vs_size = size(sp.pairedData.vsObj.imageData.fullresImage)
+    img_limit = [minimum([img_vs_size[1], img_xn_size[1]]), minimum([img_vs_size[2], img_xn_size[2]])]
+    if !horizontal_cut
+        x_lims_xn = [1, img_limit[1] * break_ratio]
+        x_lims_xn = adjust_lims(x_lims_xn)
+        x_lims_vs = [img_limit[1] * break_ratio, img_limit[1]-1]
+        x_lims_vs = adjust_lims(x_lims_vs)
+        y_lims_vs = y_lims_xn = [1, img_limit[2] - 1]
+    else
+        y_lims_vs = [1, img_limit[2] * break_ratio]
+        y_lims_vs = adjust_lims(y_lims_vs)
+        y_lims_xn = [img_limit[2] * break_ratio, img_limit[2]-1]
+        y_lims_xn = adjust_lims(y_lims_xn)
+        x_lims_vs = x_lims_xn = [1, img_limit[1] - 1]
+    end
  
         img2, anno_df = process_xn_dimplot_data(sp; anno=xn_anno, anno_color=xn_anno_color, x_col = x_col,  y_col = y_col, 
-            cell_highlight=xn_cell_highlight, x_lims = x_lims_xn, y_lims = y_lims, pt_bg_color = pt_bg_color, alpha=alpha,
+            cell_highlight=xn_cell_highlight, x_lims = x_lims_xn, y_lims = y_lims_xn, pt_bg_color = pt_bg_color, alpha=alpha,
             adjust_contrast= adjust_contrast, adjust_brightness = adjust_brightness, cell_shape = "point"
         )
 
@@ -632,19 +624,29 @@ function gemini_dim_plot(sp::PairedObject;
         sp.pairedData.vsObj = set_default_layer(sp.pairedData.vsObj; layer_slot = hd_layer)
         hd_obj = sp.pairedData.vsObj
         img_vs, poly, cell_color, plt_color = process_hd_dimplot_data(hd_obj; anno=vs_anno, anno_color=vs_anno_color, x_col = x_col, y_col = y_col, pt_bg_color=pt_bg_color, 
-            cell_highlight=vs_cell_highlight, x_lims = x_lims_vs, y_lims = y_lims,alpha = alpha, adjust_contrast = adjust_contrast, adjust_brightness = adjust_brightness,
+            cell_highlight=vs_cell_highlight, x_lims = x_lims_vs, y_lims = y_lims_vs,alpha = alpha, adjust_contrast = adjust_contrast, adjust_brightness = adjust_brightness,
             cell_shape = cell_shape)
         plt_color=[(i, alpha) for i in plt_color]
         fig = MK.Figure(size=(width, height))
-        ax1 = MK.Axis(fig[1,1]; backgroundcolor = canvas_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+        if !horizontal_cut
+            ax1_pos = fig[1, 1]; label1_pos = fig[0, 1]; legend1_pos = fig[1, 0]
+            ax2_pos = fig[1, 2]; label2_pos = fig[0, 2]; legend2_pos = fig[1, 3]
+            label_rot = 0; label_halign = :center; label_valign = :bottom; legend_title_pos = :top
+        else
+            ax1_pos = fig[1, 1]; label1_pos = fig[1, 0]; legend1_pos = fig[0, 1]
+            ax2_pos = fig[2, 1]; label2_pos = fig[2, 0]; legend2_pos = fig[3, 1]
+            label_rot = π/2; label_halign = :right; label_valign = :center; legend_title_pos = :left
+        end
+    
+        ax1 = MK.Axis(ax1_pos; backgroundcolor = canvas_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
             xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false, 
             xautolimitmargin = (0.05, 0),
             xgridvisible = false,ygridvisible = false)
-        ax2 = MK.Axis(fig[1,1]; backgroundcolor = canvas_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+        ax2 = MK.Axis(ax1_pos; backgroundcolor = canvas_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
             xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false,
             xautolimitmargin = (0.05, 0), 
             xgridvisible = false,ygridvisible = false)
-        MK.Label(fig[0, 1], "Xenium", fontsize=20, halign=:center, valign=:bottom)
+        MK.Label(label1_pos, "Xenium", fontsize=20, halign=label_halign, valign=label_valign, rotation=label_rot)
         if plot_img
             MK.image!(ax1, img2)
         end
@@ -656,9 +658,9 @@ function gemini_dim_plot(sp::PairedObject;
         if !only_selected
             bg_cells = deepcopy(sp.spmetaData.cell)
             bg_cells = filter(:cell => !(∈(Set(anno_df.cell))), bg_cells)
-            bg_cells = filter([:x, :y] => (x, y) -> x_lims_xn[1] < x < x_lims_xn[2] && y_lims[1] < y < y_lims[2], bg_cells)
+            bg_cells = filter([:x, :y] => (x, y) -> x_lims_xn[1] < x < x_lims_xn[2] && y_lims_xn[1] < y < y_lims_xn[2], bg_cells)
             bg_cells[!, x_col] = bg_cells[!, x_col] .- x_lims_xn[1]
-            bg_cells[!, y_col] = bg_cells[!, y_col] .- y_lims[1]
+            bg_cells[!, y_col] = bg_cells[!, y_col] .- y_lims_xn[1]
             MK.scatter!(ax1, bg_cells[!, x_col], bg_cells[!, y_col]; color = bg_color, strokewidth = 0, markersize = marker_size)
         end
         for i in cell_anno
@@ -677,22 +679,23 @@ function gemini_dim_plot(sp::PairedObject;
             end
         end
         if do_legend
-            MK.Legend(fig[1, 0],ax2, String(xn_anno), framecolor=:white, labelsize=legend_fontsize, nbanks=xn_legend_ncol, titlesize=20, titlefont=:regular)
+            MK.Legend(legend1_pos,ax2, String(xn_anno), framecolor=:white, labelsize=legend_fontsize, 
+                    nbanks=xn_legend_ncol, titlesize=20, titlefont=:regular, titleposition = legend_title_pos)
         end
         if do_label
             for i in cell_anno
                 anno_df3 = filter(anno => ==(i), anno_df)
                 x_ax = anno_df3[!, x_col]
                 y_ax = anno_df3[!, y_col]
-                MK.text!(ax1, i, position = (mean(x_ax) - label_offset[1], mean(y_ax) - label_offset[2]),align = (:center, :center),font = "Noto Sans Regular",fontsize = label_size,color = label_color)
+                MK.text!(ax1, i, position = (mean(x_ax) - label_offset[1], mean(y_ax) - label_offset[2]),
+                    align = (:center, :center),font = "Noto Sans Regular",fontsize = label_size,color = label_color)
             end
         end
 
-        ax3 = MK.Axis(fig[1,2]; backgroundcolor = canvas_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
+        ax3 = MK.Axis(ax2_pos; backgroundcolor = canvas_color, xticklabelsize=12, yticklabelsize=12, xticksvisible=false, 
             xautolimitmargin = (0, 0.05), 
             xticklabelsvisible=false, yticksvisible=false, yticklabelsvisible=false, xgridvisible = false,ygridvisible = false)
-        MK.Label(fig[0, 2], "VisiumHD", fontsize=20, halign=:center, valign=:bottom)
-        MK.colsize!(fig.layout, 2, MK.Aspect(1, aspect_ratio))
+        MK.Label(label2_pos, "VisiumHD", fontsize=20, halign=label_halign, valign=label_valign, rotation=label_rot)
         if plot_img
             MK.image!(ax3, img_vs)
         end
@@ -707,27 +710,35 @@ function gemini_dim_plot(sp::PairedObject;
                 MK.scatter!(ax3,[NaN], [NaN], color = color1, marker=:rect,
                                 strokewidth = 0.5,strokecolor=stroke_color, markersize = legend_size, label = cell1)
             end
-            MK.Legend(fig[1, 3], ax3, String.(vs_anno), framecolor=:white, labelsize=legend_fontsize, nbanks=vs_legend_ncol, titlesize=20, titlefont=:regular)
+            MK.Legend(legend2_pos, ax3, String.(vs_anno), framecolor=:white, labelsize=legend_fontsize, 
+                        nbanks=vs_legend_ncol, titlesize=20, titlefont=:regular, titleposition = legend_title_pos)
+        end
+        if !horizontal_cut
             MK.rowgap!(fig.layout, 2)
             MK.colgap!(fig.layout, 0)
             MK.colsize!(fig.layout, 1, MK.Aspect(1, aspect_ratio))
             MK.colsize!(fig.layout, 2, MK.Aspect(1, aspect_ratio))
         else
-            MK.rowgap!(fig.layout, 2)
+            MK.colsize!(fig.layout, 0, MK.Relative(0.05))
+            MK.colsize!(fig.layout, 1, MK.Relative(0.95))
+            MK.rowsize!(fig.layout, 0, MK.Relative(0.05))
+            MK.rowsize!(fig.layout, 1, MK.Relative(0.45))
+            MK.rowsize!(fig.layout, 3, MK.Relative(0.05))
+            MK.rowsize!(fig.layout, 2, MK.Relative(0.45))
+            MK.rowgap!(fig.layout, 0)
             MK.colgap!(fig.layout, 0)
-            MK.colsize!(fig.layout, 1, MK.Aspect(1, aspect_ratio))
-            MK.colsize!(fig.layout, 2, MK.Aspect(1, aspect_ratio))
         end
+    
     if !only_selected
         anno_df = deepcopy(hd_obj.spmetaData)
         all_poly = deepcopy(hd_obj.polygonData)
-        all_poly = [m .- [x_lims_vs[1]-1 y_lims[1]-1] for m in all_poly]
+        all_poly = [m .- [x_lims_vs[1]-1 y_lims_vs[1]-1] for m in all_poly]
         rename!(anno_df, [:barcode, :pxl_row_in_fullres, :pxl_col_in_fullres] .=> [:cell, :x, :y])
         select_fov = deepcopy(anno_df)
         select_fov = filter(vs_anno => !(∈(Set(vs_cell_highlight))), select_fov)
-        select_fov = filter([:x, :y] => (x, y) -> x_lims_vs[1] < x < x_lims_vs[2] && y_lims[1] < y < y_lims[2], select_fov)
+        select_fov = filter([:x, :y] => (x, y) -> x_lims_vs[1] < x < x_lims_vs[2] && y_lims_vs[1] < y < y_lims_vs[2], select_fov)
         select_fov[!, x_col] = select_fov[!, x_col] .- x_lims_vs[1]
-        select_fov[!, y_col] = select_fov[!, y_col] .- y_lims[1]
+        select_fov[!, y_col] = select_fov[!, y_col] .- y_lims_vs[1]
         if cell_shape != "point"
             polygon_num = select_fov.ID
             bg_poly = all_poly[polygon_num]
@@ -741,15 +752,12 @@ function gemini_dim_plot(sp::PairedObject;
         MK.poly!(ax3, [MK.Point2.(eachrow(p)) for p in poly]; strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width)
     else
         poly[!, x_col] = poly[!, x_col] .- x_lims_vs[1]
-        poly[!, y_col] = poly[!, y_col] .- y_lims[1]
+        poly[!, y_col] = poly[!, y_col] .- y_lims_vs[1]
         MK.scatter!(ax3, poly[!, x_col], poly[!, y_col]; color = poly.new_color, strokewidth = 0, markersize = marker_size)
     end
-    y_lims = [max(y_lims[1], y_lims2[1]), min(y_lims[2], y_lims2[2])]
-    y_lims[1] = y_lims[1] > 0 ? 0 : y_lims[1]
-    MK.ylims!(ax1, y_lims...)
-    MK.ylims!(ax3, y_lims...)
     return fig
 end
+
 
 function gemini_feature_plot(sp, gene::String;
     color_keys_xn::Union{Vector{String}, Tuple{String}}=["gray85","cyan","blue","blue3"],
@@ -769,7 +777,6 @@ function gemini_feature_plot(sp, gene::String;
     alpha::Real = 0.5, 
     stroke_width=0.5,
     cell_shape = "point",
-    margin = 0.01,
     stroke_color=:transparent,
     break_ratio=0.5,
     aspect_ratio=0.7,
