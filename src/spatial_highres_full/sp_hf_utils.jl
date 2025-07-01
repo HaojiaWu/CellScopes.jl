@@ -143,7 +143,7 @@ end
 
 function compute_corner_points(df::DataFrame, width::Real; x_col="x", y_col="y", cell= "barcode")
     n = nrow(df)
-    df.ID = collect(1:nrow(df))
+    df.ID = collect(1:n)
     corners = DataFrame(ID = Int[], barcode = String[], new_x = Float64[], new_y = Float64[])
     for i in 1:n
         x, y = df[i, x_col], df[i, y_col]

@@ -560,19 +560,80 @@ end
 return cosmx_obj
 end
 
+function read_cellseg_geojson(geojson_file)
+    geojson = JSON.parsefile(geojson_file)
+    features = geojson["features"]
+    rows = []
+    for (i, f) in enumerate(features)
+        geom = f["geometry"]
+        gtype = geom["type"]
+        props = f["properties"]
+
+        cell_int = haskey(props, "cell_id") ? props["cell_id"] : i
+        cell_id = "cellid_" * lpad(string(cell_int), 9, '0') * "-1"
+        cluster = get(get(props, "classification", Dict()), "name", missing)
+
+        if gtype == "Polygon"
+            for ring in geom["coordinates"]
+                for pt in ring
+                    push!(rows, (cell_id = cell_id, x = pt[2], y = pt[1], cluster = cluster))
+                end
+            end
+        elseif gtype == "MultiPolygon"
+            for poly in geom["coordinates"]
+                for ring in poly
+                    for pt in ring
+                        push!(rows, (cell_id = cell_id, x = pt[2], y = pt[1], cluster = cluster))
+                    end
+                end
+            end
+        elseif gtype == "Point"
+            pt = geom["coordinates"]
+            push!(rows, (cell_id = cell_id, x = pt[2], y = pt[1], cluster = cluster))
+        else
+            @warn "Unhandled geometry type: $gtype"
+        end
+    end
+
+    df = DataFrame(rows)
+    return df
+end
+
 function read_layers(hd_dir; 
     min_gene::Int64 = 0,
     min_cell::Int64 = 0,
-    bin_size::Int64 = 2,
+    seg_type::String = "bin",
+    bin_size::Int64 = 8,
     prefix::Union{String, Nothing}=nothing, 
     postfix::Union{String, Nothing}=nothing
     )
-    tenx_dir = hd_dir * "/filtered_feature_bc_matrix"
-    pos_file = hd_dir * "/spatial/tissue_positions.parquet"
     json_file = hd_dir * "/spatial/scalefactors_json.json"
+    json = JSON.parsefile(json_file)
+    if seg_type == "bin"
+        tenx_dir = hd_dir * "/filtered_feature_bc_matrix"
+        pos_file = hd_dir * "/spatial/tissue_positions.parquet"
+        pos = read_hd_pos(pos_file)
+        px_width = bin_size/json["microns_per_pixel"]
+        corner_coordinates = compute_corner_points(pos, px_width; cell = "barcode", x_col = "pxl_row_in_fullres", y_col = "pxl_col_in_fullres")
+        seg = DataFrame(x = corner_coordinates.new_x, y = corner_coordinates.new_y, cell_id = corner_coordinates.barcode)
+    elseif seg_type == "cell"
+        tenx_dir = hd_dir * "/filtered_feature_cell_matrix"
+        cellseg_geojson = hd_dir * "/graphclust_annotated_cell_segmentations.geojson"
+        seg = read_cellseg_geojson(cellseg_geojson)
+        seg = seg[:, [2:ncol(seg); 1]]
+        pos = DataFrames.combine(groupby(seg, :cell_id)) do subdf
+                (
+                    pxl_row_in_fullres = mean(subdf.x),
+                    pxl_col_in_fullres = mean(subdf.y)
+                )
+            end
+        rename!(pos, :cell_id => :barcode)
+        pos.ID = collect(1:nrow(pos))
+    else
+        error(""""seg_type" can only be "bin" or "cell"!""")
+    end
     counts = read_10x(tenx_dir; version ="v3", min_gene=min_gene, min_cell=min_cell)
     all_cells = counts.cell_name
-    pos = read_hd_pos(pos_file)
     pos = filter(:barcode => ∈(Set(all_cells)), pos)
     pos =  pos[(pos[!, :pxl_row_in_fullres] .> 0) .& (pos[!, :pxl_col_in_fullres] .> 0), :]
     if isa(prefix, String)
@@ -590,26 +651,7 @@ function read_layers(hd_dir;
     pos = filter(:barcode => ∈(Set(all_cells)), pos)
     pos = reorder(pos, "barcode", all_cells)
     layer.spmetaData = pos
-    json = JSON.parsefile(json_file)
     layer.jsonParameters = json
-    px_width = bin_size/json["microns_per_pixel"]
-    corner_coordinates = compute_corner_points(pos, px_width; cell = "barcode", x_col = "pxl_row_in_fullres", y_col = "pxl_col_in_fullres")
-    seg = DataFrame(x = corner_coordinates.new_x, y = corner_coordinates.new_y, cell_id = corner_coordinates.barcode)
-    grouped = groupby(seg, :cell_id)
-    cell_ids = unique(seg.cell_id)
-    poly = Vector{Matrix{Float64}}(undef, length(cell_ids))
-    n = length(cell_ids)
-    println("Formatting cell polygons...")
-    p = Progress(n, dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, color=:blue)
-    for idx in 1:length(cell_ids)
-        cell_data = grouped[idx]
-        cell_1 = Matrix(cell_data[!, 1:2])
-        poly[idx] = cell_1
-        next!(p)
-    end
-    poly_data = Polygons()
-    poly_data.polygons["original"] = poly
-    layer.polygonData = poly_data
     if bin_size !== 2
         cluster_file = hd_dir * "/analysis/clustering/gene_expression_graphclust/clusters.csv"
         umap_file = hd_dir * "/analysis/umap/gene_expression_2_components/projection.csv"
@@ -633,32 +675,61 @@ function read_layers(hd_dir;
         reduct_obj = ReductionObject(nothing, nothing, umap_obj)
         layer.dimReduction = reduct_obj
     end
+    grouped = groupby(seg, :cell_id)
+    cell_ids = unique(seg.cell_id)
+    poly = Vector{Matrix{Float64}}(undef, length(cell_ids))
+    n = length(cell_ids)
+    println("Formatting cell polygons...")
+    p = Progress(n, dt=0.5, barglyphs=BarGlyphs("[=> ]"), barlen=50, color=:blue)
+    for idx in 1:length(cell_ids)
+        cell_data = grouped[idx]
+        cell_1 = Matrix(cell_data[!, 1:2])
+        poly[idx] = cell_1
+        next!(p)
+    end
+    poly_data = Polygons()
+    poly_data.polygons["original"] = poly
+    layer.polygonData = poly_data
     return layer
 end
 
 function read_visiumHD(hd_dir::String; 
-    min_genes::Union{Vector{Int64}, Tuple{Int64} }= [0, 0, 0], 
-    min_cells::Union{Vector{Int64}, Tuple{Int64} }= [0, 0, 0],
+    min_genes::Union{Nothing, Vector{Int}, Tuple{Int}} = nothing, 
+    min_cells::Union{Nothing, Vector{Int}, Tuple{Int}} = nothing,
     prefix::Union{String, Nothing} = nothing,
     postfix::Union{String, Nothing} = nothing,
     default_bin = "8_um"
 )
+    if !isdir(hd_dir * "/segmented_outputs")
+        min_genes === nothing && (min_genes = [0, 0, 0])
+        min_cells === nothing && (min_cells = [0, 0, 0])
+    else
+        min_genes === nothing && (min_genes = [0, 0, 0, 0])
+        min_cells === nothing && (min_cells = [0, 0, 0, 0])
+    end
     layers = Layers()
     println("\033[1;34m1. loading 2um binned data...\033[0m")
     bin_dir = hd_dir * "/binned_outputs/square_002um"
-    layer1 = read_layers(bin_dir; min_gene = min_genes[1], min_cell =  min_cells[1], prefix = prefix, postfix = postfix, bin_size = 2)
+    layer1 = read_layers(bin_dir; min_gene = min_genes[1], min_cell =  min_cells[1], prefix = prefix, postfix = postfix, seg_type = "bin", bin_size = 2)
     layers.layers["2_um"] = layer1
     println("1. 2um binned data loaded!")
     println("\033[1;34m2. loading 8um binned data...\033[0m")
     bin_dir = hd_dir * "/binned_outputs/square_008um"
-    layer2 = read_layers(bin_dir; min_gene = min_genes[2], min_cell =  min_cells[2], prefix = prefix, postfix = postfix, bin_size = 8)
+    layer2 = read_layers(bin_dir; min_gene = min_genes[2], min_cell =  min_cells[2], prefix = prefix, postfix = postfix, seg_type = "bin", bin_size = 8)
     layers.layers["8_um"] = layer2
     println("2. 8um binned data loaded!")
     println("\033[1;34m3. loading 16um binned data...\033[0m")
     bin_dir = hd_dir * "/binned_outputs/square_016um"
-    layer3 = read_layers(bin_dir; min_gene = min_genes[3], min_cell =  min_cells[3], prefix = prefix, postfix = postfix, bin_size = 16)
+    layer3 = read_layers(bin_dir; min_gene = min_genes[3], min_cell =  min_cells[3], prefix = prefix, postfix = postfix, seg_type = "bin", bin_size = 16)
     layers.layers["16_um"] = layer3
     println("3. 16um binned data loaded!")
+    if isdir(hd_dir * "/segmented_outputs")
+        println("\033[1;34m4. loading cell seg data...\033[0m")
+        cell_dir = hd_dir * "/segmented_outputs"
+        layer4 = read_layers(cell_dir; min_gene = min_genes[4], min_cell =  min_cells[4], prefix = prefix, postfix = postfix, seg_type = "cell")
+        layers.layers["cell"] = layer4
+        println("4. Cell seg data loaded!")
+    end
     highres_image_file = hd_dir * "/spatial/tissue_hires_image.png"
     lowres_image_file = hd_dir * "/spatial/tissue_lowres_image.png"
     fullres_image_file = hd_dir * "/spatial/tissue_fullres_image.png"

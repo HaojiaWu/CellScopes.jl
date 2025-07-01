@@ -3,7 +3,7 @@ function sp_dim_plot(sp::VisiumHDObject, anno; x_col::String = "x", y_col::Strin
     anno_color::Union{Nothing, Dict} = nothing, adjust_contrast =1.0, adjust_brightness=0.0,marker_size=2,
     pt_bg_color = "gray90", x_lims=nothing, y_lims=nothing,width = 500, height = 500, alpha=1,
     stroke_width=0, stroke_color="black", cell_order::Union{Vector{String}, Nothing}=nothing,
-    legend_fontsize = 30, do_legend=false, legend_size = 30 , bg_color = "white"
+    legend_fontsize = 30, do_legend=false, legend_size = 30 , legend_ncol = 1, bg_color = "white"
     )
     if isa(sp.alterImgData, Nothing)
         anno_df = deepcopy(sp.spmetaData)
@@ -117,7 +117,7 @@ function sp_dim_plot(sp::VisiumHDObject, anno; x_col::String = "x", y_col::Strin
                                     strokewidth = 0.5,strokecolor=stroke_color, markersize = legend_size, label = cell1)
                 end
             end
-            MK.Legend(fig[1, 2], ax1, framecolor=:white, labelsize=legend_fontsize)
+            MK.Legend(fig[1, 2], ax1, framecolor=:white, labelsize=legend_fontsize, nbanks=legend_ncol)
         end
         if cell_shape == "polygon"
             MK.poly!(ax1, [MK.Point2.(eachrow(p)) for p in poly]; strokecolor=stroke_color, color=plt_color, strokewidth=stroke_width)
