@@ -47,9 +47,9 @@ Pkg.add(url="https://github.com/HaojiaWu/CellScopes.jl") # Install CellScopes.jl
 ```CellScopes``` supports analysis for single-cell RNA sequencing (scRNA-seq), single-cell ATAC-seq (scATAC-seq), Visium, Slide-seq, Cartana, MERFISH, seqFISH, STARmap and Xenium datasets. For more information, please refer to the tutorials provided below.
 
 ### 2.1. Multimodal analysis
-***a. Joint analysis of multimodal datasets within same slide***: *Coming soon!* <br>
-***b. Joint analysis of multimodal datasets between adjacent slides***: *Coming soon!* <br>
-***c. Joint analysis of multimodal datasets across different slides***: *Coming soon!*
+***a. Joint analysis of multimodal datasets within same slice***: *Coming soon!* <br>
+***b. Joint analysis of multimodal datasets between adjacent slices***: *Coming soon!* <br>
+***c. Joint analysis of multimodal datasets across different slices***: *Coming soon!*
 
 ### 2.2. Standalone analysis
 
